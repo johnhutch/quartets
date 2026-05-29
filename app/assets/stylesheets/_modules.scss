@@ -1,0 +1,92 @@
+// MODULES — the reusable, self-contained components. Each block is named
+// `m-*` so it's obvious in markup what's a module vs. a layout or state hook.
+// These are starter shells; flesh them out as the views land.
+
+@use "variables" as *;
+@use "sass:map";
+
+// --- Game board: the 4×4 grid of word tiles -----------------------------
+.m-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $grid-gap;
+}
+
+// --- Word tile ----------------------------------------------------------
+.m-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+  padding: $space-sm;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: $color-card;
+  border-radius: $radius;
+  user-select: none;
+}
+
+// --- Category group block (author form + reveal) ------------------------
+// One color per category. The loop stamps out .m-group--yellow etc. so we
+// never hand-maintain four near-identical rules.
+.m-group {
+  padding: $space-md;
+  border-radius: $radius;
+  margin-bottom: $space-sm;
+
+  @each $name, $color in $category-colors {
+    &--#{$name} {
+      background: $color;
+    }
+  }
+}
+
+// --- Emoji result cube (🟨🟩🟦🟪) — shareable bragging grid ------------
+.m-cube {
+  font-size: $font-lg;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  white-space: pre; // preserve the rows exactly as generated
+}
+
+// --- Stats panel --------------------------------------------------------
+.m-stats {
+  border: 1px solid $color-line;
+  border-radius: $radius;
+  padding: $space-md;
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    padding: $space-xs 0;
+    border-bottom: 1px solid $color-line;
+
+    &:last-child { border-bottom: 0; }
+  }
+}
+
+// --- Creation form shell ------------------------------------------------
+.m-form {
+  display: grid;
+  gap: $space-md;
+
+  &__field {
+    display: grid;
+    gap: $space-xs;
+  }
+
+  label {
+    font-size: $font-sm;
+    font-weight: 700;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: $space-sm;
+    font: inherit;
+    border: 1px solid $color-line;
+    border-radius: $radius;
+  }
+}

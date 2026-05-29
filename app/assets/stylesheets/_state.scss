@@ -1,0 +1,29 @@
+// STATE — the `.is-*` hooks JS toggles at runtime. These describe a moment
+// in time (selected, revealed, errored), not a component. Kept thin on
+// purpose: state overrides module defaults, it doesn't redefine them.
+
+@use "variables" as *;
+
+// A tile the player has tapped but not yet submitted.
+.is-selected {
+  background: $color-card-sel;
+  color: $color-paper;
+}
+
+// A group that's been solved/revealed — module color already set it, this
+// just locks it in and kills the pointer.
+.is-revealed {
+  pointer-events: none;
+}
+
+// A wrong guess — brief flash before the board resets the selection.
+.is-wrong {
+  background: $color-wrong;
+  color: $color-paper;
+}
+
+// Draft badge on the dashboard: a puzzle that auto-saved mid-edit.
+.is-draft {
+  color: $color-muted;
+  font-style: italic;
+}

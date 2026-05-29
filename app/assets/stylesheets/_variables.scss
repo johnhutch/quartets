@@ -1,0 +1,48 @@
+// THEME + tokens. No CSS output lives here — just the values everything
+// else reaches for. Anything you'd want to swap to re-skin the app belongs
+// in this file.
+
+// --- The four Connections category colors -------------------------------
+// Ordered easy -> hard, matching NYT. These are the load-bearing brand of
+// the whole app, so they get first-class names, not $color-1.
+$color-yellow: #f9df6d; // easiest
+$color-green:  #a0c35a;
+$color-blue:   #b0c4ef;
+$color-purple: #ba81c5; // hardest
+
+// Map for iterating (group blocks, emoji cube, stats bars).
+$category-colors: (
+  "yellow": $color-yellow,
+  "green":  $color-green,
+  "blue":   $color-blue,
+  "purple": $color-purple,
+);
+
+// --- Neutrals -----------------------------------------------------------
+$color-ink:       #121212; // text
+$color-paper:     #ffffff; // page bg
+$color-muted:     #5a5a5a; // secondary text
+$color-line:      #d9d9d9; // borders, dividers
+$color-card:      #efefe6; // unselected tile bg, NYT-ish
+$color-card-sel:  #5a594e; // selected tile bg
+$color-wrong:     #c4453c; // mistake / error state
+
+// --- Spacing scale ------------------------------------------------------
+// Tight, predictable steps. Reach for these instead of magic px.
+$space-xs:  0.25rem;
+$space-sm:  0.5rem;
+$space-md:  1rem;
+$space-lg:  1.5rem;
+$space-xl:  2.5rem;
+
+// --- Type scale ---------------------------------------------------------
+$font-stack: "Helvetica Neue", Helvetica, Arial, sans-serif;
+$font-sm:   0.875rem;
+$font-base: 1rem;
+$font-lg:   1.25rem;
+$font-xl:   1.75rem;
+
+// --- Misc ---------------------------------------------------------------
+$radius:        6px;
+$grid-gap:      $space-sm;
+$content-width: 640px; // game board is happiest narrow + mobile-first

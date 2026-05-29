@@ -1,1 +1,10 @@
-// Sassy
+// SMACSS manifest. Order matters — cascade flows top to bottom.
+// Variables carry no output, so each partial pulls them in itself with
+// `@use "variables" as *`. We only list the layers that actually emit CSS.
+//
+// Layers: base -> modules -> state. Theme lives in variables for now;
+// split it out if we ever ship more than one color scheme.
+
+@use "base";
+@use "modules";
+@use "state";

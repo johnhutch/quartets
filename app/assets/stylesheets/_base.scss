@@ -1,0 +1,53 @@
+// BASE — element defaults and resets. No classes, no IDs. This is "what a
+// bare <h1> or <button> looks like before any module touches it."
+
+@use "variables" as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: $font-stack;
+  font-size: $font-base;
+  line-height: 1.5;
+  color: $color-ink;
+  background: $color-paper;
+}
+
+h1, h2, h3 {
+  margin: 0 0 $space-md;
+  line-height: 1.2;
+}
+
+h1 { font-size: $font-xl; }
+h2 { font-size: $font-lg; }
+
+p {
+  margin: 0 0 $space-md;
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+// Layout primitive: every page is centered on this column.
+.l-container {
+  width: 100%;
+  max-width: $content-width;
+  margin: 0 auto;
+  padding: $space-md;
+}
