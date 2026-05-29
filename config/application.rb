@@ -38,5 +38,11 @@ module LinkTheThings
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # RSpec + factory_bot only. Never Minitest, never fixtures.
+    config.generators do |g|
+      g.test_framework :rspec
+      g.fixture_replacement :factory_bot, dir: "spec/factories"
+    end
   end
 end
