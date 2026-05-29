@@ -1,9 +1,15 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Idempotent seeds — safe to run any time, in any environment.
+
+# The single superuser. Creds come from the environment, never the repo.
+# Set ADMIN_EMAIL and ADMIN_PASSWORD before running `bin/rails db:seed`
+# (and in Render's env for production).
+admin_email = ENV["ADMIN_EMAIL"]
+
+if admin_email.present?
+  User.find_or_create_by!(email: admin_email) do |user|
+    user.password = ENV.fetch("ADMIN_PASSWORD")
+  end
+  puts "Superuser ready: #{admin_email}"
+else
+  puts "Skipping superuser seed — set ADMIN_EMAIL and ADMIN_PASSWORD to create one."
+end

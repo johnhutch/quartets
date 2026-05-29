@@ -64,3 +64,5 @@ gem "factory_bot_rails", "~> 6.5", groups: [:development, :test]
 
 gem "capybara", "~> 3.40", group: :test
 gem "selenium-webdriver", "~> 4.44", group: :test
+
+gem "devise", "~> 5.0"
