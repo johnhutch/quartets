@@ -1,0 +1,23 @@
+<% content_for :title, "Your puzzles" %>
+
+<div class="l-container">
+  <h1>Your puzzles</h1>
+  <p><%= link_to "+ New puzzle", new_puzzle_path %></p>
+
+  <% if @puzzles.any? %>
+    <ul class="m-puzzle-list">
+      <% @puzzles.each do |puzzle| %>
+        <li>
+          <%= link_to(puzzle.title.presence || "Untitled draft", edit_puzzle_path(puzzle)) %>
+          <% if puzzle.draft? %>
+            <span class="is-draft">draft</span>
+          <% end %>
+          <%= button_to "Delete", puzzle, method: :delete,
+                data: { turbo_confirm: "Delete this puzzle?" } %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p>No puzzles yet. <%= link_to "Make your first one", new_puzzle_path %>.</p>
+  <% end %>
+</div>

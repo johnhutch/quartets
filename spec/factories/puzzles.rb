@@ -1,5 +1,6 @@
 FactoryBot.define do
   factory :puzzle do
+    user
     sequence(:title) { |n| "Puzzle #{n}" }
     author_name { "Hutch" }
     status { :draft }

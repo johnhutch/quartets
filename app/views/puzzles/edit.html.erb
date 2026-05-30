@@ -1,0 +1,13 @@
+<% content_for :title, "Edit puzzle" %>
+
+<div class="l-container">
+  <h1>Edit puzzle</h1>
+
+  <%= render "form", puzzle: @puzzle %>
+
+  <% unless @puzzle.published? %>
+    <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch %>
+  <% end %>
+
+  <p><%= link_to "← All puzzles", puzzles_path %></p>
+</div>

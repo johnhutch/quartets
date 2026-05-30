@@ -1,0 +1,49 @@
+<%= form_with model: puzzle, class: "m-form" do |f| %>
+  <% if puzzle.errors.any? %>
+    <div class="m-form__errors is-wrong">
+      <p><%= pluralize(puzzle.errors.count, "problem") %> stopped that from saving:</p>
+      <ul>
+        <% puzzle.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# Groups in swellgarfo order (blue → green → yellow → purple), and within
+      each block: answers first, then the category — matching the form muscle
+      memory the user already has. %>
+  <%= f.fields_for :groups do |gf| %>
+    <fieldset class="m-group m-group--<%= gf.object.color %>">
+      <legend><%= gf.object.color.to_s.titleize %></legend>
+      <%= gf.hidden_field :color %>
+      <%= gf.hidden_field :position %>
+
+      <div class="m-form__field">
+        <label>Answers</label>
+        <% Group::WORDS_PER_GROUP.times do |i| %>
+          <%= text_field_tag "#{gf.object_name}[words][]",
+                Array(gf.object.words)[i],
+                placeholder: "Word #{i + 1}" %>
+        <% end %>
+      </div>
+
+      <div class="m-form__field">
+        <%= gf.label :description, "Category" %>
+        <%= gf.text_field :description, placeholder: "What links them?" %>
+      </div>
+    </fieldset>
+  <% end %>
+
+  <div class="m-form__field">
+    <%= f.label :title %>
+    <%= f.text_field :title %>
+  </div>
+
+  <div class="m-form__field">
+    <%= f.label :author_name, "Author" %>
+    <%= f.text_field :author_name %>
+  </div>
+
+  <%= f.submit(puzzle.persisted? ? "Save" : "Save draft") %>
+<% end %>

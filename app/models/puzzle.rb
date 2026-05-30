@@ -5,8 +5,7 @@ class Puzzle < ApplicationRecord
 
   GROUPS_PER_PUZZLE = 4
 
-  # user_id column exists for forward-compat; the belongs_to lands when Devise
-  # shows up in Phase 1. Don't reference .user until then.
+  belongs_to :user
 
   has_many :groups, -> { order(:position) }, dependent: :destroy, inverse_of: :puzzle
   has_many :attempts, dependent: :destroy
