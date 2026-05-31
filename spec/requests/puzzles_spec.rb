@@ -54,7 +54,7 @@ RSpec.describe "Puzzles", type: :request do
 
       it "re-renders with errors when the title is blank" do
         post puzzles_path, params: { puzzle: { title: "" } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -74,7 +74,7 @@ RSpec.describe "Puzzles", type: :request do
         patch publish_puzzle_path(puzzle)
 
         expect(puzzle.reload).to be_draft
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -88,8 +88,8 @@ RSpec.describe "Puzzles", type: :request do
     describe "ownership" do
       it "won't reach another user's puzzle" do
         other = create(:puzzle) # belongs to a different user
-        expect { get edit_puzzle_path(other) }
-          .to raise_error(ActiveRecord::RecordNotFound)
+        get edit_puzzle_path(other)
+        expect(response).to have_http_status(:not_found)
       end
     end
   end

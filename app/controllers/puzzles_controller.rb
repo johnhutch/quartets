@@ -18,7 +18,7 @@ class PuzzlesController < ApplicationController
       redirect_to edit_puzzle_path(@puzzle), notice: "Draft saved."
     else
       ensure_four_groups
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -31,7 +31,7 @@ class PuzzlesController < ApplicationController
       redirect_to edit_puzzle_path(@puzzle), notice: "Saved."
     else
       ensure_four_groups
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -45,7 +45,7 @@ class PuzzlesController < ApplicationController
       @puzzle.status = :draft # keep it a draft; just show what's missing
       flash.now[:alert] = "Can't publish yet — fix the issues below."
       ensure_four_groups
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
