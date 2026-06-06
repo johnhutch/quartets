@@ -60,7 +60,10 @@ the authoring form mirrors that order so the user's muscle memory carries over.
 - ✅ SMACSS stylesheet structure, compiling clean
 - ✅ Project docs (README, CLAUDE.md, this plan)
 - ✅ **RSpec + Capybara + factory_bot** installed; generators locked to rspec.
-  (System-spec mobile-viewport driver still to configure when system specs land.)
+- ✅ **System-spec driver** — headless Chrome at a phone-sized viewport
+  (`spec/support/capybara.rb`), `js: true` opt-in. Dodges chromedriver/Chrome
+  version drift by preferring a Selenium-cached driver whose major matches the
+  installed Chrome. Warden `login_as` for browser-session auth.
 - ⬜ **Render deploy wired early** — `render.yaml` (web service + managed
   Postgres), auto-deploy on push to `main`. Deploy the empty app *now* so we
   never hit a "works locally only" wall at the end.
@@ -69,7 +72,7 @@ the authoring form mirrors that order so the user's muscle memory carries over.
 
 ## Phase 1 — Data model + auth 🚧
 
-- ⬜ **Devise**, superuser only. No public sign-up route. Creation/editing is
+- ✅ **Devise**, superuser only. No public sign-up route. Creation/editing is
   gated; everything player-facing is open.
 - ✅ Migrations + models for `Puzzle`, `Group`, and `Attempt` per the schema.
 - ✅ Validations — the rules the form *and* the importer both lean on:
@@ -93,13 +96,17 @@ the authoring form mirrors that order so the user's muscle memory carries over.
 - ✅ Publish action: draft → published, enforcing the full 4×4 rules.
 - ✅ Request specs: auth gating, draft create, nested groups, publish (complete
   vs. incomplete), ownership.
-- ⬜ **Auto-save drafts** — the non-negotiable, born from losing work to the iOS
-  back button. Debounced Stimulus controller fires a background Turbo save on
-  change. *(Next slice.)*
-- ⬜ Draft resilience spec: partial puzzle (e.g. 2 groups filled) persists and
-  reloads intact.
-- ⬜ System spec (mobile viewport): author a full puzzle on a phone-sized screen,
-  publish, land on the shareable URL.
+- ✅ **Auto-save drafts** — the non-negotiable, born from losing work to the iOS
+  back button. Debounced Stimulus controller (`autosave_controller.js`) fires a
+  background fetch on input: first save POSTs and mints the draft, then flips the
+  form to PATCH that record. Title is now publish-only (answers-first form puts
+  it last), so untitled partial drafts save. Debounce defaults to **1000ms**.
+- ✅ Draft resilience spec: partial puzzle (2 groups filled, untitled) persists
+  and reloads intact (`spec/requests/puzzle_autosave_spec.rb`).
+- ✅ System spec (mobile viewport, `spec/system/puzzle_authoring_spec.rb`):
+  auto-save resilience (half-typed draft survives leaving without saving) +
+  author a full puzzle and publish. *(Publish lands on the dashboard for now;
+  redirecting to the public share URL waits on the Phase 3 play page.)*
 
 ## Phase 3 — Play ⬜
 
@@ -156,5 +163,5 @@ the authoring form mirrors that order so the user's muscle memory carries over.
   rollup; not before.
 - **Mistake cap on play** — match NYT's 4? Make it configurable per puzzle?
   Decide when the engine's picked, since it may dictate this.
-- **Draft auto-save cadence** — debounce interval (1–2s?) to tune once the form
-  exists and we can feel it on a phone.
+- **Draft auto-save cadence** — set to **1000ms** for now (`data-autosave-debounce-value`
+  on the form). Tune by feel on a real phone.

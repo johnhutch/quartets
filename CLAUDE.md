@@ -54,6 +54,12 @@ have no recipient.
 - **Ruby:** pinned to 4.0.4 in `.ruby-version`. The non-interactive shell may
   default to system Ruby — activate the right one before running `bundle`.
 
+## Session Workflow
+
+**Start.** A `SessionStart` hook (`.claude/hooks/session_start.sh`) auto-injects PROGRESS.md + the last 5 commits into context every session — current state is normally already loaded; no need to open PROGRESS.md by hand. Read CONTEXT.md, DECISIONS.md, and TODOS.md **on demand** when the task touches domain/models, prior decisions, or planned work. Confirm current state and next action before proceeding.
+
+**End.** Run `/wrap` before stopping — it reconciles PROGRESS / TODOS / DECISIONS / CONTEXT with the session's work (`.claude/commands/wrap.md`). The durable habit: update PROGRESS's shipped-log in the *same commit* as the code it describes; `/wrap` is the backstop. A long idle gap (>30 min) triggers a `/wrap` reminder via `.claude/hooks/idle_reminder.sh`.
+
 ## Current state
 
 Rails scaffold generated, Postgres + Sass wired, SMACSS structure built and

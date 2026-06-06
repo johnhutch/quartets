@@ -76,6 +76,19 @@
     gap: $space-xs;
   }
 
+  // Auto-save indicator. Quiet by default; only the failure state shouts.
+  &__autosave {
+    margin: 0;
+    min-height: $font-sm * 1.4; // reserve the line so nothing jumps as it toggles
+    font-size: $font-sm;
+    color: $color-muted;
+
+    &[data-state="error"] {
+      color: $color-wrong;
+      font-weight: 700;
+    }
+  }
+
   label {
     font-size: $font-sm;
     font-weight: 700;

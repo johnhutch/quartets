@@ -1,4 +1,11 @@
-<%= form_with model: puzzle, class: "m-form" do |f| %>
+<%= form_with model: puzzle, class: "m-form",
+      data: {
+        controller: "autosave",
+        "autosave-debounce-value": 1000,
+        action: "input->autosave#schedule change->autosave#schedule"
+      } do |f| %>
+  <p class="m-form__autosave" data-autosave-target="status" aria-live="polite"></p>
+
   <% if puzzle.errors.any? %>
     <div class="m-form__errors is-wrong">
       <p><%= pluralize(puzzle.errors.count, "problem") %> stopped that from saving:</p>
