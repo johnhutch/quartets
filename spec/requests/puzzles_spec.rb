@@ -52,9 +52,13 @@ RSpec.describe "Puzzles", type: :request do
         expect(Puzzle.last.groups.count).to eq(4)
       end
 
-      it "re-renders with errors when the title is blank" do
-        post puzzles_path, params: { puzzle: { title: "" } }
-        expect(response).to have_http_status(:unprocessable_content)
+      it "saves a blank-titled draft — the title comes last in the form" do
+        expect {
+          post puzzles_path, params: { puzzle: { title: "" } }
+        }.to change(Puzzle, :count).by(1)
+
+        expect(Puzzle.last).to be_draft
+        expect(response).to redirect_to(edit_puzzle_path(Puzzle.last))
       end
     end
 

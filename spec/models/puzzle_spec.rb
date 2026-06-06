@@ -5,8 +5,14 @@ RSpec.describe Puzzle, type: :model do
     expect(build(:puzzle)).to be_valid
   end
 
-  it "requires a title" do
-    puzzle = build(:puzzle, title: nil)
+  it "lets a draft save without a title" do
+    # The form is answers-first with the title at the bottom, so a half-typed
+    # draft auto-saves before a title exists.
+    expect(build(:puzzle, title: nil, status: :draft)).to be_valid
+  end
+
+  it "requires a title to publish" do
+    puzzle = build(:published_puzzle, title: nil)
     expect(puzzle).not_to be_valid
     expect(puzzle.errors[:title]).to be_present
   end
