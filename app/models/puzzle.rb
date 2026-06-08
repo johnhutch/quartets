@@ -16,10 +16,10 @@ class Puzzle < ApplicationRecord
   # Auto-generates an unguessable token on create; the unique index backs it.
   has_secure_token :share_token
 
-  validates :title, presence: true
-
-  # The full 4×4 structure is only enforced on publish. Drafts auto-save
-  # half-finished, so they stay deliberately lenient.
+  # Even the title waits for publish — a draft auto-saves the instant it's
+  # created, before the user has typed anything. The full 4×4 structure is
+  # likewise only enforced on publish; drafts stay deliberately lenient.
+  validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
 
   private

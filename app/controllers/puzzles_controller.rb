@@ -6,20 +6,17 @@ class PuzzlesController < ApplicationController
     @puzzles = current_user.puzzles.order(updated_at: :desc)
   end
 
-  def new
-    @puzzle = current_user.puzzles.build
-    ensure_four_groups
-  end
-
+  # "New puzzle" POSTs straight here: we persist an empty draft (with its four
+  # blank colored groups) and drop the user into the editor. From that moment
+  # auto-save has a real record to write into — nothing to lose to a stray tap.
   def create
     @puzzle = current_user.puzzles.build(puzzle_params)
-
-    if @puzzle.save
-      redirect_to edit_puzzle_path(@puzzle), notice: "Draft saved."
-    else
-      ensure_four_groups
-      render :new, status: :unprocessable_content
-    end
+    ensure_four_groups
+    @puzzle.save!
+    redirect_to edit_puzzle_path(@puzzle), notice: "Draft started."
+  rescue ActiveRecord::RecordInvalid
+    ensure_four_groups
+    render :new, status: :unprocessable_content
   end
 
   def edit
@@ -28,14 +25,19 @@ class PuzzlesController < ApplicationController
 
   def update
     if @puzzle.update(puzzle_params)
-      redirect_to edit_puzzle_path(@puzzle), notice: "Saved."
+      respond_to do |format|
+        format.html { redirect_to edit_puzzle_path(@puzzle), notice: "Saved." }
+        format.json { head :no_content } # background auto-save: quiet success
+      end
     else
-      ensure_four_groups
-      render :edit, status: :unprocessable_content
+      respond_to do |format|
+        format.html { ensure_four_groups; render :edit, status: :unprocessable_content }
+        format.json { render json: { errors: @puzzle.errors.full_messages }, status: :unprocessable_content }
+      end
     end
   end
 
-  # Flip a draft to published. The full 4×4 structural rules fire here.
+  # Flip a draft to published. The full 4×4 + title rules fire here.
   def publish
     @puzzle.status = :published
 
@@ -61,8 +63,9 @@ class PuzzlesController < ApplicationController
     @puzzle = current_user.puzzles.find(params[:id])
   end
 
+  # Tolerant of a bare POST (the "New puzzle" button sends no puzzle params).
   def puzzle_params
-    params.require(:puzzle).permit(
+    params.fetch(:puzzle, {}).permit(
       :title,
       :author_name,
       groups_attributes: [:id, :color, :description, { words: [] }]
