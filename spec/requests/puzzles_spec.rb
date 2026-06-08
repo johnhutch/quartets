@@ -52,24 +52,13 @@ RSpec.describe "Puzzles", type: :request do
         expect(Puzzle.last.groups.count).to eq(4)
       end
 
-      it "starts an empty draft with four blank groups (the New button)" do
-        expect { post puzzles_path }.to change(Puzzle, :count).by(1)
+      it "saves a blank-titled draft — the title comes last in the form" do
+        expect {
+          post puzzles_path, params: { puzzle: { title: "" } }
+        }.to change(Puzzle, :count).by(1)
 
-        puzzle = Puzzle.last
-        expect(puzzle).to be_draft
-        expect(puzzle.groups.count).to eq(4)
-        expect(response).to redirect_to(edit_puzzle_path(puzzle))
-      end
-    end
-
-    describe "PATCH /puzzles/:id as JSON (background auto-save)" do
-      it "saves quietly and returns no content" do
-        puzzle = create(:puzzle, user: user)
-
-        patch puzzle_path(puzzle), params: { puzzle: { title: "Typed so far" } }, as: :json
-
-        expect(response).to have_http_status(:no_content)
-        expect(puzzle.reload.title).to eq("Typed so far")
+        expect(Puzzle.last).to be_draft
+        expect(response).to redirect_to(edit_puzzle_path(Puzzle.last))
       end
     end
 

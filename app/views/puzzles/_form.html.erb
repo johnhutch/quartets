@@ -1,8 +1,11 @@
-<%# Auto-save only on a persisted draft — a brand-new form has no record to
-    PATCH into yet (the "New puzzle" button creates that record first). %>
 <%= form_with model: puzzle, class: "m-form",
-      data: ({ controller: "autosave",
-               action: "input->autosave#schedule change->autosave#schedule" } if puzzle.persisted?) do |f| %>
+      data: {
+        controller: "autosave",
+        "autosave-debounce-value": 1000,
+        action: "input->autosave#schedule change->autosave#schedule"
+      } do |f| %>
+  <p class="m-form__autosave" data-autosave-target="status" aria-live="polite"></p>
+
   <% if puzzle.errors.any? %>
     <div class="m-form__errors is-wrong">
       <p><%= pluralize(puzzle.errors.count, "problem") %> stopped that from saving:</p>
@@ -49,10 +52,5 @@
     <%= f.text_field :author_name %>
   </div>
 
-  <div class="m-form__actions">
-    <%= f.submit(puzzle.persisted? ? "Save" : "Save draft") %>
-    <% if puzzle.persisted? %>
-      <span class="m-form__status" data-autosave-target="status" aria-live="polite">Saved ✓</span>
-    <% end %>
-  </div>
+  <%= f.submit(puzzle.persisted? ? "Save" : "Save draft") %>
 <% end %>
