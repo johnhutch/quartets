@@ -1,0 +1,49 @@
+# Compose project for the Synology (DSM Container Manager → Projects).
+#
+# Dev is native — this file is production-only. The image is built by CI and
+# pulled from GHCR; the NAS never compiles anything (the Celeron would hate it).
+# Secrets live in a sibling .env on the NAS (gitignored) — see .env.example and
+# docs/DEPLOY.md.
+name: link-the-things
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: link_the_things
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: link_the_things_production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U link_the_things -d link_the_things_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ghcr.io/johnhutch/link-the-things:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Single Postgres for app + Solid cache/queue/cable (see config/database.yml).
+      DATABASE_URL: postgres://link_the_things:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/link_the_things_production
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:?set RAILS_MASTER_KEY in .env}
+      # Superuser seed — db:prepare runs it on the first boot (db/seeds.rb).
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      # Run jobs inside Puma — no separate worker service.
+      SOLID_QUEUE_IN_PUMA: "true"
+      WEB_CONCURRENCY: "2"
+      RAILS_MAX_THREADS: "3"
+    # Container listens on 80 (Thruster → Puma). Map to a host port and point
+    # DSM's reverse proxy (with Let's Encrypt) at it. Thruster stays HTTP-only;
+    # TLS terminates at the Synology proxy, and Rails' assume_ssl handles the rest.
+    ports:
+      - "${WEB_PORT:-3000}:80"
+
+volumes:
+  pgdata:

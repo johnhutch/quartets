@@ -84,21 +84,21 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# One Postgres backs everything. The app *and* the Solid trifecta
+# (cache/queue/cable) share that single database via DATABASE_URL — no reason to
+# run four databases for a self-hosted toy app. Each connection keeps its own
+# migrations_paths, so `db:prepare` still loads the right tables (they coexist in
+# the one database).
 production:
   primary: &primary_production
     <<: *default
-    database: link_the_things_production
-    username: link_the_things
-    password: <%= ENV["LINK_THE_THINGS_DATABASE_PASSWORD"] %>
+    url: <%= ENV["DATABASE_URL"] %>
   cache:
     <<: *primary_production
-    database: link_the_things_production_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: link_the_things_production_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: link_the_things_production_cable
     migrations_paths: db/cable_migrate
