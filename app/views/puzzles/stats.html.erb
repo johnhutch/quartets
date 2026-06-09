@@ -1,0 +1,47 @@
+<% content_for :title, "Stats — #{@puzzle.title}" %>
+
+<div class="l-container">
+  <h1><%= @puzzle.title %> — stats</h1>
+
+  <% if @stats.total_attempts.zero? %>
+    <p>No one's played this yet. Share it and check back.</p>
+  <% else %>
+    <div class="m-stats">
+      <div class="m-stats__row">
+        <span>Total attempts</span>
+        <span><%= @stats.total_attempts %></span>
+      </div>
+      <div class="m-stats__row">
+        <span>Solved</span>
+        <span><%= @stats.solved_count %> (<%= number_to_percentage(@stats.solve_rate * 100, precision: 0) %>)</span>
+      </div>
+    </div>
+
+    <h2>Mistakes per attempt</h2>
+    <div class="m-stats">
+      <% @stats.mistakes_distribution.each do |mistakes, count| %>
+        <div class="m-stats__row">
+          <span>
+            <%= mistakes %> <%= "mistake".pluralize(mistakes) %><%= " — out of guesses" if mistakes == Puzzle::MAX_MISTAKES %>
+          </span>
+          <span><%= count %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <% wrong = @stats.common_wrong_guesses %>
+    <% if wrong.any? %>
+      <h2>Common wrong guesses</h2>
+      <div class="m-stats">
+        <% wrong.each do |guess| %>
+          <div class="m-stats__row">
+            <span><%= guess[:words].join(", ") %></span>
+            <span>×<%= guess[:count] %></span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <p><%= link_to "← Back to dashboard", puzzles_path %></p>
+</div>
