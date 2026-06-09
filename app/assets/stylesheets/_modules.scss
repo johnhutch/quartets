@@ -18,11 +18,16 @@
   align-items: center;
   justify-content: center;
   min-height: 4.5rem;
-  padding: $space-sm;
+  padding: $space-xs;
   text-align: center;
   font-weight: 700;
-  font-size: $font-sm;
+  // Scale down on narrow phones so long answers don't blow out the tile…
+  font-size: clamp(0.62rem, 3vw, $font-sm);
+  line-height: 1.1;
   text-transform: uppercase;
+  // …and let a too-long single word wrap rather than clip/overflow.
+  overflow-wrap: anywhere;
+  hyphens: auto;
   color: $color-ink;
   background: $color-card;
   border: 0;
@@ -114,6 +119,7 @@
 
   &__controls {
     display: flex;
+    flex-wrap: wrap; // wrap instead of overflowing on a narrow phone
     justify-content: center;
     gap: $space-sm;
   }
