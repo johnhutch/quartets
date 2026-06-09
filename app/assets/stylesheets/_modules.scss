@@ -117,6 +117,14 @@
     justify-content: center;
     gap: $space-sm;
   }
+
+  // Post-game share: the emoji cube + a copy button.
+  &__share {
+    display: grid;
+    justify-items: center;
+    gap: $space-sm;
+    text-align: center;
+  }
 }
 
 // --- Button -------------------------------------------------------------

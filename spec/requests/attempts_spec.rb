@@ -30,6 +30,23 @@ RSpec.describe "Attempts", type: :request do
       expect(attempt.guesses.first["colors"]).to eq(%w[blue blue blue blue])
     end
 
+    it "returns the emoji cube for the just-finished play" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token), params: {
+        attempt: {
+          solved: true,
+          mistakes_count: 1,
+          guesses: [
+            { words: %w[a b c d], colors: %w[blue blue blue blue] },
+            { words: %w[a b c e], colors: %w[blue blue blue green] }
+          ]
+        }
+      }, as: :json
+
+      expect(response.parsed_body["cube"]).to eq("🟦🟦🟦🟦\n🟦🟦🟦🟩")
+    end
+
     it "reuses the same player token across plays (the anonymous identity)" do
       puzzle = create(:published_puzzle)
 

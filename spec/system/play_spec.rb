@@ -56,6 +56,9 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
 
     # The engine flags the element once the background save round-trips.
     expect(page).to have_css(".m-game[data-recorded='true']")
+    # …and shows the shareable cube it got back.
+    expect(page).to have_css(".m-cube", text: "🟦")
+    expect(page).to have_button("Copy result")
 
     attempt = Attempt.last
     expect(attempt.puzzle).to eq(puzzle)

@@ -146,7 +146,7 @@ export default class extends Controller {
 
     const token = document.querySelector('meta[name="csrf-token"]')?.content
     try {
-      await fetch(this.recordUrlValue, {
+      const response = await fetch(this.recordUrlValue, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
         credentials: "same-origin",
@@ -158,10 +158,44 @@ export default class extends Controller {
           }
         })
       })
+
+      // The POST round-tripped — mark it done, then show whatever cube came back.
       this.element.dataset.recorded = "true"
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}))
+        this.renderShare(data.cube)
+      }
     } catch {
       // Stats are nice-to-have; a failed save shouldn't break the player's game.
     }
+  }
+
+  // The shareable cube + a copy-to-clipboard button, for bragging over text.
+  renderShare(cube) {
+    if (!cube) return
+
+    const share = document.createElement("div")
+    share.className = "m-game__share"
+
+    const grid = document.createElement("p")
+    grid.className = "m-cube"
+    grid.textContent = cube
+
+    const copy = document.createElement("button")
+    copy.type = "button"
+    copy.className = "m-btn"
+    copy.textContent = "Copy result"
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(cube)
+        copy.textContent = "Copied!"
+      } catch {
+        copy.textContent = "Press ⌘/Ctrl-C to copy"
+      }
+    })
+
+    share.append(grid, copy)
+    this.element.appendChild(share)
   }
 
   // --- rendering --------------------------------------------------------
