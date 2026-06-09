@@ -69,4 +69,17 @@ RSpec.describe Puzzle, type: :model do
         .and change(Attempt, :count).by(-1)
     end
   end
+
+  describe ".featured" do
+    it "returns only the puzzles flagged for the homepage" do
+      starred = create(:puzzle, featured: true)
+      create(:puzzle, featured: false)
+
+      expect(Puzzle.featured).to contain_exactly(starred)
+    end
+
+    it "defaults a puzzle to not featured" do
+      expect(create(:puzzle).featured).to be(false)
+    end
+  end
 end

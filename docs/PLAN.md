@@ -110,20 +110,19 @@ the authoring form mirrors that order so the user's muscle memory carries over.
   author a full puzzle and publish. *(Publish lands on the dashboard for now;
   redirecting to the public share URL waits on the Phase 3 play page.)*
 
-## Phase 3 — Play ⬜
+## Phase 3 — Play 🚧
 
-- ⬜ **Pick the game engine** — survey open-source vanilla-JS / Stimulus
-  Connections clones. Criteria: maintained, permissive license, easy to feed our
-  JSON, no React, embeddable without a Node build (we're on importmap). Record
-  the pick + why in `CLAUDE.md`.
-- ⬜ **Public puzzle page** (`/p/:share_token`) — feeds the engine one puzzle's
-  data, runs the full loop: pick 4 → submit → reveal-or-mistake → win/lose,
-  mistakes capped like NYT.
-- ⬜ **Public puzzle index** — browsable list of published puzzles (the Q11 B
-  decision: anyone on the internet, not just link-holders).
-- ⬜ **Anonymous player identity** — a signed cookie token, persisted per player
-  so stats attribute without any login.
-- ⬜ System spec: play a puzzle to a win and to a loss; both record correctly.
+- ✅ **Game engine** — built our own Stimulus `game_controller.js` (no droppable
+  vanilla engine exists; ADR-0003). Shuffles 16 tiles, pick-4 → submit →
+  reveal-or-mistake loop, mistakes capped at `Puzzle::MAX_MISTAKES`, fires a
+  `game:finished` event with the guess log for Phase 4.
+- ✅ **Public puzzle page** (`/p/:share_token`) — `PlayController#show` feeds the
+  engine one puzzle's groups as JSON; drafts/bad tokens 404; no login.
+- ✅ **Public puzzle index** (`/play`) — browsable list of published puzzles only.
+- ✅ **Anonymous player identity** — a signed, permanent `player_token` cookie set
+  on every play (ready for Phase 4 attribution; not yet recording attempts).
+- ✅ System spec: play a puzzle to a win and to a loss (`spec/system/play_spec.rb`).
+  *(Attempt *recording* lands in Phase 4 — the engine already emits the data.)*
 
 ## Phase 4 — Stats + sharing ⬜
 

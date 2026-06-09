@@ -21,10 +21,17 @@
   padding: $space-sm;
   text-align: center;
   font-weight: 700;
+  font-size: $font-sm;
   text-transform: uppercase;
+  color: $color-ink;
   background: $color-card;
+  border: 0;
   border-radius: $radius;
   user-select: none;
+  transition: transform 0.05s ease;
+
+  &:active { transform: scale(0.97); }
+  &:disabled { cursor: default; opacity: 0.85; }
 }
 
 // --- Category group block (author form + reveal) ------------------------
@@ -64,6 +71,134 @@
 
     &:last-child { border-bottom: 0; }
   }
+}
+
+// --- Play screen --------------------------------------------------------
+.m-game {
+  display: grid;
+  gap: $space-md;
+
+  // Solved groups stack above the board, NYT-style.
+  &__solved {
+    display: grid;
+    gap: $space-sm;
+  }
+
+  &__group {
+    display: grid;
+    gap: $space-xs;
+    text-align: center;
+    margin-bottom: 0;
+  }
+
+  &__group-name {
+    text-transform: uppercase;
+    font-size: $font-sm;
+    letter-spacing: 0.05em;
+  }
+
+  &__status {
+    margin: 0;
+    min-height: $font-lg * 1.4; // reserve the line so the board doesn't jump
+    font-size: $font-lg;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  &__mistakes {
+    margin: 0;
+    text-align: center;
+    color: $color-muted;
+    letter-spacing: 0.15em;
+  }
+
+  &__controls {
+    display: flex;
+    justify-content: center;
+    gap: $space-sm;
+  }
+}
+
+// --- Button -------------------------------------------------------------
+.m-btn {
+  padding: $space-sm $space-lg;
+  font-weight: 700;
+  background: $color-paper;
+  border: 1px solid $color-ink;
+  border-radius: 999px;
+
+  &:disabled { opacity: 0.4; cursor: default; }
+
+  &--primary {
+    background: $color-ink;
+    color: $color-paper;
+  }
+}
+
+// --- Homepage hero ------------------------------------------------------
+.m-hero {
+  text-align: center;
+  margin-bottom: $space-lg;
+
+  &__title {
+    margin-bottom: $space-xs;
+  }
+
+  &__pitch {
+    color: $color-muted;
+    margin-bottom: 0;
+  }
+
+  &__nowplaying {
+    text-align: center;
+    color: $color-muted;
+    font-size: $font-sm;
+  }
+}
+
+.m-home-nav {
+  display: flex;
+  justify-content: center;
+  gap: $space-sm;
+  margin-top: $space-lg;
+}
+
+.m-empty {
+  text-align: center;
+  padding: $space-xl $space-md;
+  color: $color-muted;
+}
+
+.m-home-foot {
+  margin-top: $space-xl;
+  text-align: center;
+  font-size: $font-sm;
+  color: $color-muted;
+}
+
+// --- Public puzzle list -------------------------------------------------
+.m-puzzle-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: $space-sm;
+
+  li {
+    padding: $space-sm 0;
+    border-bottom: 1px solid $color-line;
+  }
+
+  &__author {
+    color: $color-muted;
+    font-size: $font-sm;
+  }
+}
+
+.m-byline {
+  margin-top: -$space-sm;
+  color: $color-muted;
+  font-style: italic;
 }
 
 // --- Creation form shell ------------------------------------------------

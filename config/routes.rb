@@ -1,15 +1,21 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  # Superuser-facing puzzle management. Play (public) lands in Phase 3.
+  # Superuser-facing puzzle management.
   resources :puzzles do
     member do
       patch :publish
     end
   end
 
-  # The admin dashboard is home for now; public play takes over root later.
-  root "puzzles#index"
+  # Public play surface — no login. Browse published puzzles, open one by its
+  # unguessable share token.
+  get "/play", to: "play#index", as: :play_index
+  get "/p/:share_token", to: "play#show", as: :play
+
+  # Public homepage — a random featured puzzle, no login. The admin dashboard
+  # lives at /puzzles.
+  root "home#show"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

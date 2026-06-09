@@ -26,9 +26,10 @@ Don't relitigate these without a reason — they came out of a full grill-me pas
   Description per group. **Auto-save as drafts** via debounced Turbo — this is a
   hard requirement, born from losing work to the iOS back button. Drafts live on
   the superuser dashboard.
-- **Play UX:** full interactive game. **Embed an existing open-source
-  vanilla-JS / Stimulus Connections engine** — do not build the game loop from
-  scratch, and **no React** (hard no).
+- **Play UX:** full interactive game via our own compact **Stimulus**
+  `game_controller.js` — no React (hard no), no Node build (importmap). We
+  originally meant to embed an existing engine, but none exists that's vanilla,
+  permissively licensed, and importmap-droppable; see ADR-0003.
 - **Stats per puzzle:** total attempts, solve rate, mistakes per attempt, common
   wrong guesses, shareable emoji-cube (🟨🟩🟦🟪).
 - **Export:** JSON download per puzzle.

@@ -1,0 +1,28 @@
+<% content_for :title, "Link the Things" %>
+
+<div class="l-container">
+  <header class="m-hero">
+    <h1 class="m-hero__title">Link the Things</h1>
+    <p class="m-hero__pitch">Four groups of four. Find the threads. No login, no fuss — just play.</p>
+  </header>
+
+  <% if @puzzle %>
+    <p class="m-hero__nowplaying">Today's pick: <strong><%= @puzzle.title %></strong></p>
+
+    <%= render "play/board", puzzle: @puzzle %>
+
+    <nav class="m-home-nav">
+      <%= link_to "Play another →", root_path, class: "m-btn" %>
+      <%= link_to "Browse all puzzles", play_index_path, class: "m-btn" %>
+    </nav>
+  <% else %>
+    <div class="m-empty">
+      <p>No puzzles are featured yet. The board's empty — for now.</p>
+      <p><%= link_to "Browse all puzzles", play_index_path %> · <%= link_to "Sign in", new_user_session_path %> to create one.</p>
+    </div>
+  <% end %>
+
+  <footer class="m-home-foot">
+    <%= link_to "Sign in", new_user_session_path %>
+  </footer>
+</div>

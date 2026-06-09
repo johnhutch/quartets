@@ -67,6 +67,37 @@ first deploy waits on the one-time NAS setup + GitHub secrets.
 
 ---
 
+## 0003 — Game engine: build our own Stimulus controller
+
+**Date:** 2026-06-09
+**Status:** accepted
+
+**Context.** CLAUDE.md called for *embedding* an existing open-source vanilla-JS /
+Stimulus Connections engine ("do not build the game loop from scratch") under two
+hard constraints: **no React** and **no Node build** (we're on importmap). A
+survey of the field came up empty: the maintained clones
+(`and-computers/react-connections-game`, `fetch-rewards/fetch-connections-game`,
+`srefsland/nyt-connections-clone`) are React/Next.js; the ones that look vanilla
+(`wheeler/connections-game`, `dbousamra/connections`) are TypeScript + Vite (a
+Node build) with no real license. No maintained, permissively-licensed,
+importmap-droppable vanilla engine exists.
+
+**Decision.** Build our own compact **Stimulus controller** (`game_controller.js`).
+The Connections loop is small and well-understood — render 16 shuffled cards →
+select up to 4 → submit → match-a-group or count-a-mistake (cap at
+`Puzzle::MAX_MISTAKES`) → lock solved rows → win/lose → shuffle/deselect. ~200
+lines, zero dependencies, fits importmap natively, and it's the natural place to
+emit the guess data Phase 4 needs (stats + emoji cube). TDD'd via a system spec.
+
+**Consequence.** This **reverses** the "embed an existing engine / don't build
+from scratch" line in CLAUDE.md — that line assumed a droppable engine existed,
+and it doesn't; every alternative violates a *harder* constraint (React or a
+build step). The other locked decisions (no React, importmap, no build) stand. We
+own the game loop now — more code to maintain, but full control over the JSON we
+feed it and the guess data we get back.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.
