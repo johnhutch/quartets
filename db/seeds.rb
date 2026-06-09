@@ -96,10 +96,16 @@ DEMO_PUZZLES = [
 
 if owner
   DEMO_PUZZLES.each do |data|
-    Puzzle.find_or_create_by!(title: data[:title], user: owner) do |puzzle|
-      puzzle.author_name = "Link the Things"
-      puzzle.featured    = data[:featured]
-      puzzle.status      = :published
+    puzzle = Puzzle.find_or_initialize_by(title: data[:title], user: owner)
+
+    # Demos wear "Demo" as their outward author so they're obviously distinct
+    # from real (e.g. imported) puzzles. Re-set on every run so existing rows get
+    # relabeled too — the demo set is seed-managed, not hand-edited.
+    puzzle.author_name = "Demo"
+    puzzle.featured    = data[:featured]
+    puzzle.status      = :published
+
+    if puzzle.new_record?
       data[:groups].each_with_index do |group, i|
         puzzle.groups.build(
           color: group[:color],
@@ -109,7 +115,10 @@ if owner
         )
       end
     end
+
+    puzzle.save!
   end
 
-  puts "Demo puzzles: #{Puzzle.count} total, #{Puzzle.featured.count} featured."
+  demo_count = Puzzle.where(author_name: "Demo").count
+  puts "Demo puzzles: #{demo_count} (#{Puzzle.featured.count} featured)."
 end
