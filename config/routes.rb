@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   resources :puzzles do
     member do
       patch :publish
+      get :stats
     end
   end
 
