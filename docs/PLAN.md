@@ -124,16 +124,17 @@ the authoring form mirrors that order so the user's muscle memory carries over.
 - ✅ System spec: play a puzzle to a win and to a loss (`spec/system/play_spec.rb`).
   *(Attempt *recording* lands in Phase 4 — the engine already emits the data.)*
 
-## Phase 4 — Stats + sharing 🚧
+## Phase 4 — Stats + sharing ✅
 
 - ✅ **Record attempts** — the engine posts a finished play to
   `POST /p/:share_token/attempts` (`AttemptsController`); writes an `Attempt`
   with solved?, mistakes_count, and the ordered `guesses` jsonb (each guess = the
   4 words + the true color of each). Anonymous, tied to the `player_token` cookie.
   Best-effort (a failed save never breaks the game). Request + system specs.
-- ⬜ **Per-puzzle stats view** — total attempts, solve rate, mistakes-per-attempt
-  distribution, and **common wrong guesses** (derived by aggregating the
-  `guesses` jsonb across attempts — no separate table).
+- ✅ **Per-puzzle stats view** — `PuzzleStats` value object + a gated, owner-scoped
+  `/puzzles/:id/stats` page (linked from the dashboard): total attempts, solve
+  rate, mistakes-per-attempt distribution, and **common wrong guesses** (aggregated
+  from the `guesses` jsonb — no separate table). Hard-spec'd logic + request spec.
 - ✅ **Emoji result cube** (🟨🟩🟦🟪) — `EmojiCube` value object turns an
   attempt's `guesses` into the 4×N grid; the attempts endpoint returns it and the
   game shows it post-play with copy-to-clipboard.

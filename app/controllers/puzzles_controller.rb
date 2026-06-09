@@ -1,9 +1,14 @@
 class PuzzlesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_puzzle, only: %i[edit update publish destroy]
+  before_action :set_puzzle, only: %i[edit update publish destroy stats]
 
   def index
     @puzzles = current_user.puzzles.order(updated_at: :desc)
+  end
+
+  # Author analytics for one puzzle — how it's playing out in the wild.
+  def stats
+    @stats = PuzzleStats.new(@puzzle.attempts)
   end
 
   def new
