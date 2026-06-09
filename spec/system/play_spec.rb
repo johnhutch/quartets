@@ -49,6 +49,19 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(page).to have_content("Out of guesses")
   end
 
+  it "records the finished play for stats" do
+    visit play_path(puzzle.share_token)
+
+    answers.each_value { |group| solve(group) }
+
+    # The engine flags the element once the background save round-trips.
+    expect(page).to have_css(".m-game[data-recorded='true']")
+
+    attempt = Attempt.last
+    expect(attempt.puzzle).to eq(puzzle)
+    expect(attempt).to be_solved
+  end
+
   # Picks the four words then submits.
   def solve(words)
     words.each { |word| click_button word }

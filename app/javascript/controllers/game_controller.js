@@ -19,7 +19,8 @@ export default class extends Controller {
   static targets = ["board", "solved", "status", "mistakes", "submit"]
   static values = {
     puzzle: Object,
-    maxMistakes: { type: Number, default: 4 }
+    maxMistakes: { type: Number, default: 4 },
+    recordUrl: String
   }
 
   connect() {
@@ -64,7 +65,9 @@ export default class extends Controller {
 
     const colors = this.selected.map((word) => this.colorOf[word])
     const correct = colors.every((color) => color === colors[0])
-    this.guesses.push({ words: [...this.selected], correct })
+    // Log the picked words + the true color of each — the cube and the
+    // common-mistakes stats both read off this.
+    this.guesses.push({ words: [...this.selected], colors })
 
     if (correct) {
       this.lockGroup(colors[0])
@@ -133,6 +136,32 @@ export default class extends Controller {
     this.dispatch("finished", {
       detail: { won, mistakes: this.mistakes, guesses: this.guesses }
     })
+    this.record(won)
+  }
+
+  // Persist the finished play for stats (best-effort — never block the game on
+  // it). Marks the element `data-recorded` so a test can wait on the round-trip.
+  async record(won) {
+    if (!this.hasRecordUrlValue || this.recordUrlValue === "") return
+
+    const token = document.querySelector('meta[name="csrf-token"]')?.content
+    try {
+      await fetch(this.recordUrlValue, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          attempt: {
+            solved: won,
+            mistakes_count: this.mistakes,
+            guesses: this.guesses
+          }
+        })
+      })
+      this.element.dataset.recorded = "true"
+    } catch {
+      // Stats are nice-to-have; a failed save shouldn't break the player's game.
+    }
   }
 
   // --- rendering --------------------------------------------------------

@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   # unguessable share token.
   get "/play", to: "play#index", as: :play_index
   get "/p/:share_token", to: "play#show", as: :play
+  # The game posts a finished play here for stats (anonymous, cookie-attributed).
+  post "/p/:share_token/attempts", to: "attempts#create", as: :play_attempts
 
   # Public homepage — a random featured puzzle, no login. The admin dashboard
   # lives at /puzzles.
