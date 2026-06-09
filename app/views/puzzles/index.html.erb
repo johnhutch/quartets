@@ -13,6 +13,7 @@
             <span class="is-draft">draft</span>
           <% else %>
             <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__stats" %>
+            <%= link_to "Export", export_puzzle_path(puzzle) %>
           <% end %>
           <%= button_to "Delete", puzzle, method: :delete,
                 data: { turbo_confirm: "Delete this puzzle?" } %>

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     member do
       patch :publish
       get :stats
+      get :export
     end
   end
 

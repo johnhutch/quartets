@@ -1,6 +1,6 @@
 class PuzzlesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_puzzle, only: %i[edit update publish destroy stats]
+  before_action :set_puzzle, only: %i[edit update publish destroy stats export]
 
   def index
     @puzzles = current_user.puzzles.order(updated_at: :desc)
@@ -9,6 +9,15 @@ class PuzzlesController < ApplicationController
   # Author analytics for one puzzle — how it's playing out in the wild.
   def stats
     @stats = PuzzleStats.new(@puzzle.attempts)
+  end
+
+  # Download the puzzle as portable JSON (stable schema — see PuzzleExport).
+  def export
+    serializer = PuzzleExport.new(@puzzle)
+    send_data serializer.to_json,
+              type: :json,
+              filename: serializer.filename,
+              disposition: "attachment"
   end
 
   def new

@@ -148,7 +148,9 @@ the authoring form mirrors that order so the user's muscle memory carries over.
   comma-split multi-word answers) and imports idempotently: complete 4×4 puzzles
   publish, partial ones become drafts, junk is skipped. Hard-spec'd against a
   fixture of the real formats. First real run: 8 published, 1 draft, 2 skipped.
-- ⬜ **JSON export** per puzzle — download endpoint, stable schema.
+- ✅ **JSON export** per puzzle — `PuzzleExport` serializer (stable, spec-pinned
+  schema) + a gated, owner-scoped `/puzzles/:id/export` download (linked from the
+  dashboard). Model + request specs.
 - ⬜ **Mobile pass** — iPhone is *the* device. Real-device check of authoring,
   playing, and sharing. Tap targets, the form's auto-save, the cube copy.
 - ⬜ **Production deploy on the Synology** + a real end-to-end smoke test: create →
