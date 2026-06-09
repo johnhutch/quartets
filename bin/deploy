@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Build the production image here (fast box) and ship it straight to the
+# Synology — no registry, no GitHub, no build on the NAS's weak Celeron. The
+# image is saved, streamed over SSH, loaded, and the Compose stack is restarted.
+#
+# Usage:
+#   NAS_SSH=hutch@nas.local bin/deploy
+# Optional:
+#   NAS_DIR=/volume1/docker/link-the-things   # Compose project dir on the NAS
+#
+# One-time NAS setup (SSH, Container Manager, the .env + docker-compose.yml in
+# NAS_DIR) lives in docs/DEPLOY.md.
+set -euo pipefail
+
+IMAGE="link-the-things:latest"
+: "${NAS_SSH:?set NAS_SSH, e.g. NAS_SSH=hutch@nas.local}"
+NAS_DIR="${NAS_DIR:-/volume1/docker/link-the-things}"
+
+# The DS918+ is x86-64; an Apple-Silicon Mac builds arm64 by default, so pin the
+# target platform or the image won't run on the NAS.
+echo "==> Building $IMAGE for linux/amd64…"
+docker build --platform linux/amd64 -t "$IMAGE" .
+
+echo "==> Shipping to $NAS_SSH (save → ssh → load)…"
+docker save "$IMAGE" | gzip | ssh "$NAS_SSH" "docker load"
+
+echo "==> Restarting the stack in $NAS_DIR…"
+ssh "$NAS_SSH" "cd '$NAS_DIR' && docker compose up -d && docker image prune -f"
+
+echo "==> Done — live on the NAS."

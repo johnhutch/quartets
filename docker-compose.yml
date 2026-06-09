@@ -23,7 +23,10 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/johnhutch/link-the-things:latest
+    # Built on the dev machine and shipped here by bin/deploy (no registry, no
+    # CI). pull_policy: never keeps Compose from trying to fetch it from a hub.
+    image: link-the-things:latest
+    pull_policy: never
     restart: unless-stopped
     depends_on:
       db:
