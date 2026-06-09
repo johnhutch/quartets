@@ -1,0 +1,27 @@
+<%# The playable board. Shared by the homepage and /p/:share_token so they stay
+    identical. We feed the game controller the groups (color + category + the
+    four words) as JSON; it shuffles the 16 tiles, runs the guess loop, and caps
+    mistakes at MAX_MISTAKES. Expects a `puzzle` local. %>
+<%= tag.div class: "m-game",
+      data: {
+        controller: "game",
+        game_max_mistakes_value: Puzzle::MAX_MISTAKES,
+        game_puzzle_value: {
+          groups: puzzle.groups.map { |g|
+            { color: g.color, description: g.description, words: g.filled_words }
+          }
+        }.to_json
+      } do %>
+  <div class="m-game__solved" data-game-target="solved"></div>
+  <div class="m-board" data-game-target="board"></div>
+
+  <p class="m-game__status" data-game-target="status" aria-live="polite"></p>
+  <p class="m-game__mistakes" data-game-target="mistakes" aria-live="polite"></p>
+
+  <div class="m-game__controls">
+    <button type="button" class="m-btn" data-action="game#shuffle">Shuffle</button>
+    <button type="button" class="m-btn" data-action="game#deselect">Deselect all</button>
+    <button type="button" class="m-btn m-btn--primary"
+            data-game-target="submit" data-action="game#submit" disabled>Submit</button>
+  </div>
+<% end %>

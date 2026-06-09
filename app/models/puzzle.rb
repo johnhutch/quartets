@@ -13,6 +13,9 @@ class Puzzle < ApplicationRecord
 
   enum :status, { draft: 0, published: 1 }, default: :draft
 
+  # Hand-picked for the homepage rotation. Curated, not "everything published."
+  scope :featured, -> { where(featured: true) }
+
   # Auto-generates an unguessable token on create; the unique index backs it.
   has_secure_token :share_token
 

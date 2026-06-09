@@ -1,0 +1,12 @@
+<% content_for :title, @puzzle.title %>
+
+<div class="l-container">
+  <h1><%= @puzzle.title %></h1>
+  <% if @puzzle.author_name.present? %>
+    <p class="m-byline">by <%= @puzzle.author_name %></p>
+  <% end %>
+
+  <%= render "play/board", puzzle: @puzzle %>
+
+  <p><%= link_to "← More puzzles", play_index_path %></p>
+</div>
