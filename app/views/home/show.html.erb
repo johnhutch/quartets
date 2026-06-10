@@ -1,11 +1,17 @@
 <% content_for :title, "Quartets" %>
-<% content_for :body_class, "theme-brutal" %>
 
 <div class="l-container">
   <header class="m-hero-brutal">
-    <span class="m-sticker">No login ↗</span>
-    <h1 class="m-wordmark"><%= multicolor("Quartets") %></h1>
-    <p class="m-lede">Sixteen words. Four hidden groups. Find the threads before you run out of guesses.</p>
+    <div class="m-hero-brutal__top">
+      <%= link_to "Create ↗", new_puzzle_path, class: "m-sticker m-create-sticker" %>
+    </div>
+    <div class="m-nameplate-stack">
+      <h1 class="m-wordmark"><%= multicolor("Quartets") %></h1>
+      <span class="m-nameplate" aria-hidden="true">NoTimes</span>
+    </div>
+    <p class="m-lede">16 words. 4 hidden groups. <br/>
+    0 journalistic integrity.<br/>
+    Find the threads before you run out of guesses.</p>
   </header>
 
   <% if @puzzle %>

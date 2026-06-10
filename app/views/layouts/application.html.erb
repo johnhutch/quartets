@@ -23,7 +23,9 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="<%= content_for(:body_class) %>">
+  <%# Brutalist theme is the whole app now. A page can opt out by setting
+      content_for(:body_class) to something else. %>
+  <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "theme-brutal" %>">
     <% flash.each do |type, message| %>
       <div class="flash flash--<%= type %>"><%= message %></div>
     <% end %>

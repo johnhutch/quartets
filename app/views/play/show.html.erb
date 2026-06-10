@@ -1,7 +1,7 @@
 <% content_for :title, @puzzle.title %>
 
 <div class="l-container">
-  <h1><%= @puzzle.title %></h1>
+  <h1><%= multicolor(@puzzle.title) %></h1>
   <% if @puzzle.author_name.present? %>
     <p class="m-byline">by <%= @puzzle.author_name %></p>
   <% end %>

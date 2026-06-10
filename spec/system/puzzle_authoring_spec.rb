@@ -46,7 +46,9 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
 
     expect(page).to have_current_path(puzzles_path)
     expect(Puzzle.last).to be_published
-    expect(page).to have_content("Phone-authored")
+    # The dashboard title is display type, uppercased by the brutalist theme —
+    # match the title, not its presentational casing.
+    expect(page).to have_content(/phone-authored/i)
   end
 
   # Fills one color block: its four answers plus the category.

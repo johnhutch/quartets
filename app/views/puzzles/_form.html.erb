@@ -52,5 +52,5 @@
     <%= f.text_field :author_name %>
   </div>
 
-  <%= f.submit(puzzle.persisted? ? "Save" : "Save draft") %>
+  <%= f.submit(puzzle.persisted? ? "Save" : "Save draft", class: "m-btn m-btn--pop") %>
 <% end %>
