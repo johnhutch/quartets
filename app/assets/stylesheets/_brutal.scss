@@ -23,6 +23,9 @@
 body.theme-brutal {
   background: $brutal-paper;
   color: $brutal-ink;
+  // Bleeding wordmarks + grid-breaking stickers intentionally run to the edge;
+  // clip the horizontal spill so they never spawn a scrollbar on a phone.
+  overflow-x: hidden;
 
   // Give the brutalist pages a wider canvas so the oversized wordmark has room
   // to be big and bleed, instead of wrapping inside the narrow play column.
@@ -214,6 +217,26 @@ body.theme-brutal {
 }
 
 .theme-brutal .m-byline { font-style: italic; opacity: 0.7; }
+
+// --- Play page header: title left, a grid-breaking "Create" sticker top-right
+.theme-brutal .m-play-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-md;
+
+  h1 { margin-bottom: $space-md; } // pull back the interior-heading spacing
+
+  // Bleed the sticker past the container's right padding so it busts the grid,
+  // and tilt it the opposite way from the homepage chip.
+  &__create {
+    flex: none;
+    margin-top: $space-sm;
+    margin-right: -$space-md; // cancel the container padding → flush to the edge
+    transform: rotate(3deg);
+    white-space: nowrap;
+  }
+}
 
 // --- Stats panels -----------------------------------------------------------
 .theme-brutal .m-stats {

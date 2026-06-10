@@ -1,7 +1,10 @@
 <% content_for :title, "Play" %>
 
 <div class="l-container">
-  <h1><%= multicolor("Play") %></h1>
+  <header class="m-play-head">
+    <h1><%= multicolor("Play") %></h1>
+    <%= link_to "Create ↗", new_puzzle_path, class: "m-sticker m-play-head__create" %>
+  </header>
 
   <% if @puzzles.any? %>
     <ul class="m-puzzle-list">
