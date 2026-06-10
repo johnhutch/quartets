@@ -1,12 +1,12 @@
 <% content_for :title, "Edit puzzle" %>
 
 <div class="l-container">
-  <h1>Edit puzzle</h1>
+  <h1><%= multicolor("Edit puzzle") %></h1>
 
   <%= render "form", puzzle: @puzzle %>
 
   <% unless @puzzle.published? %>
-    <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch %>
+    <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
   <% end %>
 
   <p><%= link_to "← All puzzles", puzzles_path %></p>

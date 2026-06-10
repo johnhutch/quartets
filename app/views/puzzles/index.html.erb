@@ -1,8 +1,8 @@
 <% content_for :title, "Your puzzles" %>
 
 <div class="l-container">
-  <h1>Your puzzles</h1>
-  <%= button_to "+ New puzzle", puzzles_path, method: :post %>
+  <h1><%= multicolor("Your puzzles") %></h1>
+  <%= button_to "+ New puzzle", puzzles_path, method: :post, class: "m-btn m-btn--pop" %>
 
   <% if @puzzles.any? %>
     <ul class="m-puzzle-list">
@@ -15,13 +15,13 @@
             <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__stats" %>
             <%= link_to "Export", export_puzzle_path(puzzle) %>
           <% end %>
-          <%= button_to "Delete", puzzle, method: :delete,
+          <%= button_to "Delete", puzzle, method: :delete, class: "m-btn",
                 data: { turbo_confirm: "Delete this puzzle?" } %>
         </li>
       <% end %>
     </ul>
   <% else %>
     <p>No puzzles yet.</p>
-    <%= button_to "Make your first one", puzzles_path, method: :post %>
+    <%= button_to "Make your first one", puzzles_path, method: :post, class: "m-btn m-btn--pop" %>
   <% end %>
 </div>

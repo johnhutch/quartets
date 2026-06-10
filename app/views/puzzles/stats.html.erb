@@ -1,7 +1,7 @@
 <% content_for :title, "Stats — #{@puzzle.title}" %>
 
 <div class="l-container">
-  <h1><%= @puzzle.title %> — stats</h1>
+  <h1><%= multicolor("#{@puzzle.title} — stats") %></h1>
 
   <% if @stats.total_attempts.zero? %>
     <p>No one's played this yet. Share it and check back.</p>
