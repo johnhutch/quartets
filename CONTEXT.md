@@ -32,7 +32,8 @@ idempotent) — never committed.
   yellow, purple` (enum). Authoring/form order is blue→green→yellow→purple
   (swellgarfo muscle memory), *not* NYT difficulty order.
 - **Attempt** — one anonymous play-through, keyed by a `player_token` cookie.
-- **share_token** — a puzzle's unguessable public slug (Phase 3 play URL).
+- **share_token** — a puzzle's unguessable public slug; the public play URL is
+  `/p/:share_token` (`play#show`).
 
 ## Models / key modules
 
@@ -49,7 +50,8 @@ idempotent) — never committed.
   published.
 - **Attempt** (`player_token`, `solved`, `mistakes_count`, `guesses` jsonb).
   Stats (emoji cube, common wrong guesses) derive from `guesses` — no extra
-  tables. Indexed on `player_token`. (Model exists; play loop is Phase 3.)
+  tables. Indexed on `player_token`. The public play loop records these (the
+  Stimulus `game_controller.js` POSTs to `play_attempts_path`).
 - **PuzzlesController** — `before_action :authenticate_user!`; every query
   scoped to `current_user` (cross-user access 404s). `publish` is a PATCH member
   route that flips draft→published. `create`/`update` are autosave-aware (see

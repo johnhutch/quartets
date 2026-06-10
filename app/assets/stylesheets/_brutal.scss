@@ -20,9 +20,21 @@
   font-display: swap;
 }
 
+// Self-hosted UnifrakturMaguntia (OFL) — textura blackletter, the closest
+// open match to the NYT nameplate. Only the homepage nameplate uses it.
+@font-face {
+  font-family: "UnifrakturMaguntia";
+  src: url("unifraktur-maguntia.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
 body.theme-brutal {
   background: $brutal-paper;
   color: $brutal-ink;
+  // Bleeding wordmarks + grid-breaking stickers intentionally run to the edge;
+  // clip the horizontal spill so they never spawn a scrollbar on a phone.
+  overflow-x: hidden;
 
   // Give the brutalist pages a wider canvas so the oversized wordmark has room
   // to be big and bleed, instead of wrapping inside the narrow play column.
@@ -154,4 +166,203 @@ body.theme-brutal {
 .theme-brutal .m-sg-section > h2 {
   font-size: clamp(1.75rem, 8vw, 3rem);
   margin-bottom: $space-md;
+}
+
+// --- Interior page headings (everything that isn't the wordmark) ------------
+// The wordmark + sg-section headings keep their own sizes (higher specificity);
+// this just gives the plain page <h1>/<h2> some brutalist heft.
+.theme-brutal {
+  h1 { font-size: clamp(2rem, 9vw, 3.25rem); margin-bottom: $space-lg; }
+  h2 { font-size: $font-xl; margin-top: $space-lg; }
+}
+
+// --- Flash messages (live in <body>, above .l-container) --------------------
+.theme-brutal .flash {
+  max-width: 900px;
+  margin: $space-md auto;
+  padding: $space-sm $space-md;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: $color-green;
+  color: #000;
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.25);
+
+  &--alert,
+  &--error { background: $color-wrong; color: $brutal-paper; }
+}
+
+// --- Puzzle lists (public browse + superuser dashboard) ---------------------
+.theme-brutal .m-puzzle-list {
+  gap: $space-md;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-md;
+    border: $brutal-border solid $brutal-ink; // override the thin module rule
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  }
+
+  // First link in a row is the title: big display type, takes the slack so the
+  // small action links/buttons get pushed to the right edge.
+  li > a:first-of-type {
+    flex: 1 1 auto;
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: $font-lg;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  // Secondary actions (Stats, Export) and meta stay small + quiet.
+  li > a:not(:first-of-type),
+  &__stats,
+  &__author { font-size: $font-sm; }
+  &__author { font-style: italic; opacity: 0.7; }
+}
+
+.theme-brutal .m-byline { font-style: italic; opacity: 0.7; }
+
+// --- Header row carrying a grid-breaking "Create" sticker top-right ----------
+.theme-brutal .m-play-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between; // title left, sticker right
+  gap: $space-md;
+}
+
+// The create sticker floats over the top-right of the hero instead of taking
+// its own row — keeps it on the same horizontal plane as the wordmark rather
+// than shoving QUARTETS down.
+.theme-brutal .m-hero-brutal { position: relative; }
+
+.theme-brutal .m-hero-brutal__top {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+}
+
+.theme-brutal .m-play-head h1 { margin-bottom: $space-md; } // pull back interior-heading spacing
+
+// Bleed the sticker past the container's right padding so it busts the grid.
+.theme-brutal .m-create-sticker {
+  flex: none;
+  margin-top: $space-sm;
+  margin-right: -$space-md; // cancel the container padding → flush to the edge
+  transform: rotate(3deg);
+  white-space: nowrap;
+}
+
+// --- Nameplate: a small white blackletter "NOTimes" layered over QUARTETS ----
+// The serif gothic over the multicolor sans wordmark is the whole gag. The
+// stack shrinks to the wordmark's width so the nameplate centers across it.
+.theme-brutal .m-nameplate-stack {
+  position: relative;
+  display: inline-block;
+  margin: $space-lg 0 $space-md; // room for the nameplate riding above the top edge
+}
+
+.theme-brutal .m-nameplate {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  // Straddle the top edge of the wordmark, tilted like the old NO-LOGIN sticker.
+  transform: translateY(-45%) rotate(-3deg);
+  text-align: left;
+  font-family: "UnifrakturMaguntia", "Old English Text MT", serif;
+  font-weight: 400;
+  color: #fff;
+  font-size: clamp(1rem, 5.5vw, 2.25rem); // ~half the old size
+  line-height: 1;
+  pointer-events: none; // purely decorative; let clicks fall through
+  z-index: 2;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6); // lift it off the colored letters
+}
+
+// --- Stats panels -----------------------------------------------------------
+.theme-brutal .m-stats {
+  margin-bottom: $space-lg;
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+
+  &__row {
+    padding: $space-sm $space-md;
+    border-bottom: $brutal-border solid $brutal-ink;
+
+    &:last-child { border-bottom: 0; }
+
+    // The number/value on the right reads as display type.
+    span:last-child { font-family: $font-display; font-weight: 700; }
+  }
+}
+
+// --- Author form ------------------------------------------------------------
+.theme-brutal .m-form {
+  gap: $space-lg;
+
+  label,
+  legend {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+
+  input,
+  textarea {
+    background: $brutal-paper;
+    color: $brutal-ink;
+    border: $brutal-border solid $brutal-ink;
+    border-radius: 0;
+
+    &:focus {
+      outline: $brutal-border solid $color-blue;
+      outline-offset: 2px;
+    }
+  }
+
+  // Auto-save indicator stays quiet; only the failure state shouts (red).
+  &__autosave[data-state="error"] { color: $color-wrong; }
+
+  &__errors {
+    padding: $space-md;
+    border: $brutal-border solid $brutal-ink;
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.25);
+  }
+}
+
+// Category fieldsets: keep the bright group color, frame it brutally, and tab
+// the legend as a black chip so it reads on any of the four fills.
+.theme-brutal .m-group {
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.25);
+  color: #000;
+
+  legend {
+    background: $brutal-ink;
+    color: $brutal-paper;
+    padding: $space-xs $space-sm;
+    border: $brutal-border solid $brutal-ink;
+  }
+}
+
+// --- Draft badge on the dashboard -------------------------------------------
+.theme-brutal .is-draft {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: $font-sm;
+  text-transform: uppercase;
+  font-style: normal;
+  background: $color-yellow;
+  color: #000;
+  padding: 0 $space-xs;
+  border: 2px solid $brutal-ink;
 }
