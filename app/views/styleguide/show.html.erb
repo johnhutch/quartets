@@ -1,0 +1,74 @@
+<% content_for :title, "Style guide — Quartets" %>
+<% content_for :body_class, "theme-brutal" %>
+
+<div class="l-container">
+  <span class="m-sticker">Living doc ↗</span>
+  <h1 class="m-wordmark"><%= multicolor("Style Guide") %></h1>
+  <p class="m-lede">The brutalist system for Quartets — dark, stark, big type, and the four category colors doing double duty as the brand.</p>
+
+  <section class="m-sg-section">
+    <h2><%= multicolor("Multicolor headers") %></h2>
+    <p class="m-lede">One ribbon of color flows across each heading, ignoring spaces, switching every 4–7 letters. Seeded on the text, so each phrase always bands the same way.</p>
+    <% ["Quartets", "Find the threads", "Four groups of four", "Sixteen words one grid"].each do |phrase| %>
+      <h3><%= multicolor(phrase) %></h3>
+    <% end %>
+  </section>
+
+  <section class="m-sg-section">
+    <h2><%= multicolor("Palette") %></h2>
+    <p class="m-lede">Stark greyscale base. The four category colors are the only color — functional on the board, decorative in type.</p>
+    <div class="m-swatches">
+      <% {
+           "Paper #0c0c0c" => "#0c0c0c", "Ink #f4f2ec" => "#f4f2ec", "Select grey #5a594e" => "#5a594e",
+           "Blue #b0c4ef" => "#b0c4ef", "Green #a0c35a" => "#a0c35a",
+           "Yellow #f9df6d" => "#f9df6d", "Purple #ba81c5" => "#ba81c5"
+         }.each do |label, hex| %>
+        <div class="m-swatch" style="background: <%= hex %>; color: <%= hex == '#f4f2ec' || hex == '#0c0c0c' ? '#888' : '#000' %>;"><%= label %></div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="m-sg-section">
+    <h2><%= multicolor("Type scale") %></h2>
+    <h1 class="m-wordmark" style="font-size: 4rem;">Display</h1>
+    <h2>Heading two</h2>
+    <h3>Heading three</h3>
+    <p class="m-lede">Lede — Space Grotesk for display, the system stack for body copy like this. Readable at length, no webfont tax on the words people actually read.</p>
+    <p>Body copy. Sixteen words sit in a four-by-four grid; four share a hidden thread.</p>
+  </section>
+
+  <section class="m-sg-section">
+    <h2><%= multicolor("Buttons") %></h2>
+    <p>
+      <span class="m-btn">Play another →</span>
+      <span class="m-btn m-btn--pop">Browse all</span>
+      <span class="m-btn" style="opacity:.45">Disabled</span>
+    </p>
+  </section>
+
+  <section class="m-sg-section">
+    <h2><%= multicolor("Tiles") %></h2>
+    <p class="m-lede">Off-white blocks on the dark field. Selection stays neutral grey — color means "group," so it's reserved for reveals.</p>
+    <div class="m-board" style="margin-bottom: 1rem;">
+      <button type="button" class="m-card">Tile</button>
+      <button type="button" class="m-card is-selected">Selected</button>
+      <button type="button" class="m-card">Owl</button>
+      <button type="button" class="m-card">Mollycoddle</button>
+    </div>
+    <div class="m-game__solved">
+      <% %w[blue green yellow purple].each do |color| %>
+        <div class="m-group m-group--<%= color %> m-game__group">
+          <strong class="m-game__group-name"><%= color.titleize %></strong>
+          <span class="m-game__group-words">one, two, three, four</span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="m-sg-section">
+    <h2><%= multicolor("Surfaces") %></h2>
+    <p class="m-lede">Thick <%= "#{3}" %>px borders, hard 6px offset shadows (never blurred), zero radius. Sharp, physical, stacked.</p>
+  </section>
+
+  <p style="padding: 1.5rem 0;"><%= link_to "← Home", root_path %></p>
+</div>

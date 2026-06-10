@@ -1,0 +1,157 @@
+// BRUTALIST THEME — opt-in, scoped to <body class="theme-brutal"> so the working
+// play/dashboard pages are untouched. Dark base, off-white ink, thick borders,
+// hard offset shadows, zero radius, oversized display type, and the four
+// category colors as a playful multicolor brand palette.
+
+@use "variables" as *;
+
+// Self-hosted Space Grotesk (OFL). Defining the face is global + harmless; only
+// .theme-brutal actually applies it.
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("space-grotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("space-grotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+body.theme-brutal {
+  background: $brutal-paper;
+  color: $brutal-ink;
+
+  // Give the brutalist pages a wider canvas so the oversized wordmark has room
+  // to be big and bleed, instead of wrapping inside the narrow play column.
+  .l-container { max-width: 900px; }
+
+  // Multicolor ribbon spans (wordmark + display headings). Light category
+  // colors read cleanly on the near-black page.
+  .u-ink--blue   { color: $color-blue; }
+  .u-ink--green  { color: $color-green; }
+  .u-ink--yellow { color: $color-yellow; }
+  .u-ink--purple { color: $color-purple; }
+
+  h1, h2, h3 {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+  }
+
+  a { color: inherit; }
+}
+
+// --- Wordmark: oversized, bleeds off the left edge --------------------------
+.theme-brutal .m-wordmark {
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+  font-size: clamp(3rem, 17vw, 7rem);
+  white-space: nowrap; // keep the wordmark on one line; let it run to the edge
+  margin: 0 0 $space-md;
+  margin-left: -0.05em;
+}
+
+.theme-brutal .m-lede {
+  font-size: $font-lg;
+  max-width: 28ch;
+}
+
+// --- Rotated sticker --------------------------------------------------------
+.theme-brutal .m-sticker {
+  display: inline-block;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: $color-yellow;
+  color: #000;
+  padding: $space-xs $space-md;
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: $brutal-shadow $brutal-shadow 0 $color-purple;
+  transform: rotate(-3deg);
+  text-decoration: none;
+}
+
+// --- Buttons ----------------------------------------------------------------
+.theme-brutal .m-btn {
+  display: inline-block;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: $brutal-ink;
+  color: $brutal-paper;
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35);
+  padding: $space-sm $space-lg;
+
+  &:active { transform: translate(3px, 3px); box-shadow: 3px 3px 0 rgba($brutal-ink, 0.35); }
+  &:disabled { opacity: 0.45; }
+
+  // A loud variant uses a category color fill.
+  &--pop { background: $color-green; color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 $color-blue; }
+}
+
+// --- Board + tiles ----------------------------------------------------------
+.theme-brutal .m-board { gap: $space-sm; }
+
+.theme-brutal .m-card {
+  font-family: $font-display;
+  font-weight: 700;
+  background: $brutal-ink;
+  color: $brutal-paper;
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 rgba($brutal-ink, 0.22);
+
+  &.is-selected {
+    background: $color-card-sel; // keep the existing neutral grey
+    color: $brutal-ink;
+    box-shadow: none;
+    transform: translate(3px, 3px);
+  }
+}
+
+// --- Revealed group rows keep their category color, in a brutalist frame ----
+.theme-brutal .m-game__group {
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  color: #000;
+}
+
+.theme-brutal .m-game__status,
+.theme-brutal .m-game__mistakes { font-family: $font-display; }
+
+// --- Style guide scaffolding ------------------------------------------------
+.theme-brutal .m-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: $space-sm;
+}
+.theme-brutal .m-swatch {
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  padding: $space-sm;
+  min-height: 5rem;
+  display: flex;
+  align-items: flex-end;
+  font-size: $font-sm;
+  font-weight: 700;
+}
+.theme-brutal .m-sg-section {
+  border-top: $brutal-border solid $brutal-ink;
+  padding: $space-lg 0;
+}
+.theme-brutal .m-sg-section > h2 {
+  font-size: clamp(1.75rem, 8vw, 3rem);
+  margin-bottom: $space-md;
+}

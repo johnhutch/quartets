@@ -20,6 +20,9 @@ Rails.application.routes.draw do
   # Public homepage — a random featured puzzle, no login. The admin dashboard
   # lives at /puzzles.
   root "home#show"
+
+  # Living style guide for the brutalist visual system (public, unlinked).
+  get "/styleguide", to: "styleguide#show"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -8,3 +8,4 @@
 @use "base";
 @use "modules";
 @use "state";
+@use "brutal"; // opt-in dark brutalist theme, scoped to body.theme-brutal

@@ -1,8 +1,10 @@
 require "capybara/rspec"
 
 # iPhone is *the* device, so JS system specs run at a phone-sized viewport by
-# default. CSS px for an iPhone 14/15 class screen.
-MOBILE_VIEWPORT = "390,844".freeze
+# default — via Chrome device emulation, not --window-size (headless floors the
+# window at ~500px, which isn't a real phone width). Emulation sets the true CSS
+# viewport + touch. Metrics ~ iPhone 14/15 class screen.
+MOBILE_METRICS = { width: 390, height: 844, pixelRatio: 3, touch: true }.freeze
 
 # Homebrew's chromedriver on PATH can drift ahead of the installed Chrome
 # (e.g. driver 149 vs Chrome 148), which makes Selenium fail to start a session.
@@ -24,8 +26,9 @@ end
 
 Capybara.register_driver :mobile_chrome_headless do |app|
   options = Selenium::WebDriver::Chrome::Options.new(
-    args: %W[--headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --window-size=#{MOBILE_VIEWPORT}]
+    args: %w[--headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu]
   )
+  options.add_emulation(device_metrics: MOBILE_METRICS)
   kwargs = { browser: :chrome, options: options }
   if (service = matching_chromedriver_service)
     kwargs[:service] = service

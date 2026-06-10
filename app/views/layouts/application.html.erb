@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Link The Things" %></title>
+    <title><%= content_for(:title) || "Quartets" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Link The Things">
@@ -23,7 +23,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="<%= content_for(:body_class) %>">
     <% flash.each do |type, message| %>
       <div class="flash flash--<%= type %>"><%= message %></div>
     <% end %>

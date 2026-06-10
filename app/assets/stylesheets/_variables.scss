@@ -46,3 +46,13 @@ $font-xl:   1.75rem;
 $radius:        6px;
 $grid-gap:      $space-sm;
 $content-width: 640px; // game board is happiest narrow + mobile-first
+
+// --- Brutalist theme (dark) ---------------------------------------------
+// Opt-in via <body class="theme-brutal">; only the homepage + style guide wear
+// it for now. Stark dark base, off-white ink, thick light borders, hard offset
+// shadows (no blur). The four category colors above double as the brand palette.
+$brutal-paper:  #0c0c0c; // near-black page
+$brutal-ink:    #f4f2ec; // off-white text / borders
+$brutal-border: 3px;     // thick
+$brutal-shadow: 6px;     // hard offset distance, never blurred
+$font-display:  "Space Grotesk", "Arial Black", "Helvetica Neue", sans-serif;
