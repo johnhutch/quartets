@@ -163,16 +163,19 @@ export default class extends Controller {
       this.element.dataset.recorded = "true"
       if (response.ok) {
         const data = await response.json().catch(() => ({}))
-        this.renderShare(data.cube)
+        this.renderShare(data.cube, data.share)
       }
     } catch {
       // Stats are nice-to-have; a failed save shouldn't break the player's game.
     }
   }
 
-  // The shareable cube + a copy-to-clipboard button, for bragging over text.
-  renderShare(cube) {
+  // The shareable cube + a copy-to-clipboard button, for bragging over text. The
+  // grid shows the bare cube; the copy writes the full block (title + cube +
+  // link) the server built, falling back to the cube if it didn't send one.
+  renderShare(cube, shareText) {
     if (!cube) return
+    const toCopy = shareText || cube
 
     const share = document.createElement("div")
     share.className = "m-game__share"
@@ -187,7 +190,7 @@ export default class extends Controller {
     copy.textContent = "Copy result"
     copy.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(cube)
+        await navigator.clipboard.writeText(toCopy)
         copy.textContent = "Copied!"
       } catch {
         copy.textContent = "Press ⌘/Ctrl-C to copy"

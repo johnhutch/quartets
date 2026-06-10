@@ -7,8 +7,13 @@ class AttemptsController < ApplicationController
   def create
     puzzle = Puzzle.published.find_by!(share_token: params[:share_token])
     attempt = puzzle.attempts.create!(attempt_params.merge(player_token: current_player_token))
-    # Hand the cube back so the just-finished game can show + copy it.
-    render json: { cube: EmojiCube.new(attempt.guesses).to_s }, status: :created
+    # Hand back the cube (for the on-screen grid) and the full share block — title
+    # + cube + a direct link — so the just-finished game can show one and copy the
+    # other. play_url uses the request host, so the share link follows whatever
+    # domain we're served on.
+    cube = EmojiCube.new(attempt.guesses).to_s
+    share = ShareText.new(title: puzzle.title, cube:, url: play_url(puzzle.share_token)).to_s
+    render json: { cube:, share: }, status: :created
   rescue ActiveRecord::RecordNotFound
     head :not_found
   rescue ActiveRecord::RecordInvalid

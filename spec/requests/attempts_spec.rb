@@ -47,6 +47,23 @@ RSpec.describe "Attempts", type: :request do
       expect(response.parsed_body["cube"]).to eq("🟦🟦🟦🟦\n🟦🟦🟦🟩")
     end
 
+    it "returns a full share block — title, cube, and a direct link to the puzzle" do
+      puzzle = create(:published_puzzle, title: "Capital Cities")
+
+      post play_attempts_path(puzzle.share_token), params: {
+        attempt: {
+          solved: true,
+          mistakes_count: 0,
+          guesses: [{ words: %w[a b c d], colors: %w[blue blue blue blue] }]
+        }
+      }, as: :json
+
+      share = response.parsed_body["share"]
+      expect(share).to include("Quartets — Capital Cities")
+      expect(share).to include("🟦🟦🟦🟦")
+      expect(share).to include(play_url(puzzle.share_token))
+    end
+
     it "reuses the same player token across plays (the anonymous identity)" do
       puzzle = create(:published_puzzle)
 
