@@ -23,6 +23,9 @@ Rails.application.routes.draw do
 
   # Living style guide for the brutalist visual system (public, unlinked).
   get "/styleguide", to: "styleguide#show"
+
+  # Static info pages — public, login-free. Linked from the site footer.
+  get "/privacy", to: "pages#privacy", as: :privacy
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

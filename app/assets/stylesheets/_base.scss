@@ -51,3 +51,31 @@ button {
   margin: 0 auto;
   padding: $space-md;
 }
+
+// Site footer — full-width rule, content centered on the same column. Neutral
+// styling here; the brutalist theme dresses it up in _brutal.scss.
+.l-footer {
+  margin-top: $space-xl;
+  border-top: 1px solid $color-line;
+  font-size: $font-sm;
+  color: $color-muted;
+
+  &__credit { margin-bottom: $space-sm; }
+
+  &__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-xs $space-md;
+    margin: 0 0 $space-sm;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__license { margin-bottom: $space-sm; }
+
+  &__disclaimer {
+    margin-bottom: 0;
+    font-style: italic;
+    opacity: 0.7;
+  }
+}

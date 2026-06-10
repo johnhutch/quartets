@@ -366,3 +366,35 @@ body.theme-brutal {
   padding: 0 $space-xs;
   border: 2px solid $brutal-ink;
 }
+
+// --- Site footer ------------------------------------------------------------
+// Thick top rule, display-type links that underline hard and flip to a category
+// color on hover. The legal/disclaimer lines drop back to the plain stack so the
+// fine print reads as fine print.
+.theme-brutal .l-footer {
+  border-top: $brutal-border solid $brutal-ink;
+  color: $brutal-ink;
+  font-family: $font-display;
+  padding-bottom: $space-lg;
+
+  a {
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 2px solid currentColor;
+  }
+  a:hover { color: $color-yellow; }
+
+  &__credit { font-size: $font-base; }
+
+  &__links { gap: $space-sm $space-lg; }
+
+  &__license,
+  &__disclaimer {
+    font-family: $font-stack; // fine print back to the plain stack
+    text-transform: none;
+  }
+
+  &__license a { text-transform: none; }
+  &__disclaimer { font-style: italic; opacity: 0.6; }
+}
