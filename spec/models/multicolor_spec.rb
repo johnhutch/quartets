@@ -8,7 +8,7 @@ RSpec.describe Multicolor do
   def segs(text) = described_class.new(text).segments
 
   it "is lossless — the segments reassemble the original text exactly" do
-    text = "LINK THE THINGS"
+    text = "QUARTETS"
     expect(segs(text).map(&:first).join).to eq(text)
   end
 

@@ -6,15 +6,15 @@
 # Usage:
 #   NAS_SSH=hutch@nas.local bin/deploy
 # Optional:
-#   NAS_DIR=/volume1/docker/link-the-things   # Compose project dir on the NAS
+#   NAS_DIR=/volume1/docker/quartets   # Compose project dir on the NAS
 #
 # One-time NAS setup (SSH, Container Manager, the .env + docker-compose.yml in
 # NAS_DIR) lives in docs/DEPLOY.md.
 set -euo pipefail
 
-IMAGE="link-the-things:latest"
+IMAGE="quartets:latest"
 : "${NAS_SSH:?set NAS_SSH, e.g. NAS_SSH=hutch@nas.local}"
-NAS_DIR="${NAS_DIR:-/volume1/docker/link-the-things}"
+NAS_DIR="${NAS_DIR:-/volume1/docker/quartets}"
 
 # The DS918+ is x86-64; an Apple-Silicon Mac builds arm64 by default, so pin the
 # target platform or the image won't run on the NAS.

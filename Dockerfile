@@ -2,8 +2,8 @@
 # check=error=true
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t link_the_things .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name link_the_things link_the_things
+# docker build -t quartets .
+# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name quartets quartets
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 

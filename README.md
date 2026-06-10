@@ -1,4 +1,4 @@
-# Link the Things
+# Quartets
 
 A Rails app for building and playing NYT Connections–style puzzles. Make a
 puzzle, share a link, watch your friends fumble the purple group. Built because

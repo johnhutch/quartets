@@ -4,20 +4,20 @@
 # pulled from GHCR; the NAS never compiles anything (the Celeron would hate it).
 # Secrets live in a sibling .env on the NAS (gitignored) — see .env.example and
 # docs/DEPLOY.md.
-name: link-the-things
+name: quartets
 
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: link_the_things
+      POSTGRES_USER: quartets
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: link_the_things_production
+      POSTGRES_DB: quartets_production
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U link_the_things -d link_the_things_production"]
+      test: ["CMD-SHELL", "pg_isready -U quartets -d quartets_production"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,7 +25,7 @@ services:
   web:
     # Built on the dev machine and shipped here by bin/deploy (no registry, no
     # CI). pull_policy: never keeps Compose from trying to fetch it from a hub.
-    image: link-the-things:latest
+    image: quartets:latest
     pull_policy: never
     restart: unless-stopped
     depends_on:
@@ -33,7 +33,7 @@ services:
         condition: service_healthy
     environment:
       # Single Postgres for app + Solid cache/queue/cable (see config/database.yml).
-      DATABASE_URL: postgres://link_the_things:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/link_the_things_production
+      DATABASE_URL: postgres://quartets:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/quartets_production
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY:?set RAILS_MASTER_KEY in .env}
       # Superuser seed — db:prepare runs it on the first boot (db/seeds.rb).
       ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
