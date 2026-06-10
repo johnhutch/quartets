@@ -1,0 +1,45 @@
+<% content_for :title, "Privacy" %>
+
+<div class="l-container">
+  <h1><%= multicolor("Privacy") %></h1>
+
+  <p class="m-lede">
+    Short version: we don't collect your personal info, we don't track you, and
+    there's nothing here to sell. No accounts to play, no names, no email, no
+    location, no analytics, no ad networks, no pixels, no third parties.
+  </p>
+
+  <h2>The one cookie</h2>
+  <p>
+    Playing sets a single anonymous token in your browser — a random string, not
+    tied to any identity. It exists so <em>your own</em> stats (your solve rate,
+    your emoji cube) work on your device. We couldn't tell you who you are if we
+    tried, because we never asked.
+  </p>
+
+  <h2>Gameplay stats</h2>
+  <p>
+    We do record how puzzles go — which words got grouped, how many mistakes,
+    whether it was solved — so a puzzle's author can see its stats. That data is
+    anonymous and aggregate. No name is attached to it, ever.
+  </p>
+
+  <h2>Creators</h2>
+  <p>
+    If you sign in to <em>build</em> puzzles, that's an email and a password, used
+    only to log you in. It's the only personal thing in the whole system, it's
+    yours, and it goes nowhere else.
+  </p>
+
+  <h2>Third parties</h2>
+  <p>
+    None. No trackers, no embeds phoning home, no data shared or sold. The app is
+    self-hosted — your gameplay doesn't leave the box it runs on.
+  </p>
+
+  <p>
+    Questions? <%= link_to "johnhutch.com", "https://johnhutch.com", target: "_blank", rel: "noopener" %>.
+  </p>
+
+  <p><%= link_to "← Back to the puzzles", root_path %></p>
+</div>
