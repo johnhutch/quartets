@@ -9,7 +9,10 @@ class PlayController < ApplicationController
   end
 
   def show
-    @puzzle = Puzzle.published.find_by!(share_token: params[:share_token])
+    @puzzle = Puzzle.find_by!(share_token: params[:share_token])
+    # Published puzzles are public; an unpublished one is visible only to its
+    # owner, who lands here to preview + publish it (ADR-0005).
+    head :not_found unless @puzzle.published? || owns?(@puzzle)
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end

@@ -44,15 +44,15 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     visit edit_puzzle_path(Puzzle.last)
     click_button "Publish"
 
-    # Publishing drops the author straight onto the live, playable board — with a
-    # share prompt + copy-link button up top — so they can eyeball it and grab the
-    # link. The full author→publish→play loop.
+    # Publishing drops the author straight onto the live, playable board with a
+    # celebratory "it's published!" banner + a Share button. The full
+    # author→publish→play loop.
     share_token = Puzzle.last.share_token
-    expect(page).to have_current_path(play_path(share_token))
+    expect(page).to have_current_path(play_path(share_token), ignore_query: true)
     expect(Puzzle.last).to be_published
-    expect(page).to have_content(/phone-authored/i)
-    expect(page).to have_content(/look good\? share your puzzle!/i)
-    expect(page).to have_css("button[data-action='clipboard#copy']", text: /copy puzzle link/i)
+    expect(page).to have_content(/phone-authored.*is published!/i)
+    expect(page).to have_content(/share it with your friends and enemies/i)
+    expect(page).to have_css(".m-publish-prompt--done button[data-action='clipboard#copy']")
     expect(page).to have_css(".m-card", count: 16)
   end
 

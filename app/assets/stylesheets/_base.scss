@@ -39,6 +39,8 @@ a {
   text-decoration: underline;
 }
 
+a:hover { opacity: 0.7; }
+
 button {
   font: inherit;
   cursor: pointer;
@@ -53,27 +55,38 @@ button {
   justify-content: space-between;
   gap: $space-sm;
   padding: $space-sm $space-md;
-  font-size: $font-sm;
+  font-size: $font-lg;
 
   &__home { font-weight: 700; }
 
   &__auth {
     display: flex;
     align-items: center;
-    gap: $space-md;
+    gap: $space-sm;
 
-    form { margin: 0; } // button_to wraps the logout in a form
+    // button_to wraps the logout in a form — collapse it so the button sits in
+    // the flex row exactly like the anchor buttons beside it.
+    form { margin: 0; display: contents; }
   }
 
-  // The logout button rides inside a nav of links — strip the button chrome so
-  // it reads as one of them.
-  &__signout {
-    background: none;
-    border: 0;
-    padding: 0;
+  // Small outline buttons, sized to roughly the cap height of the wordmark. The
+  // anchors and the form button must render identically — buttons don't inherit
+  // font/text-transform, so set them explicitly here.
+  &__btn {
+    display: inline-block;
+    margin: 0;
+    padding: 0.1em 0.5em;
     font: inherit;
+    font-size: $font-sm;
+    line-height: 1.25;
+    text-transform: uppercase;
+    background: none;
     color: inherit;
-    cursor: pointer;
+    border: 1px solid currentColor;
+    border-radius: $radius;
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
   }
 }
 

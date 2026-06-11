@@ -16,13 +16,22 @@
       <% @puzzles.each do |puzzle| %>
         <li class="m-puzzle-list__item">
           <% title = puzzle.title.presence || "Untitled draft" %>
-          <%= link_to title, (puzzle.published? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
-                class: "m-puzzle-list__title" %>
+          <div class="m-puzzle-list__head">
+            <%= link_to multicolor(title),
+                  (puzzle.published? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
+                  class: "m-puzzle-list__title" %>
+            <span class="m-puzzle-list__meta">
+              <% if puzzle.published? %>
+                <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+                <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+              <% else %>
+                <span class="m-puzzle-list__flag">Draft</span>
+              <% end %>
+            </span>
+          </div>
 
           <div class="m-puzzle-list__actions">
             <% if puzzle.published? %>
-              <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
-              <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
               <%= button_to unpublish_puzzle_path(puzzle), method: :patch,
                     class: "m-btn m-btn--sm m-btn--blue" do %>
                 <%= icon(:eye_slash) %><span>Unpublish</span>
@@ -33,7 +42,6 @@
                 <%= icon(:share) %><span data-clipboard-target="label">Share</span>
               <% end %>
             <% else %>
-              <span class="m-puzzle-list__flag">Draft</span>
               <%= button_to publish_puzzle_path(puzzle), method: :patch,
                     class: "m-btn m-btn--sm m-btn--go" do %>
                 <%= icon(:eye) %><span>Publish</span>
@@ -41,7 +49,7 @@
             <% end %>
 
             <%= button_to puzzle, method: :delete,
-                  class: "m-btn m-btn--sm m-puzzle-list__delete",
+                  class: "m-btn m-btn--xs m-puzzle-list__delete",
                   data: { turbo_confirm: "Delete this puzzle?" } do %>
               <%= icon(:trash) %><span>Delete</span>
             <% end %>

@@ -52,5 +52,9 @@
     <%= f.text_field :author_name %>
   </div>
 
-  <%= f.submit(puzzle.persisted? ? "Save" : "Save draft", class: "m-btn m-btn--pop") %>
+  <div class="m-form__submit">
+    <%= f.button type: :submit, class: "m-btn" do %>
+      <%= icon(:save) %><span><%= puzzle.persisted? ? "Save" : "Save draft" %></span>
+    <% end %>
+  </div>
 <% end %>

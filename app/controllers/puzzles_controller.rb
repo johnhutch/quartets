@@ -44,7 +44,8 @@ class PuzzlesController < ApplicationController
       if autosave?
         head :created, location: edit_puzzle_path(@puzzle)
       else
-        redirect_to edit_puzzle_path(@puzzle), notice: "Draft saved."
+        # "Save draft" lands the author on the show page to preview + publish.
+        redirect_to play_path(@puzzle.share_token)
       end
     else
       ensure_four_groups
@@ -63,7 +64,8 @@ class PuzzlesController < ApplicationController
       if autosave?
         head :no_content
       else
-        redirect_to edit_puzzle_path(@puzzle), notice: "Saved."
+        # A manual "Save" is the author signalling they're done — preview it.
+        redirect_to play_path(@puzzle.share_token)
       end
     else
       ensure_four_groups
@@ -76,9 +78,9 @@ class PuzzlesController < ApplicationController
     @puzzle.status = :published
 
     if @puzzle.save
-      # Land the author on the live puzzle so they can eyeball it and grab the
-      # share link right there (the share prompt shows for owners).
-      redirect_to play_path(@puzzle.share_token), notice: "Published — ready to share."
+      # Land on the live puzzle with the celebratory "it's published!" banner
+      # (?published=1 distinguishes the just-published moment from a later visit).
+      redirect_to play_path(@puzzle.share_token, published: 1)
     else
       @puzzle.status = :draft # keep it a draft; just show what's missing
       flash.now[:alert] = "Can't publish yet — fix the issues below."

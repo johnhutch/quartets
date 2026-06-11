@@ -6,8 +6,8 @@
   <%= render "form", puzzle: @puzzle %>
 
   <% unless @puzzle.published? %>
-    <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
+    <div class="m-form__submit">
+      <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
+    </div>
   <% end %>
-
-  <p><%= link_to "← All puzzles", puzzles_path %></p>
 </div>

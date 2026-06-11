@@ -15,7 +15,7 @@ RSpec.describe "Puzzles", type: :request do
       expect(puzzle).to be_draft
       expect(puzzle.user).to be_nil
       expect(puzzle.creator_token).to be_present
-      expect(response).to redirect_to(edit_puzzle_path(puzzle))
+      expect(response).to redirect_to(play_path(puzzle.share_token))
     end
 
     it "scopes the dashboard to the visitor's own cookie-owned puzzles" do
@@ -25,8 +25,10 @@ RSpec.describe "Puzzles", type: :request do
       get puzzles_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Mine anon")
-      expect(response.body).not_to include("Not mine")
+      # Titles render as multicolor spans, so compare against the stripped text.
+      text = Nokogiri::HTML(response.body).text
+      expect(text).to include("Mine anon")
+      expect(text).not_to include("Not mine")
     end
 
     it "won't reach a puzzle owned by a different cookie" do
@@ -78,14 +80,15 @@ RSpec.describe "Puzzles", type: :request do
         get puzzles_path
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("My Puzzle")
-        expect(response.body).not_to include("Their Puzzle")
+        text = Nokogiri::HTML(response.body).text
+        expect(text).to include("My Puzzle")
+        expect(text).not_to include("Their Puzzle")
         expect(response.body).not_to match(/you've made so far/i) # claim CTA is anon-only
       end
     end
 
     describe "POST /puzzles" do
-      it "creates a draft owned by me and opens its editor" do
+      it "creates a draft owned by me and lands on its preview" do
         expect {
           post puzzles_path, params: { puzzle: { title: "Fresh" } }
         }.to change(Puzzle, :count).by(1)
@@ -93,7 +96,7 @@ RSpec.describe "Puzzles", type: :request do
         puzzle = Puzzle.last
         expect(puzzle).to be_draft
         expect(puzzle.user).to eq(user)
-        expect(response).to redirect_to(edit_puzzle_path(puzzle))
+        expect(response).to redirect_to(play_path(puzzle.share_token))
       end
 
       it "persists the four nested groups" do
@@ -116,7 +119,7 @@ RSpec.describe "Puzzles", type: :request do
         }.to change(Puzzle, :count).by(1)
 
         expect(Puzzle.last).to be_draft
-        expect(response).to redirect_to(edit_puzzle_path(Puzzle.last))
+        expect(response).to redirect_to(play_path(Puzzle.last.share_token))
       end
     end
 
@@ -127,7 +130,7 @@ RSpec.describe "Puzzles", type: :request do
         patch publish_puzzle_path(puzzle)
 
         expect(puzzle.reload).to be_published
-        expect(response).to redirect_to(play_path(puzzle.share_token))
+        expect(response).to redirect_to(play_path(puzzle.share_token, published: 1))
       end
 
       it "refuses to publish an incomplete draft" do
@@ -159,10 +162,10 @@ RSpec.describe "Puzzles", type: :request do
         10.times { |i| create(:puzzle, user: user, title: "Filler #{i}") }
 
         get puzzles_path
-        expect(response.body).not_to include("Oldest one")
+        expect(Nokogiri::HTML(response.body).text).not_to include("Oldest one")
 
         get puzzles_path(page: 2)
-        expect(response.body).to include("Oldest one")
+        expect(Nokogiri::HTML(response.body).text).to include("Oldest one")
       end
     end
 
