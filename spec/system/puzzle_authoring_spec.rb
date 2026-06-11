@@ -29,7 +29,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     end
   end
 
-  it "authors a full puzzle, publishes it, and lands on a playable share link" do
+  it "authors a full puzzle, publishes it, and lands on its shareable board" do
     visit new_puzzle_path
 
     fill_group "blue",   %w[cat dog owl fox], "Animals"
@@ -44,20 +44,15 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     visit edit_puzzle_path(Puzzle.last)
     click_button "Publish"
 
-    expect(page).to have_current_path(puzzles_path)
-    expect(Puzzle.last).to be_published
-    # The dashboard title is display type, uppercased by the brutalist theme —
-    # match the title, not its presentational casing.
-    expect(page).to have_content(/phone-authored/i)
-
-    # Publishing is for sharing: the dashboard surfaces the public share link, and
-    # following it lands on the real, playable board — the 16 shuffled tiles the
-    # game controller renders. This is the full author→publish→play loop.
+    # Publishing drops the author straight onto the live, playable board — with a
+    # share prompt + copy-link button up top — so they can eyeball it and grab the
+    # link. The full author→publish→play loop.
     share_token = Puzzle.last.share_token
-    click_link "Play"
-
     expect(page).to have_current_path(play_path(share_token))
+    expect(Puzzle.last).to be_published
     expect(page).to have_content(/phone-authored/i)
+    expect(page).to have_content(/look good\? share your puzzle!/i)
+    expect(page).to have_css("button[data-action='clipboard#copy']", text: /copy puzzle link/i)
     expect(page).to have_css(".m-card", count: 16)
   end
 

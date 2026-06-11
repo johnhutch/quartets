@@ -1,6 +1,14 @@
 <% content_for :title, @puzzle.title %>
 
 <div class="l-container">
+  <% if owns?(@puzzle) %>
+    <aside class="m-share-prompt" data-controller="clipboard"
+           data-clipboard-text-value="<%= play_url(@puzzle.share_token) %>">
+      <p class="m-share-prompt__pitch">Look good? Share your puzzle!</p>
+      <button type="button" class="m-btn m-btn--pop" data-action="clipboard#copy">Copy puzzle link</button>
+    </aside>
+  <% end %>
+
   <h1><%= multicolor(@puzzle.title) %></h1>
   <% if @puzzle.author_name.present? %>
     <p class="m-byline">by <%= @puzzle.author_name %></p>
@@ -8,5 +16,9 @@
 
   <%= render "play/board", puzzle: @puzzle %>
 
-  <p><%= link_to "← More puzzles", play_index_path %></p>
+  <% if owns?(@puzzle) %>
+    <p class="m-play-back"><%= link_to "View All My Puzzles", puzzles_path %></p>
+  <% else %>
+    <p class="m-play-back"><%= link_to "← More puzzles", play_index_path %></p>
+  <% end %>
 </div>

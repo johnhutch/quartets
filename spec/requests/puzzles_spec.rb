@@ -121,13 +121,13 @@ RSpec.describe "Puzzles", type: :request do
     end
 
     describe "PATCH /puzzles/:id/publish" do
-      it "publishes a complete draft" do
+      it "publishes a complete draft and lands on its public board" do
         puzzle = create(:puzzle, :complete, user: user, status: :draft)
 
         patch publish_puzzle_path(puzzle)
 
         expect(puzzle.reload).to be_published
-        expect(response).to redirect_to(puzzles_path)
+        expect(response).to redirect_to(play_path(puzzle.share_token))
       end
 
       it "refuses to publish an incomplete draft" do
@@ -137,6 +137,32 @@ RSpec.describe "Puzzles", type: :request do
 
         expect(puzzle.reload).to be_draft
         expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+
+    describe "PATCH /puzzles/:id/unpublish" do
+      it "pulls a published puzzle back to draft" do
+        puzzle = create(:published_puzzle, user: user)
+
+        patch unpublish_puzzle_path(puzzle)
+
+        expect(puzzle.reload).to be_draft
+        expect(response).to redirect_to(puzzles_path)
+      end
+    end
+
+    describe "GET /puzzles pagination" do
+      it "shows 10 per page, the rest on the next page" do
+        # 11 puzzles, newest first by updated_at. The oldest spills to page 2.
+        oldest = create(:puzzle, user: user, title: "Oldest one")
+        oldest.update_column(:updated_at, 1.day.ago)
+        10.times { |i| create(:puzzle, user: user, title: "Filler #{i}") }
+
+        get puzzles_path
+        expect(response.body).not_to include("Oldest one")
+
+        get puzzles_path(page: 2)
+        expect(response.body).to include("Oldest one")
       end
     end
 

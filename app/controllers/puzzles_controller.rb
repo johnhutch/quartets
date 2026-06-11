@@ -4,10 +4,16 @@ class PuzzlesController < ApplicationController
   # Creation is public (ADR-0005) — no authenticate_user!. Ownership is by
   # account when signed in, else by the creator_token cookie we mint here.
   before_action :ensure_creator_token
-  before_action :set_puzzle, only: %i[edit update publish destroy stats export]
+  before_action :set_puzzle, only: %i[edit update publish unpublish destroy stats export]
+
+  PER_PAGE = 10
 
   def index
-    @puzzles = owned_puzzles.order(updated_at: :desc)
+    scope = owned_puzzles.order(updated_at: :desc, id: :desc)
+    @puzzles_total = scope.count
+    @total_pages = [(@puzzles_total / PER_PAGE.to_f).ceil, 1].max
+    @page = params[:page].to_i.clamp(1, @total_pages)
+    @puzzles = scope.offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
   end
 
   # Author analytics for one puzzle — how it's playing out in the wild.
@@ -70,13 +76,22 @@ class PuzzlesController < ApplicationController
     @puzzle.status = :published
 
     if @puzzle.save
-      redirect_to puzzles_path, notice: "Published — ready to share."
+      # Land the author on the live puzzle so they can eyeball it and grab the
+      # share link right there (the share prompt shows for owners).
+      redirect_to play_path(@puzzle.share_token), notice: "Published — ready to share."
     else
       @puzzle.status = :draft # keep it a draft; just show what's missing
       flash.now[:alert] = "Can't publish yet — fix the issues below."
       ensure_four_groups
       render :edit, status: :unprocessable_content
     end
+  end
+
+  # Pull a published puzzle back to draft — hides it from the public play surfaces
+  # while the author reworks it. Lenient draft rules apply again.
+  def unpublish
+    @puzzle.update!(status: :draft)
+    redirect_to puzzles_path, notice: "Unpublished — back to a draft."
   end
 
   def destroy

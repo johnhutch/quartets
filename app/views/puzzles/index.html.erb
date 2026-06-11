@@ -3,31 +3,66 @@
 <div class="l-container">
   <h1><%= multicolor("Your puzzles") %></h1>
 
-  <% if !user_signed_in? && @puzzles.any? %>
-    <%= render "claim_cta", count: @puzzles.size %>
+  <% if !user_signed_in? && @puzzles_total > 0 %>
+    <%= render "claim_cta", count: @puzzles_total %>
   <% end %>
 
-  <%= button_to "+ New puzzle", puzzles_path, method: :post, class: "m-btn m-btn--pop" %>
+  <div class="m-dashboard-actions">
+    <%= link_to "+ New puzzle", new_puzzle_path, class: "m-btn m-btn--pop" %>
+  </div>
 
-  <% if @puzzles.any? %>
+  <% if @puzzles_total > 0 %>
     <ul class="m-puzzle-list">
       <% @puzzles.each do |puzzle| %>
-        <li>
-          <%= link_to(puzzle.title.presence || "Untitled draft", edit_puzzle_path(puzzle)) %>
-          <% if puzzle.draft? %>
-            <span class="is-draft">draft</span>
-          <% else %>
-            <%= link_to "Play", play_path(puzzle.share_token), class: "m-puzzle-list__play" %>
-            <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__stats" %>
-            <%= link_to "Export", export_puzzle_path(puzzle) %>
-          <% end %>
-          <%= button_to "Delete", puzzle, method: :delete, class: "m-btn",
-                data: { turbo_confirm: "Delete this puzzle?" } %>
+        <li class="m-puzzle-list__item">
+          <% title = puzzle.title.presence || "Untitled draft" %>
+          <%= link_to title, (puzzle.published? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
+                class: "m-puzzle-list__title" %>
+
+          <div class="m-puzzle-list__actions">
+            <% if puzzle.published? %>
+              <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+              <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+              <%= button_to unpublish_puzzle_path(puzzle), method: :patch,
+                    class: "m-btn m-btn--sm m-btn--blue" do %>
+                <%= icon(:eye_slash) %><span>Unpublish</span>
+              <% end %>
+              <%= tag.button type: "button", class: "m-btn m-btn--sm m-btn--share",
+                    data: { controller: "clipboard", clipboard_text_value: play_url(puzzle.share_token),
+                            action: "clipboard#copy" } do %>
+                <%= icon(:share) %><span data-clipboard-target="label">Share</span>
+              <% end %>
+            <% else %>
+              <span class="m-puzzle-list__flag">Draft</span>
+              <%= button_to publish_puzzle_path(puzzle), method: :patch,
+                    class: "m-btn m-btn--sm m-btn--go" do %>
+                <%= icon(:eye) %><span>Publish</span>
+              <% end %>
+            <% end %>
+
+            <%= button_to puzzle, method: :delete,
+                  class: "m-btn m-btn--sm m-puzzle-list__delete",
+                  data: { turbo_confirm: "Delete this puzzle?" } do %>
+              <%= icon(:trash) %><span>Delete</span>
+            <% end %>
+          </div>
         </li>
       <% end %>
     </ul>
+
+    <% if @total_pages > 1 %>
+      <nav class="m-pagination">
+        <% if @page > 1 %>
+          <%= link_to "← Prev", puzzles_path(page: @page - 1), class: "m-pagination__step" %>
+        <% end %>
+        <span class="m-pagination__at">Page <%= @page %> of <%= @total_pages %></span>
+        <% if @page < @total_pages %>
+          <%= link_to "Next →", puzzles_path(page: @page + 1), class: "m-pagination__step" %>
+        <% end %>
+      </nav>
+    <% end %>
   <% else %>
     <p>No puzzles yet.</p>
-    <%= button_to "Make your first one", puzzles_path, method: :post, class: "m-btn m-btn--pop" %>
+    <%= link_to "Make your first one", new_puzzle_path, class: "m-btn m-btn--pop" %>
   <% end %>
 </div>

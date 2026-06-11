@@ -6,7 +6,7 @@ module Creator
   extend ActiveSupport::Concern
 
   included do
-    helper_method :current_creator_token
+    helper_method :current_creator_token, :owns?
   end
 
   private
@@ -26,6 +26,16 @@ module Creator
       current_user.puzzles
     else
       Puzzle.where(creator_token: current_creator_token)
+    end
+  end
+
+  # Does the current requester own this puzzle? Lets public surfaces (e.g. the
+  # play page) show owner-only affordances like the share prompt.
+  def owns?(puzzle)
+    if user_signed_in?
+      puzzle.user_id == current_user.id
+    else
+      puzzle.creator_token.present? && puzzle.creator_token == current_creator_token
     end
   end
 end

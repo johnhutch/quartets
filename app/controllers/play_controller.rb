@@ -2,6 +2,7 @@
 # gate is "published" — drafts stay invisible until their author ships them.
 class PlayController < ApplicationController
   include AnonymousPlayer
+  include Creator # for owns? — the owner gets a share prompt on their own puzzle
 
   def index
     @puzzles = Puzzle.published.order(created_at: :desc)

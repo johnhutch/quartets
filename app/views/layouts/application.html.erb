@@ -27,7 +27,7 @@
       content_for(:body_class) to something else. %>
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "theme-brutal" %>">
     <header class="l-topbar">
-      <%= link_to "Quartets", root_path, class: "l-topbar__home" %>
+      <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
       <nav class="l-topbar__auth">
         <% if user_signed_in? %>
           <%= link_to "My puzzles", puzzles_path %>
