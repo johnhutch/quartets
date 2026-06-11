@@ -1,24 +1,32 @@
 <% content_for :title, @puzzle.title %>
 
 <div class="l-container">
-  <% if owns?(@puzzle) %>
-    <aside class="m-share-prompt" data-controller="clipboard"
-           data-clipboard-text-value="<%= play_url(@puzzle.share_token) %>">
-      <p class="m-share-prompt__pitch">Look good? Share your puzzle!</p>
-      <button type="button" class="m-btn m-btn--pop" data-action="clipboard#copy">Copy puzzle link</button>
+  <% if owns?(@puzzle) && @puzzle.draft? %>
+    <aside class="m-publish-prompt">
+      <p class="m-publish-prompt__text">Look good? Publish it so you can share it with others!</p>
+      <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
+    </aside>
+  <% elsif @puzzle.published? && params[:published].present? %>
+    <aside class="m-publish-prompt m-publish-prompt--done">
+      <p class="m-publish-prompt__text">
+        <%= multicolor(@puzzle.title) %> is published! Share it with your friends and enemies.
+      </p>
+      <%= tag.button type: "button", class: "m-btn m-btn--share",
+            data: { controller: "clipboard", clipboard_text_value: play_url(@puzzle.share_token),
+                    action: "clipboard#copy" } do %>
+        <%= icon(:share) %><span data-clipboard-target="label">Share</span>
+      <% end %>
     </aside>
   <% end %>
 
-  <h1><%= multicolor(@puzzle.title) %></h1>
+  <h1 class="m-play-title"><%= multicolor(@puzzle.title) %></h1>
   <% if @puzzle.author_name.present? %>
     <p class="m-byline">by <%= @puzzle.author_name %></p>
   <% end %>
 
   <%= render "play/board", puzzle: @puzzle %>
 
-  <% if owns?(@puzzle) %>
-    <p class="m-play-back"><%= link_to "View All My Puzzles", puzzles_path %></p>
-  <% else %>
+  <% unless owns?(@puzzle) %>
     <p class="m-play-back"><%= link_to "← More puzzles", play_index_path %></p>
   <% end %>
 </div>

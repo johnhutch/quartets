@@ -30,11 +30,11 @@
       <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
       <nav class="l-topbar__auth">
         <% if user_signed_in? %>
-          <%= link_to "My puzzles", puzzles_path %>
-          <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__signout" %>
+          <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
+          <%= link_to "My puzzles", puzzles_path, class: "l-topbar__btn" %>
         <% else %>
-          <%= link_to "Log in", new_user_session_path %>
-          <%= link_to "Sign up", new_user_registration_path %>
+          <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
+          <%= link_to "Sign up", new_user_registration_path, class: "l-topbar__btn" %>
         <% end %>
       </nav>
     </header>

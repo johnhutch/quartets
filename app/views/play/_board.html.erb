@@ -25,4 +25,14 @@
     <button type="button" class="m-btn m-btn--primary"
             data-game-target="submit" data-action="game#submit" disabled>Submit</button>
   </div>
+
+  <% if puzzle.published? %>
+    <div class="m-game__share-cta">
+      <%= tag.button type: "button", class: "m-btn m-btn--share",
+            data: { controller: "clipboard", clipboard_text_value: play_url(puzzle.share_token),
+                    action: "clipboard#copy" } do %>
+        <%= icon(:share) %><span data-clipboard-target="label">Share this puzzle</span>
+      <% end %>
+    </div>
+  <% end %>
 <% end %>

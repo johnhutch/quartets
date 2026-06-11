@@ -25,6 +25,24 @@ SMTP creds for forgot-password mail also get filled into the NAS `.env`.
 
 ## Shipped log (most recent first)
 
+- **QA round 2 — create→show flow, show-page banners, polish.** "Save draft" now
+  lands on the puzzle **show page** (create+update redirect to `play_path`);
+  `PlayController#show` lets an owner **preview their own draft**. Show header is
+  state-aware: draft+owner → blue "Look good? Publish it…" box + Publish; just-
+  published (`?published=1`) → a **dark green-framed banner** "TITLE *(colorized)*
+  is published! Share it…" + Share; ordinary published / non-owner → no box. Every
+  **published** board gets a centered "Share this puzzle" button under the controls
+  (everyone). Removed the old copy-link box + the bottom "view all" / "all puzzles"
+  links from show/new/edit. Dashboard rows v3: **colorized + underlined** titles,
+  Edit/Stats pinned right of the title (wraps when long), buttons on their own
+  line, **deprioritized (xs) Delete**. "Save draft" button is now white w/ a save
+  icon, centered, not full-bleed. Topbar `Quartets` colorized; **My puzzles / Log
+  out are small outline buttons**. Footer **Hutch + SwiftKick Web colorized**.
+  Global: hover states on buttons+links, and a WCAG-AA `$brutal-muted` grey
+  replacing low-opacity dark text on the near-black page. New `clipboard`/`icon`
+  helpers gained a Share/eye/eye-slash/trash/save set. Specs updated (create/
+  publish redirects, draft-preview gating, celebrate banner); 144 green; verified
+  by phone-width screenshots. Bulk CSV "export my puzzles" parked in `TODOS.md`.
 - **Dashboard + share-flow QA pass.** Publish now lands the author on the live
   `/p/:share_token` board with an owner-only **share prompt** ("Look good? Share
   your puzzle!" + a *Copy puzzle link* button via a new `clipboard` Stimulus

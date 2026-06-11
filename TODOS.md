@@ -46,6 +46,12 @@ Planned work that has been scoped but not yet started. Read this at session star
 - **Superuser admin page** — a gated view listing **all** puzzles in the system
   (every author's), for the superuser. The one place creation/ownership is still
   account-gated post-ADR-0005.
+- **Bulk "Export my puzzles" (CSV)** — export is now a *separate* function: an
+  "Export my puzzles" link at the **bottom of Your Puzzles** downloads **all** of
+  the owner's puzzles as one CSV. Per-puzzle export is gone from the UI (the
+  `/puzzles/:id/export` JSON route still works underneath — no need to rip it
+  out). Decide the CSV shape (one row per puzzle with the 4 groups flattened, or
+  one row per group).
 
 ### Quick wins (no decisions needed)
 

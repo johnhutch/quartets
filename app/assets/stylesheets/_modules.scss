@@ -163,12 +163,20 @@
     font-size: $font-sm;
   }
 
+  // Extra-small / deprioritized (e.g. Delete).
+  &--xs {
+    padding: 2px $space-sm;
+    font-size: $font-sm;
+  }
+
   // Icon + label buttons line their contents up with a small gap.
   &:has(.m-icon) {
     display: inline-flex;
     align-items: center;
     gap: 0.4em;
   }
+
+  &:hover { filter: brightness(0.96); }
 }
 
 // --- Homepage hero ------------------------------------------------------
@@ -220,21 +228,38 @@
   display: grid;
   gap: $space-sm;
 
-  // Title on the left, the action cluster on the right; the cluster wraps below
-  // on narrow screens so it never crowds the title.
+  // Title row (title + edit/stats or draft flag) stacked over the action row,
+  // so the buttons always get their own line beneath the name.
   &__item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
+    display: grid;
     gap: $space-sm;
     padding: $space-sm 0;
     border-bottom: 1px solid $color-line;
   }
 
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-xs $space-sm;
+  }
+
+  // Title takes the row and wraps when long; edit/stats stay pinned right.
   &__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
     font-weight: 700;
     text-transform: uppercase;
+    text-decoration: underline;
+  }
+
+  &__meta {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: $space-sm;
   }
 
   &__actions {
@@ -243,6 +268,8 @@
     align-items: center;
     gap: $space-sm;
   }
+
+  &__delete { margin-left: auto; }
 
   &__link { font-size: $font-sm; }
 
@@ -288,30 +315,49 @@
 }
 
 .m-byline {
-  margin-top: -$space-sm;
+  margin-top: 0;
   color: $color-muted;
   font-style: italic;
 }
 
-// --- Share prompt (owner's view of their published puzzle) --------------
-.m-share-prompt {
+// --- Publish / celebrate banner on the puzzle show page -----------------
+.m-publish-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
   margin: 0 0 $space-lg;
   padding: $space-md;
   border: 1px solid $color-line;
   border-radius: $radius;
-  display: grid;
-  gap: $space-sm;
-  justify-items: start;
 
-  &__pitch {
+  &__text {
     margin: 0;
     font-weight: 700;
+    flex: 1 1 14rem;
   }
 }
 
-// The "back / view all" link under the board needs room so it doesn't crowd the
-// game controls above it.
+// Show-page title sits tight to its byline.
+.m-play-title { margin-bottom: $space-xs; }
+
+// Centered "share this puzzle" CTA beneath the board controls.
+.m-game__share-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: $space-lg;
+}
+
+// The "back / more puzzles" link under the board needs room so it doesn't crowd
+// the game controls above it.
 .m-play-back { margin-top: $space-xl; }
+
+// Form submit row: a centered, content-width button (never full-bleed).
+.m-form__submit {
+  display: flex;
+  justify-content: center;
+}
 
 // --- Claim CTA (anon author → account) ----------------------------------
 .m-claim {

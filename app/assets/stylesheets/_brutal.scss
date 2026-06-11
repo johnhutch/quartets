@@ -123,18 +123,29 @@ body.theme-brutal {
     &:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba($brutal-ink, 0.35); }
   }
 
+  // Extra-small / deprioritized — quiet shadow, lighter weight.
+  &--xs {
+    padding: 2px $space-sm;
+    font-weight: 400;
+    box-shadow: 2px 2px 0 rgba($brutal-ink, 0.3);
+    &:active { transform: translate(1px, 1px); box-shadow: 0 0 0 rgba($brutal-ink, 0.3); }
+  }
+
   // Icon + label buttons need flex so the SVG sits beside the text.
   &:has(.m-icon) { display: inline-flex; align-items: center; gap: 0.4em; }
+
+  // Hover lift — a touch brighter, shadow grows.
+  transition: filter 0.1s, box-shadow 0.1s, transform 0.05s;
+  &:hover { filter: brightness(1.08); }
 }
 
 // Draft flag reads as a quiet tag, not a button.
 .theme-brutal .m-puzzle-list__flag {
   font-family: $font-display;
   font-weight: 700;
-  color: $brutal-ink;
-  border: 2px dashed rgba($brutal-ink, 0.5);
+  color: $brutal-muted;
+  border: 2px dashed $brutal-muted;
   border-radius: 0;
-  opacity: 0.75;
 }
 
 // --- Board + tiles ----------------------------------------------------------
@@ -218,39 +229,62 @@ body.theme-brutal {
   &--error { background: $color-wrong; color: $brutal-paper; }
 }
 
-// --- Puzzle lists (public browse + superuser dashboard) ---------------------
+// --- Puzzle lists (public browse + author dashboard) ------------------------
 .theme-brutal .m-puzzle-list {
   gap: $space-md;
 
+  // Every row is a brutal card; the thin module border is overridden here.
   li {
+    padding: $space-md;
+    border: $brutal-border solid $brutal-ink;
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  }
+
+  // Public browse rows stay a single flex line (title + author); the dashboard
+  // rows keep their grid (title row over action row) from the module layer.
+  li:not(.m-puzzle-list__item) {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: $space-sm;
-    padding: $space-md;
-    border: $brutal-border solid $brutal-ink; // override the thin module rule
-    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+
+    > a:first-of-type {
+      flex: 1 1 auto;
+      font-family: $font-display;
+      font-weight: 700;
+      font-size: $font-lg;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
   }
 
-  // First link in a row is the title: big display type, takes the slack so the
-  // small action links/buttons get pushed to the right edge.
-  li > a:first-of-type {
-    flex: 1 1 auto;
+  // Dashboard titles: big display type, underlined + colorized (multicolor spans).
+  &__title {
     font-family: $font-display;
     font-weight: 700;
     font-size: $font-lg;
     text-transform: uppercase;
-    text-decoration: none;
+    text-decoration: underline;
   }
 
-  // Secondary actions (Stats, Export) and meta stay small + quiet.
-  li > a:not(:first-of-type),
-  &__stats,
-  &__author { font-size: $font-sm; }
-  &__author { font-style: italic; opacity: 0.7; }
+  &__link {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__author { font-size: $font-sm; font-style: italic; color: $brutal-muted; }
 }
 
-.theme-brutal .m-byline { font-style: italic; opacity: 0.7; }
+.theme-brutal .m-byline { font-style: italic; color: $brutal-muted; }
+
+// Secondary / "muted" copy bumped to a WCAG-AA grey on the near-black page.
+.theme-brutal {
+  .m-auth__lede,
+  .m-home-foot,
+  .m-empty,
+  .m-pagination__at { color: $brutal-muted; }
+}
 
 // --- Header row carrying a grid-breaking "Create" sticker top-right ----------
 .theme-brutal .m-play-head {
@@ -402,27 +436,39 @@ body.theme-brutal {
   font-family: $font-display;
   text-transform: uppercase;
 
-  a,
-  .l-topbar__signout {
+  &__home {
+    letter-spacing: -0.02em;
     font-weight: 700;
     text-decoration: none;
-    border-bottom: 2px solid transparent;
   }
-  a:hover,
-  .l-topbar__signout:hover { color: $color-yellow; border-bottom-color: currentColor; }
 
-  &__home { letter-spacing: -0.02em; }
+  // Auth controls: compact outline buttons that fill yellow on hover.
+  &__btn {
+    border: 2px solid $brutal-ink;
+    font-weight: 700;
+    &:hover { background: $color-yellow; color: #000; opacity: 1; }
+  }
 }
 
-// --- Share prompt -----------------------------------------------------------
-.theme-brutal .m-share-prompt {
+// --- Publish / celebrate banner ---------------------------------------------
+.theme-brutal .m-publish-prompt {
   border: $brutal-border solid $brutal-ink;
   border-radius: 0;
   box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.25);
   background: $color-blue;
   color: #000;
 
-  &__pitch {
+  // The "it's published!" banner carries the *colorized* title, which would
+  // vanish on a solid fill — so it's a dark box with a green frame instead, and
+  // the multicolor spans pop like they do on the page.
+  &--done {
+    background: $brutal-paper;
+    color: $brutal-ink;
+    border-color: $color-green;
+    box-shadow: $brutal-shadow $brutal-shadow 0 $color-green;
+  }
+
+  &__text {
     font-family: $font-display;
     text-transform: uppercase;
   }
@@ -435,7 +481,7 @@ body.theme-brutal {
   text-decoration: none;
   border-bottom: 2px solid currentColor;
 }
-.theme-brutal .m-play-back a:hover { color: $color-yellow; }
+.theme-brutal .m-play-back a:hover { color: $color-yellow; opacity: 1; }
 
 // --- Claim CTA --------------------------------------------------------------
 .theme-brutal .m-claim {
@@ -503,5 +549,5 @@ body.theme-brutal {
   }
 
   &__license a { text-transform: none; }
-  &__disclaimer { font-style: italic; opacity: 0.6; }
+  &__disclaimer { font-style: italic; color: $brutal-muted; }
 }

@@ -43,6 +43,36 @@ RSpec.describe "Play (public)", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
+    it "lets the owner preview their own draft with a publish CTA" do
+      user = create(:user)
+      sign_in user
+      draft = create(:puzzle, :complete, user: user, status: :draft)
+
+      get play_path(draft.share_token)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Look good? Publish it")
+    end
+
+    it "celebrates a just-published puzzle (?published=1)" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:published_puzzle, user: user, title: "Yay")
+
+      get play_path(puzzle.share_token, published: 1)
+
+      expect(response.body).to include("is published!")
+    end
+
+    it "shows no banner on an ordinary published visit" do
+      puzzle = create(:published_puzzle, title: "Plain")
+
+      get play_path(puzzle.share_token)
+
+      expect(response.body).not_to include("is published!")
+      expect(response.body).not_to include("Look good? Publish it")
+    end
+
     it "404s an unknown token" do
       get play_path("nope-not-a-real-token")
 
