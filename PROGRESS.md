@@ -13,19 +13,32 @@ The app plays **end-to-end** — author → publish → share link → play → 
 emoji cube — and the brutalist design now covers the whole site. Phases 0–4 are
 done; Phase 5 (import + export) is mostly there.
 
-The open frontier is the **auth & accounts epic**: reverse the superuser-only
-gate so **anyone can create a puzzle without logging in** (restores an original
-spec that got lost), then claim-on-signup, a logged-in "my puzzles" stats
-dashboard, and per-creator public homepages (`/u/:handle`). It's gated by open
-decisions **D1–D4** in `TODOS.md` — **work those through `grill-me` first and
-write the outcomes into `DECISIONS.md`** before building (D2 explicitly rewrites
-the "superuser-only creation" decision in `CLAUDE.md`/`DECISIONS.md`). The
-quick-wins (richer share payload, debounce tune) need no
-decisions and can go anytime. Deploy is decided (Synology, ADR-0004) but **not
-yet run end-to-end** — waits on one-time NAS setup.
+The **auth & accounts epic shipped** (ADR-0005): creation is now fully public,
+anonymous authors own their work via a `creator_token` cookie, signing in/up
+claims it, and the styled Devise flows (signup/login/logout/forgot-password) are
+on-theme. What's left of that thread: the per-creator **public homepage
+(`/u/:handle`)** — deferred (D3) — and turning the dashboard's per-puzzle Stats
+links into an **at-a-glance aggregate table**. The remaining quick-wins (richer
+share payload, debounce tune) need no decisions. Deploy is decided (Synology,
+ADR-0004) but **not yet run end-to-end** — waits on one-time NAS setup, where the
+SMTP creds for forgot-password mail also get filled into the NAS `.env`.
 
 ## Shipped log (most recent first)
 
+- **Auth & accounts epic — public creation + cookie ownership + claim-on-signup**
+  (ADR-0005, settles D1–D4). Reversed the superuser-only gate: `PuzzlesController`
+  is open, ownership is `user_id` **or** a signed permanent `creator_token` cookie
+  (new `Creator` concern, mirrors `AnonymousPlayer`); `Puzzle#user` is now
+  optional. `ClaimsPuzzles` (site-wide `before_action`) sweeps a cookie's puzzles
+  onto the account the instant you authenticate, then clears the cookie. Devise
+  gained `:registerable` + `:recoverable` (no confirmable); every Devise screen
+  (login/signup/account/forgot/reset) restyled on the brutalist theme inside a new
+  `.m-auth` column, plus a site-wide `.l-topbar` auth bar (login/signup ↔ my
+  puzzles/log out). A yellow `.m-claim` CTA on the dashboard nudges anon authors —
+  "own the N puzzles you've made so far" — to sign up. Mail is env-configurable:
+  `letter_opener` in dev, ENV-driven SMTP in prod (creds at deploy). Full suite
+  green (139 examples); old "bounce to sign in" stats/export specs rewritten to the
+  new owner-scoped 404.
 - **Author→publish→play loop closed end-to-end** — the dashboard
   (`puzzles#index`) now surfaces a `Play` link (→ `/p/:share_token`) on every
   published puzzle, so the creator can reach/share the public board straight from
@@ -82,16 +95,18 @@ yet run end-to-end** — waits on one-time NAS setup.
 
 ## Known not-done / watch-outs
 
-- **Settle D1–D4 (`TODOS.md`) via `grill-me` before the auth epic** — anonymous-
-  draft ownership, the auth-gate reversal (rewrites the superuser-only decision),
-  creator handles for `/u/:handle`, and which Devise modules. Record outcomes in
-  `DECISIONS.md` first.
+- **Per-creator public homepage `/u/:handle`** — deferred (D3, ADR-0005). Needs a
+  stable per-account handle/slug and how free-text `author_name` reconciles with a
+  claimed account. The last unbuilt piece of the accounts thread.
+- **"My puzzles" aggregate stats table** — the dashboard lists puzzles with a
+  per-puzzle `Stats` link; the planned at-a-glance table (completions, *successful*
+  completions, avg mistakes inline per row) is still TODO.
 - **Quick wins, no decisions needed:** richer share payload (cube + title + direct
-  link), extend the author→publish system spec through to the `/p/:share_token`
-  page, and tune the 1000ms auto-save debounce on a real phone.
-- **Auth polish on today's model:** style the Devise login/signup screens
-  on-theme, wire `recoverable`, and the logged-in "view my puzzles" stats table.
+  link), and tune the 1000ms auto-save debounce on a real phone.
+- **SMTP creds for prod** — forgot-password mail is wired and previews in dev
+  (`letter_opener`); production reads `SMTP_*` from the NAS `.env`, to be filled at
+  first deploy. Until then prod swallows delivery errors so the app boots clean.
 - **Mobile pass** (real iPhone), **first Synology production deploy** + smoke test,
-  and **seeding the superuser** — the remaining Phase 0/5 ⬜s.
+  and **seeding a first account** — the remaining Phase 0/5 ⬜s.
 - `docs/PLAN.md`'s schema sketch calls `Group#words` a "PG array"; it's actually a
   **jsonb** column. Treat jsonb as the truth.

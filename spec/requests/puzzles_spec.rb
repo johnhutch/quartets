@@ -3,10 +3,67 @@ require "rails_helper"
 RSpec.describe "Puzzles", type: :request do
   let(:user) { create(:user) }
 
-  describe "authentication" do
-    it "bounces an unauthenticated visitor to sign in" do
+  # Creation is public now (ADR-0005) — no login wall. A logged-out author owns
+  # their work through a signed creator_token cookie until they claim it.
+  describe "anonymous authoring" do
+    it "lets a logged-out visitor create a puzzle owned by their cookie" do
+      expect {
+        post puzzles_path, params: { puzzle: { title: "Anon draft" } }
+      }.to change(Puzzle, :count).by(1)
+
+      puzzle = Puzzle.last
+      expect(puzzle).to be_draft
+      expect(puzzle.user).to be_nil
+      expect(puzzle.creator_token).to be_present
+      expect(response).to redirect_to(edit_puzzle_path(puzzle))
+    end
+
+    it "scopes the dashboard to the visitor's own cookie-owned puzzles" do
+      post puzzles_path, params: { puzzle: { title: "Mine anon" } } # mints my cookie
+      create(:puzzle, user: nil, creator_token: "someone-else", title: "Not mine")
+
       get puzzles_path
-      expect(response).to redirect_to(new_user_session_path)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Mine anon")
+      expect(response.body).not_to include("Not mine")
+    end
+
+    it "won't reach a puzzle owned by a different cookie" do
+      other = create(:puzzle, user: nil, creator_token: "someone-else")
+      get edit_puzzle_path(other)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    describe "claim CTA on the dashboard" do
+      it "nudges the visitor to claim the puzzles their cookie owns, with a count" do
+        post puzzles_path, params: { puzzle: { title: "One" } }
+        post puzzles_path, params: { puzzle: { title: "Two" } }
+
+        get puzzles_path
+
+        expect(response.body).to include("2 puzzles")
+        expect(response.body).to match(/sign up/i)
+        expect(response.body).to include(new_user_registration_path)
+      end
+
+      it "doesn't show the CTA before anything's been created" do
+        get puzzles_path
+        expect(response.body).not_to match(/you've made so far/i)
+      end
+    end
+
+    it "publishes its own anonymous draft" do
+      post puzzles_path, params: { puzzle: { title: "Anon" } } # mints my cookie
+      mine = Puzzle.last
+      mine.update!(status: :draft)
+      %i[blue green yellow purple].each_with_index do |color, i|
+        mine.groups.create!(color: color, description: color.to_s, words: %w[a b c d], position: i)
+      end
+
+      patch publish_puzzle_path(mine)
+
+      expect(mine.reload).to be_published
     end
   end
 
@@ -23,6 +80,7 @@ RSpec.describe "Puzzles", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("My Puzzle")
         expect(response.body).not_to include("Their Puzzle")
+        expect(response.body).not_to match(/you've made so far/i) # claim CTA is anon-only
       end
     end
 

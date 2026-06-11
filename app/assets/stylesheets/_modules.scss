@@ -215,6 +215,58 @@
   font-style: italic;
 }
 
+// --- Claim CTA (anon author → account) ----------------------------------
+.m-claim {
+  margin: $space-md 0 $space-lg;
+  padding: $space-md;
+  border: 1px solid $color-line;
+  border-radius: $radius;
+  display: grid;
+  gap: $space-sm;
+
+  &__pitch { margin: 0; }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm;
+  }
+}
+
+// --- Auth pages (login / signup / forgot / account) ---------------------
+// A narrow column over the shared .m-form. Mobile-first; the form itself is
+// already styled, so this just handles page rhythm and the link cluster.
+.m-auth {
+  max-width: 28rem;
+
+  &__lede {
+    color: $color-muted;
+    margin-bottom: $space-md;
+  }
+
+  &__remember {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    font-size: $font-sm;
+
+    input { width: auto; }
+  }
+
+  &__links {
+    margin-top: $space-lg;
+    display: grid;
+    gap: $space-sm;
+    font-size: $font-sm;
+  }
+
+  &__danger {
+    margin-top: $space-xl;
+    padding-top: $space-md;
+    border-top: 1px solid $color-line;
+  }
+}
+
 // --- Creation form shell ------------------------------------------------
 .m-form {
   display: grid;

@@ -124,6 +124,58 @@ the one-time NAS setup.
 
 ---
 
+## 0005 — Anonymous creation + cookie ownership + claim-on-signup (settles D1–D4)
+
+**Date:** 2026-06-10
+**Status:** accepted (supersedes the "superuser-only creation" decision in 0000-era
+CLAUDE.md)
+
+**Context.** The original spec — lost along the way — was that *anyone* can author
+a puzzle without an account; the superuser-only gate crept in during Phase 2 and
+contradicts it. Reopening that meant settling the four gating questions D1–D4
+(TODOS.md). The owner pre-decided the direction: public creation, a cookie that
+remembers what you made, and a "claim these to own them" prompt that bridges
+anonymous work to a real account. The remaining forks were taken via
+`AskUserQuestion` (all the recommended option).
+
+**Decision.**
+
+- **D2 · Auth gate reversed.** `authenticate_user!` comes off `PuzzlesController`
+  entirely. Creating, editing, publishing, listing, stats, export are all public.
+  There is no admin-only surface anymore — "superuser" is just an account that
+  happens to own puzzles. This **rewrites** the "Superuser-only for puzzle
+  creation" line in CLAUDE.md/DECISIONS.md.
+- **D1 · Ownership = user_id OR a cookie creator_token.** A puzzle `belongs_to`
+  a user *optionally*; when no one's logged in, ownership rides a signed,
+  permanent `creator_token` cookie (mirrors `AnonymousPlayer`'s `player_token`).
+  A new `puzzles.creator_token` column (indexed) carries it. The owner of a
+  request is `current_user` if signed in, else the cookie token. Index/edit/
+  publish/stats are scoped to whichever applies, so anonymous creators get the
+  same edit-and-revisit story on their own device. **Claim-on-auth:** the moment
+  a request is authenticated and the creator cookie still owns puzzles, those
+  rows are reassigned to the user and the cookie is cleared. Covers signup,
+  login, and remembered sessions.
+- **D3 · Public per-creator homepage (`/u/:handle`) deferred.** Not needed for
+  this epic — claim + the "my puzzles" dashboard don't require a stable handle.
+  `author_name` stays free-text. Revisit handles when the public homepage lands.
+- **D4 · Devise modules:** add `:registerable` (public signup) and `:recoverable`
+  (forgot-password). **No `:confirmable`** — signup is frictionless, no
+  email-confirmation step. `:rememberable` + `:validatable` stay. Mail is
+  **env-configurable**: dev previews reset emails via `letter_opener`; production
+  reads SMTP from ENV (filled into the NAS `.env` at first deploy). Nothing about
+  this blocks on the deploy.
+
+**Consequence.** Creation is fully public — drafts and stats are no longer
+login-protected, so don't assume `current_user` anywhere in the puzzle flow;
+reach for the owner helper instead. The `creator_token` cookie is load-bearing
+for anonymous ownership; clearing it (or switching devices) orphans unclaimed
+puzzles, which is the intended nudge toward signing up. Existing specs that
+assumed login-gated creation get rewritten. Forgot-password works end-to-end in
+dev now; production needs real SMTP creds in `.env` before reset mail actually
+sends.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

@@ -1,0 +1,14 @@
+<%# Shown only to a logged-out author who has puzzles riding on their
+    creator_token cookie (ADR-0005). The bridge from anonymous create to a real
+    account: sign up / log in and claim-on-auth sweeps these onto the account. %>
+<aside class="m-claim">
+  <p class="m-claim__pitch">
+    Log in or create an account to own the
+    <strong><%= pluralize(count, "puzzle") %></strong>
+    you've made so far — see their stats and keep every puzzle in one place.
+  </p>
+  <div class="m-claim__actions">
+    <%= link_to "Sign up", new_user_registration_path, class: "m-btn m-btn--pop" %>
+    <%= link_to "Log in", new_user_session_path, class: "m-btn" %>
+  </div>
+</aside>

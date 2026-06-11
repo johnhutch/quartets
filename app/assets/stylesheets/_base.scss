@@ -44,6 +44,39 @@ button {
   cursor: pointer;
 }
 
+// Slim auth bar at the very top of every page — home wordmark on the left,
+// login/signup or my-puzzles/logout on the right. Neutral here; the brutalist
+// theme dresses it up in _brutal.scss.
+.l-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  padding: $space-sm $space-md;
+  font-size: $font-sm;
+
+  &__home { font-weight: 700; }
+
+  &__auth {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+
+    form { margin: 0; } // button_to wraps the logout in a form
+  }
+
+  // The logout button rides inside a nav of links — strip the button chrome so
+  // it reads as one of them.
+  &__signout {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+}
+
 // Layout primitive: every page is centered on this column.
 .l-container {
   width: 100%;

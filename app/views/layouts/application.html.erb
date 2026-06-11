@@ -26,6 +26,19 @@
   <%# Brutalist theme is the whole app now. A page can opt out by setting
       content_for(:body_class) to something else. %>
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "theme-brutal" %>">
+    <header class="l-topbar">
+      <%= link_to "Quartets", root_path, class: "l-topbar__home" %>
+      <nav class="l-topbar__auth">
+        <% if user_signed_in? %>
+          <%= link_to "My puzzles", puzzles_path %>
+          <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__signout" %>
+        <% else %>
+          <%= link_to "Log in", new_user_session_path %>
+          <%= link_to "Sign up", new_user_registration_path %>
+        <% end %>
+      </nav>
+    </header>
+
     <% flash.each do |type, message| %>
       <div class="flash flash--<%= type %>"><%= message %></div>
     <% end %>

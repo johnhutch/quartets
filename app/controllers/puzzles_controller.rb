@@ -1,9 +1,13 @@
 class PuzzlesController < ApplicationController
-  before_action :authenticate_user!
+  include Creator
+
+  # Creation is public (ADR-0005) — no authenticate_user!. Ownership is by
+  # account when signed in, else by the creator_token cookie we mint here.
+  before_action :ensure_creator_token
   before_action :set_puzzle, only: %i[edit update publish destroy stats export]
 
   def index
-    @puzzles = current_user.puzzles.order(updated_at: :desc)
+    @puzzles = owned_puzzles.order(updated_at: :desc)
   end
 
   # Author analytics for one puzzle — how it's playing out in the wild.
@@ -21,12 +25,12 @@ class PuzzlesController < ApplicationController
   end
 
   def new
-    @puzzle = current_user.puzzles.build
+    @puzzle = owned_puzzles.build
     ensure_four_groups
   end
 
   def create
-    @puzzle = current_user.puzzles.build(puzzle_params)
+    @puzzle = owned_puzzles.build(puzzle_params)
 
     if @puzzle.save
       # Auto-save's first POST creates the record; hand the editor URL back in
@@ -82,9 +86,10 @@ class PuzzlesController < ApplicationController
 
   private
 
-  # Scoped to the current user, so one superuser can never reach another's work.
+  # Scoped to the requester — by account or creator_token — so one author can
+  # never reach another's work.
   def set_puzzle
-    @puzzle = current_user.puzzles.find(params[:id])
+    @puzzle = owned_puzzles.find(params[:id])
   end
 
   # Background draft saves flag themselves so we answer quietly instead of

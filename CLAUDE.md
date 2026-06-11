@@ -18,14 +18,20 @@ Don't relitigate these without a reason — they came out of a full grill-me pas
 - **Stack:** Rails 8, Turbo/Stimulus, importmap (no Node build step), PostgreSQL.
 - **CSS:** Sass, organized SMACSS. **No Tailwind, no utility-class soup.** Four
   partials + manifest (see `app/assets/stylesheets/`). Naming: `l-`/`m-`/`is-`.
-- **Auth:** Devise. Superuser-only for puzzle *creation*. Playing is **public** —
-  puzzles are browsable, no login to play.
+- **Auth:** Devise (`registerable` + `recoverable`, no `confirmable`). Creation,
+  playing, and stats are all **public** — no login required to author or play
+  (ADR-0005 reversed the old superuser-only gate). Accounts are optional: they
+  let you *own* and revisit your puzzles across devices.
+- **Anonymous ownership:** a logged-out author's puzzles ride a signed,
+  permanent `creator_token` cookie (mirrors the player_token). Signing in/up
+  **claims** the cookie's puzzles onto the account, then clears the cookie. See
+  ADR-0005 (settles D1–D4).
 - **Players:** anonymous, cookie/session-based identity for stats. No player
   accounts (can layer on later).
 - **Creation UX:** color-coded form (Blue/Green/Yellow/Purple), Answers +
   Description per group. **Auto-save as drafts** via debounced Turbo — this is a
   hard requirement, born from losing work to the iOS back button. Drafts live on
-  the superuser dashboard.
+  the author's dashboard (`/puzzles`) — scoped by account or `creator_token`.
 - **Play UX:** full interactive game via our own compact **Stimulus**
   `game_controller.js` — no React (hard no), no Node build (importmap). We
   originally meant to embed an existing engine, but none exists that's vanilla,
