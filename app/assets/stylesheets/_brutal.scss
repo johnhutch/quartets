@@ -371,6 +371,65 @@ body.theme-brutal {
 // Thick top rule, display-type links that underline hard and flip to a category
 // color on hover. The legal/disclaimer lines drop back to the plain stack so the
 // fine print reads as fine print.
+// --- Top auth bar -----------------------------------------------------------
+.theme-brutal .l-topbar {
+  border-bottom: $brutal-border solid $brutal-ink;
+  font-family: $font-display;
+  text-transform: uppercase;
+
+  a,
+  .l-topbar__signout {
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  a:hover,
+  .l-topbar__signout:hover { color: $color-yellow; border-bottom-color: currentColor; }
+
+  &__home { letter-spacing: -0.02em; }
+}
+
+// --- Claim CTA --------------------------------------------------------------
+.theme-brutal .m-claim {
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.25);
+  background: $color-yellow;
+  color: #000;
+
+  &__pitch {
+    font-family: $font-display;
+    font-weight: 700;
+
+    strong { text-decoration: underline; }
+  }
+}
+
+// --- Auth pages -------------------------------------------------------------
+.theme-brutal .m-auth {
+  // Auth pages don't need the wide wordmark canvas — pull the column back in.
+  &.l-container { max-width: 28rem; }
+
+  &__links {
+    font-family: $font-display;
+    text-transform: uppercase;
+
+    a {
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 2px solid currentColor;
+      width: fit-content;
+    }
+    a:hover { color: $color-yellow; }
+  }
+
+  &__danger {
+    border-top-color: $brutal-ink;
+
+    h2 { font-size: $font-base; }
+  }
+}
+
 .theme-brutal .l-footer {
   border-top: $brutal-border solid $brutal-ink;
   color: $brutal-ink;

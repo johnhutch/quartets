@@ -60,6 +60,10 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Preview outbound mail (Devise reset-password etc.) in the browser instead of
+  # actually sending it — no SMTP needed in dev (ADR-0005).
+  gem "letter_opener"
 end
 
 gem "rspec-rails", "~> 8.0", groups: [:development, :test]

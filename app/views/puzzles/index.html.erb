@@ -2,6 +2,11 @@
 
 <div class="l-container">
   <h1><%= multicolor("Your puzzles") %></h1>
+
+  <% if !user_signed_in? && @puzzles.any? %>
+    <%= render "claim_cta", count: @puzzles.size %>
+  <% end %>
+
   <%= button_to "+ New puzzle", puzzles_path, method: :post, class: "m-btn m-btn--pop" %>
 
   <% if @puzzles.any? %>

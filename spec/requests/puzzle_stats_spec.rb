@@ -1,14 +1,15 @@
 require "rails_helper"
 
-# Author-facing analytics: a puzzle's stats page is gated and owner-scoped, like
-# the rest of the dashboard. Players never see it (they get their own cube).
+# Author-facing analytics: a puzzle's stats page is owner-scoped (ADR-0005) —
+# by account or creator_token. A visitor who doesn't own it can't see it (404),
+# and players never reach it (they get their own cube).
 RSpec.describe "Puzzle stats", type: :request do
   let(:user) { create(:user) }
 
-  it "bounces an unauthenticated visitor to sign in" do
+  it "404s for a visitor who doesn't own the puzzle" do
     puzzle = create(:published_puzzle, user: user)
     get stats_puzzle_path(puzzle)
-    expect(response).to redirect_to(new_user_session_path)
+    expect(response).to have_http_status(:not_found)
   end
 
   context "when signed in" do

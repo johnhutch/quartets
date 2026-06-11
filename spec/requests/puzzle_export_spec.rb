@@ -1,14 +1,15 @@
 require "rails_helper"
 
-# JSON export is an author tool: gated and owner-scoped (like stats), and it
-# downloads as a file. Public play never exposes a puzzle's answers this way.
+# JSON export is an author tool: owner-scoped like stats (ADR-0005), and it
+# downloads as a file. A non-owner can't reach it (404); public play never
+# exposes a puzzle's answers this way.
 RSpec.describe "Puzzle export", type: :request do
   let(:user) { create(:user) }
 
-  it "bounces an unauthenticated visitor to sign in" do
+  it "404s for a visitor who doesn't own the puzzle" do
     puzzle = create(:published_puzzle, user: user)
     get export_puzzle_path(puzzle)
-    expect(response).to redirect_to(new_user_session_path)
+    expect(response).to have_http_status(:not_found)
   end
 
   context "when signed in" do

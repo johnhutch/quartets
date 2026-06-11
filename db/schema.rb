@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_11_035351) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,12 +40,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_000000) do
   create_table "puzzles", force: :cascade do |t|
     t.string "author_name"
     t.datetime "created_at", null: false
+    t.string "creator_token"
     t.boolean "featured", default: false, null: false
     t.string "share_token"
     t.integer "status"
     t.string "title"
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.index ["creator_token"], name: "index_puzzles_on_creator_token"
     t.index ["share_token"], name: "index_puzzles_on_share_token", unique: true
     t.index ["user_id"], name: "index_puzzles_on_user_id"
   end

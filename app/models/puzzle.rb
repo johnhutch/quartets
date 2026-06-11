@@ -5,7 +5,9 @@ class Puzzle < ApplicationRecord
 
   GROUPS_PER_PUZZLE = 4
 
-  belongs_to :user
+  # Optional: a logged-out author owns puzzles through the signed creator_token
+  # cookie instead (ADR-0005). Signing in/up claims them onto the account.
+  belongs_to :user, optional: true
 
   has_many :groups, -> { order(:position) }, dependent: :destroy, inverse_of: :puzzle
   has_many :attempts, dependent: :destroy
