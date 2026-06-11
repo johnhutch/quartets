@@ -28,9 +28,6 @@ into DECISIONS.md before building Phase 3.
   `recoverable` (forgotten password — yes), `confirmable` (email confirmation —
   decide), and whether mailers need real SMTP on the Synology box.
 
-- **Extend the author→publish system spec** to assert landing on the public
-  share URL, once the Phase 3 play page (`/p/:share_token`) exists. Today it
-  stops at the dashboard. (`spec/system/puzzle_authoring_spec.rb`)
 - **Tune the auto-save debounce** — currently 1000ms
   (`data-autosave-debounce-value` on the form). Feel it on a real phone and
   adjust.
@@ -71,8 +68,8 @@ into DECISIONS.md before building Phase 3.
 
 Reasoning lives in the session where this was set; the short version:
 
-1. **Quick wins, no decisions** — extend the author→publish spec to the share
-   URL → auto-save debounce tune.
+1. **Quick wins, no decisions** — ~~extend the author→publish spec to the share
+   URL~~ (done) → auto-save debounce tune.
 2. **Auth polish (works on today's model)** — style login → clean the full
    signup/login flow → wire `recoverable` (per D4) → "view my puzzles" stats
    dashboard (logged-in puzzles already `belong_to` the user, so this needs no

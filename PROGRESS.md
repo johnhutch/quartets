@@ -20,12 +20,18 @@ dashboard, and per-creator public homepages (`/u/:handle`). It's gated by open
 decisions **D1–D4** in `TODOS.md` — **work those through `grill-me` first and
 write the outcomes into `DECISIONS.md`** before building (D2 explicitly rewrites
 the "superuser-only creation" decision in `CLAUDE.md`/`DECISIONS.md`). The
-quick-wins (richer share payload, share-URL spec, debounce tune) need no
+quick-wins (richer share payload, debounce tune) need no
 decisions and can go anytime. Deploy is decided (Synology, ADR-0004) but **not
 yet run end-to-end** — waits on one-time NAS setup.
 
 ## Shipped log (most recent first)
 
+- **Author→publish→play loop closed end-to-end** — the dashboard
+  (`puzzles#index`) now surfaces a `Play` link (→ `/p/:share_token`) on every
+  published puzzle, so the creator can reach/share the public board straight from
+  their list. Extended the author→publish system spec to click that link and
+  assert the real playable board renders (16 `.m-card` tiles). Quick win, no
+  decisions.
 - **Renamed the project to Quartets** — folder, GitHub repo (`johnhutch/quartets`,
   old URL redirects), Rails module (`Quartets`), the dev/test Postgres DBs (renamed
   via `ALTER DATABASE`, data intact), and every doc/config identifier. *(Landed via
