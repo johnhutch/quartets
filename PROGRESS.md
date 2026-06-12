@@ -25,6 +25,30 @@ SMTP creds for forgot-password mail also get filled into the NAS `.env`.
 
 ## Shipped log (most recent first)
 
+- **Your Puzzles redesign — hierarchy pass.** Replaced the "wall of colored
+  buttons" with a title-forward, dense **divided list** (`.m-puzzle-list--dash`,
+  no per-row boxes — boxes stay on the public browse list only). Each row now has
+  **one filled accent button** (the encouraged next step: incomplete draft →
+  *Finish*, complete draft → *Publish* (green), published → *Share*); everything
+  else is a **quiet caps text-link**. Destructive actions are demoted — *Delete*
+  is muted grey (red on hover) and *Unpublish?* purple, both grouped right.
+  Dropped the greyed-publish-with-tooltip (incomplete drafts simply offer *Finish*
+  instead of *Publish*). Status line shows *Draft* / *Published · N plays*. Green
+  now only ever appears on a ready-to-publish draft, so it actually signals.
+  Specs updated; 151 green. (Decisions: compact list + always-visible quiet
+  actions, chosen via grill.)
+- **Published rows mirror draft rows.** A published card now carries the same blue
+  **Edit** button as drafts (replacing the old "Edit" text link in the meta — Stats
+  stays), and **Delete** is the last child so the shared
+  `&__actions > :last-child { margin-left: auto }` parks it in the bottom-right
+  corner on both row types. Published actions read `Edit · Share · Unpublish? …
+  Delete`. 151 green.
+- **Unpublish demoted to a corner link.** On the dashboard, a published card's
+  Unpublish is now a small **purple "Unpublish?" text link** (eye-slash icon kept)
+  tucked into the card's bottom-right corner — a Turbo `data-turbo-method=patch`
+  link with a `data-turbo-confirm` ("Are you sure you want to unpublish
+  <title>?"). New `spec/system/dashboard_spec.rb` drives the confirm→unpublish
+  flow. 151 green.
 - **QA round 4 — completeness-gated draft rows.** A draft row now reflects
   `Puzzle#complete?`: **incomplete** → an "Edit"-style **Finish** button + a
   **greyed, un-clickable Publish** (a focusable fake button, not a real form) with
