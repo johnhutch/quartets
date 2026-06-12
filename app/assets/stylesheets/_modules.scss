@@ -196,10 +196,11 @@
   &__bubble {
     position: absolute;
     bottom: calc(100% + #{$space-xs});
-    left: 50%;
-    transform: translateX(-50%);
+    // Right-anchored so it extends leftward (into the page) instead of off the
+    // right edge — the controls that use it sit on the right of a centered row.
+    right: 0;
     width: max-content;
-    max-width: 15rem;
+    max-width: min(15rem, 80vw);
     padding: $space-xs $space-sm;
     font-size: $font-sm;
     line-height: 1.3;
@@ -212,9 +213,10 @@
     z-index: 10;
   }
 
-  // Desktop hover or mobile tap (focus on the inner button) reveals it.
-  &:hover &__bubble,
-  &:focus-within &__bubble {
+  // Only a blocked control explains itself — hover (desktop) or focus (mobile
+  // tap) reveals the bubble. When not blocked, the control works silently.
+  &.is-blocked:hover &__bubble,
+  &.is-blocked:focus-within &__bubble {
     opacity: 1;
     visibility: visible;
   }
@@ -411,10 +413,14 @@
 // the game controls above it.
 .m-play-back { margin-top: $space-xl; }
 
-// Form submit row: a centered, content-width button (never full-bleed).
+// Form submit row: centered, content-width buttons (Save draft + Publish) with
+// breathing room between them.
 .m-form__submit {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  gap: $space-md;
 }
 
 // --- Claim CTA (anon author → account) ----------------------------------

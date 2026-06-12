@@ -8,7 +8,7 @@ import { Controller } from "@hotwired/stimulus"
 //   data-autosave-debounce-value="1000"   (ms; tune on a phone)
 //   data-autosave-target="status"         (optional save indicator)
 export default class extends Controller {
-  static targets = ["status", "submitLabel"]
+  static targets = ["status", "submitLabel", "publish", "publishGuard"]
   static values = { debounce: { type: Number, default: 1000 } }
 
   connect() {
@@ -16,7 +16,7 @@ export default class extends Controller {
     this.saving = false
     this.dirty = false
     this.setStatus("idle")
-    this.refreshSubmitLabel()
+    this.refresh()
   }
 
   disconnect() {
@@ -26,16 +26,24 @@ export default class extends Controller {
   // Wire to the form's input/change events.
   schedule() {
     this.setStatus("pending")
-    this.refreshSubmitLabel()
+    this.refresh()
     clearTimeout(this.timer)
     this.timer = setTimeout(() => this.save(), this.debounceValue)
   }
 
-  // "Save draft" until every word, category, and the title are filled, then
-  // "Finish" — kept live as the author types.
-  refreshSubmitLabel() {
-    if (!this.hasSubmitLabelTarget) return
-    this.submitLabelTarget.textContent = this.complete() ? "Finish" : "Save draft"
+  // Keep the save button ("Save draft" → "Finish") and the publish button
+  // (greyed + tooltip until the puzzle is complete) in sync as the author types.
+  refresh() {
+    const done = this.complete()
+    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = done ? "Finish" : "Save draft"
+    if (this.hasPublishGuardTarget) this.publishGuardTarget.classList.toggle("is-blocked", !done)
+    if (this.hasPublishTarget) this.publishTarget.classList.toggle("is-disabled", !done)
+  }
+
+  // Block a publish attempt while the puzzle is still incomplete; the tooltip
+  // explains why.
+  guardPublish(event) {
+    if (!this.complete()) event.preventDefault()
   }
 
   complete() {

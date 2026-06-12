@@ -57,5 +57,20 @@
     <%= f.button type: :submit, class: "m-btn" do %>
       <%= icon(:save) %><span data-autosave-target="submitLabel"><%= puzzle.complete? ? "Finish" : "Save draft" %></span>
     <% end %>
+
+    <%# Editing an unpublished puzzle: Publish rides the same line, but stays
+        greyed (and un-submittable, with a tooltip) until the puzzle is complete.
+        It's a second submit on this form via formaction → the publish action. %>
+    <% if puzzle.persisted? && puzzle.draft? %>
+      <span class="m-tooltip<%= ' is-blocked' unless puzzle.complete? %>"
+            data-autosave-target="publishGuard">
+        <%= tag.button type: :submit, formaction: publish_puzzle_path(puzzle),
+              class: "m-btn m-btn--go#{' is-disabled' unless puzzle.complete?}",
+              data: { autosave_target: "publish", action: "autosave#guardPublish" } do %>
+          <%= icon(:eye) %><span>Publish</span>
+        <% end %>
+        <span class="m-tooltip__bubble" role="tooltip">This puzzle is incomplete! Finish it before publishing.</span>
+      </span>
+    <% end %>
   </div>
 <% end %>
