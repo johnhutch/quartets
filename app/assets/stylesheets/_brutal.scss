@@ -91,6 +91,29 @@ body.theme-brutal {
   text-decoration: none;
 }
 
+// --- Stamp: the sticker's louder cousin -------------------------------------
+// A big, tilted, grid-breaking slab for *climactic* moments only (game over,
+// the headline stat). Sticker = quiet label; stamp = a slap on the page. Use
+// sparingly — its punch comes from being rare.
+.theme-brutal .m-stamp {
+  display: inline-block;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-size: clamp(1.5rem, 7vw, 2.5rem);
+  padding: $space-sm $space-md;
+  background: $color-green;
+  color: #000;
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: $brutal-shadow $brutal-shadow 0 $brutal-ink;
+  transform: rotate(-4deg);
+  text-decoration: none;
+
+  &--lose { background: $color-purple; transform: rotate(3deg); }
+}
+
 // --- Buttons ----------------------------------------------------------------
 .theme-brutal .m-btn {
   display: inline-block;
@@ -189,6 +212,9 @@ body.theme-brutal {
 
 .theme-brutal .m-game__status,
 .theme-brutal .m-game__mistakes { font-family: $font-display; }
+
+// Give the end-of-game stamp room to tilt without crowding the mistakes line.
+.theme-brutal .m-game__status:has(.m-stamp) { margin: $space-md 0 $space-lg; }
 
 // --- Style guide scaffolding ------------------------------------------------
 .theme-brutal .m-swatches {

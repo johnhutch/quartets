@@ -123,6 +123,7 @@ export default class extends Controller {
 
   finish(won) {
     this.over = true
+    this.element.classList.add("is-over") // hides the shuffle/deselect/submit row
     if (!won) {
       // Reveal the groups they never found so the answers are visible.
       Object.keys(this.groups)
@@ -132,7 +133,7 @@ export default class extends Controller {
     }
     this.selected = []
     this.render()
-    this.setStatus(won ? "Solved it! 🎉" : "Out of guesses — the answers are above")
+    this.renderEndStamp(won)
     this.dispatch("finished", {
       detail: { won, mistakes: this.mistakes, guesses: this.guesses }
     })
@@ -243,6 +244,16 @@ export default class extends Controller {
 
   setStatus(text) {
     if (this.hasStatusTarget) this.statusTarget.textContent = text
+  }
+
+  // Slap a big tilted stamp on the board at game over — the payoff moment.
+  renderEndStamp(won) {
+    if (!this.hasStatusTarget) return
+    this.statusTarget.textContent = ""
+    const stamp = document.createElement("span")
+    stamp.className = won ? "m-stamp m-stamp--win" : "m-stamp m-stamp--lose"
+    stamp.textContent = won ? "Solved it ↗" : "Out of guesses"
+    this.statusTarget.appendChild(stamp)
   }
 
   shuffleCards() {

@@ -78,7 +78,9 @@
       </nav>
     <% end %>
   <% else %>
-    <p>No puzzles yet.</p>
-    <%= link_to "Make your first one", new_puzzle_path, class: "m-btn m-btn--pop" %>
+    <div class="m-empty-stack">
+      <p class="m-empty">No puzzles yet — this page is yours to fill.</p>
+      <%= link_to "Make one ↗", new_puzzle_path, class: "m-stamp" %>
+    </div>
   <% end %>
 </div>

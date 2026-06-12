@@ -124,6 +124,10 @@
     gap: $space-sm;
   }
 
+  // Game over: the play controls have nothing left to do — hide them. The
+  // post-game share/cube stays.
+  &.is-over &__controls { display: none; }
+
   // Post-game share: the emoji cube + a copy button.
   &__share {
     display: grid;
@@ -378,6 +382,20 @@
   margin-top: 0;
   color: $color-muted;
   font-style: italic;
+}
+
+// Headline stat — a tilted stamp wants vertical room so its rotation + shadow
+// don't crowd the rows beneath it.
+.m-stats-hero {
+  margin: $space-lg 0 $space-xl;
+}
+
+// Empty dashboard: an inviting tilted "make one" stamp instead of a plain button.
+.m-empty-stack {
+  display: grid;
+  justify-items: start;
+  gap: $space-lg;
+  padding: $space-lg 0 $space-xl;
 }
 
 // --- Publish / celebrate banner on the puzzle show page -----------------

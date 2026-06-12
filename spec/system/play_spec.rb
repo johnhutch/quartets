@@ -32,7 +32,10 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
 
     answers.each_value { |group| solve(group) }
 
-    expect(page).to have_content("Solved it")
+    expect(page).to have_content(/solved it/i) # the win stamp (uppercased by CSS)
+    # The play controls retire once the game's over.
+    expect(page).to have_no_button("Submit")
+    expect(page).to have_no_button("Shuffle")
   end
 
   it "ends the game after four mistakes" do
@@ -46,7 +49,8 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
       %w[fox four earth flute]
     ].each { |guess| solve(guess) }
 
-    expect(page).to have_content("Out of guesses")
+    expect(page).to have_content(/out of guesses/i) # the loss stamp
+    expect(page).to have_no_button("Submit")
   end
 
   it "records the finished play for stats" do

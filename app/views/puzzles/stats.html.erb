@@ -6,6 +6,10 @@
   <% if @stats.total_attempts.zero? %>
     <p>No one's played this yet. Share it and check back.</p>
   <% else %>
+    <p class="m-stats-hero">
+      <span class="m-stamp"><%= number_to_percentage(@stats.solve_rate * 100, precision: 0) %> solve rate</span>
+    </p>
+
     <div class="m-stats">
       <div class="m-stats__row">
         <span>Total attempts</span>
