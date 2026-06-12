@@ -28,6 +28,15 @@ class Puzzle < ApplicationRecord
   validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
 
+  # Fully filled out and ready to publish: a title, all four groups, and every
+  # group has its four words + a category. Drives the "Save draft"→"Finish"
+  # button label (server-side default; the autosave controller keeps it live).
+  def complete?
+    title.present? &&
+      groups.size == GROUPS_PER_PUZZLE &&
+      groups.all? { |g| g.description.present? && g.filled_words.size == Group::WORDS_PER_GROUP }
+  end
+
   private
 
   def complete_structure

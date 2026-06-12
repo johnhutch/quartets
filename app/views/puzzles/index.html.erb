@@ -33,7 +33,7 @@
           <div class="m-puzzle-list__actions">
             <% if puzzle.published? %>
               <%= button_to unpublish_puzzle_path(puzzle), method: :patch,
-                    class: "m-btn m-btn--sm m-btn--blue" do %>
+                    class: "m-btn m-btn--sm m-btn--purple" do %>
                 <%= icon(:eye_slash) %><span>Unpublish</span>
               <% end %>
               <%= tag.button type: "button", class: "m-btn m-btn--sm m-btn--share",
@@ -42,9 +42,28 @@
                 <%= icon(:share) %><span data-clipboard-target="label">Share</span>
               <% end %>
             <% else %>
-              <%= button_to publish_puzzle_path(puzzle), method: :patch,
-                    class: "m-btn m-btn--sm m-btn--go" do %>
-                <%= icon(:eye) %><span>Publish</span>
+              <%# Complete drafts can publish (and just need an Edit); incomplete
+                  ones get a "Finish" nudge and a greyed-out, un-clickable Publish
+                  with a tooltip explaining why. %>
+              <%= link_to edit_puzzle_path(puzzle), class: "m-btn m-btn--sm m-btn--blue" do %>
+                <%= icon(:edit) %><span><%= puzzle.complete? ? "Edit" : "Finish" %></span>
+              <% end %>
+              <% if puzzle.complete? %>
+                <%= button_to publish_puzzle_path(puzzle), method: :patch,
+                      class: "m-btn m-btn--sm m-btn--go" do %>
+                  <%= icon(:eye) %><span>Publish</span>
+                <% end %>
+              <% else %>
+                <span class="m-tooltip">
+                  <button type="button" aria-disabled="true"
+                          class="m-btn m-btn--sm m-btn--go is-disabled"
+                          aria-describedby="pub-tip-<%= puzzle.id %>">
+                    <%= icon(:eye) %><span>Publish</span>
+                  </button>
+                  <span class="m-tooltip__bubble" id="pub-tip-<%= puzzle.id %>" role="tooltip">
+                    This puzzle is incomplete! Finish it before publishing.
+                  </span>
+                </span>
               <% end %>
             <% end %>
 

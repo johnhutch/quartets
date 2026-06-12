@@ -112,9 +112,10 @@ body.theme-brutal {
   &--pop { background: $color-green; color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 $color-blue; }
 
   // Color-coded action buttons. Hard ink shadow + black ink on the bright fills.
-  &--go    { background: $color-green;  color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
-  &--blue  { background: $color-blue;   color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
-  &--share { background: $color-yellow; color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
+  &--go     { background: $color-green;  color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
+  &--blue   { background: $color-blue;   color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
+  &--purple { background: $color-purple; color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
+  &--share  { background: $color-yellow; color: #000; box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35); }
 
   // Compact action-row button — thinner shadow to match the smaller footprint.
   &--sm {
@@ -137,6 +138,25 @@ body.theme-brutal {
   // Hover lift — a touch brighter, shadow grows.
   transition: filter 0.1s, box-shadow 0.1s, transform 0.05s;
   &:hover { filter: brightness(1.08); }
+
+  // Greyed/disabled — flatten the shadow and kill the hover lift.
+  &.is-disabled,
+  &.is-disabled:hover {
+    filter: grayscale(1) opacity(0.5);
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+// Tooltip bubble — a hard light chip on the dark page.
+.theme-brutal .m-tooltip__bubble {
+  background: $brutal-ink;
+  color: $brutal-paper;
+  border: 2px solid $brutal-ink;
+  border-radius: 0;
+  font-family: $font-display;
+  font-weight: 700;
+  box-shadow: 4px 4px 0 rgba($brutal-ink, 0.3);
 }
 
 // Draft flag reads as a quiet tag, not a button.
@@ -283,6 +303,7 @@ body.theme-brutal {
   .m-auth__lede,
   .m-home-foot,
   .m-empty,
+  .m-form__note,
   .m-pagination__at { color: $brutal-muted; }
 }
 

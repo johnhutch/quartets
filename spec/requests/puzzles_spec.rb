@@ -15,7 +15,7 @@ RSpec.describe "Puzzles", type: :request do
       expect(puzzle).to be_draft
       expect(puzzle.user).to be_nil
       expect(puzzle.creator_token).to be_present
-      expect(response).to redirect_to(play_path(puzzle.share_token))
+      expect(response).to redirect_to(puzzles_path)
     end
 
     it "scopes the dashboard to the visitor's own cookie-owned puzzles" do
@@ -85,10 +85,35 @@ RSpec.describe "Puzzles", type: :request do
         expect(text).not_to include("Their Puzzle")
         expect(response.body).not_to match(/you've made so far/i) # claim CTA is anon-only
       end
+
+      it "an incomplete draft says 'Finish' and can't be published from the list" do
+        draft = create(:puzzle, user: user, title: "WIP", status: :draft) # no groups
+
+        get puzzles_path
+
+        text = Nokogiri::HTML(response.body).text
+        expect(response.body).to include(edit_puzzle_path(draft))
+        expect(text).to include("Finish")
+        # No working publish form — just the greyed button + its tooltip.
+        expect(response.body).not_to include(publish_puzzle_path(draft))
+        expect(response.body).to include("is-disabled")
+        expect(text).to include("This puzzle is incomplete!")
+      end
+
+      it "a complete draft says 'Edit' and offers a real Publish" do
+        draft = create(:puzzle, :complete, user: user, status: :draft)
+
+        get puzzles_path
+
+        text = Nokogiri::HTML(response.body).text
+        expect(text).to match(/\bEdit\b/)
+        expect(response.body).to include(publish_puzzle_path(draft))
+        expect(response.body).not_to include("This puzzle is incomplete!")
+      end
     end
 
     describe "POST /puzzles" do
-      it "creates a draft owned by me and lands on its preview" do
+      it "creates a draft owned by me and returns to the dashboard" do
         expect {
           post puzzles_path, params: { puzzle: { title: "Fresh" } }
         }.to change(Puzzle, :count).by(1)
@@ -96,7 +121,7 @@ RSpec.describe "Puzzles", type: :request do
         puzzle = Puzzle.last
         expect(puzzle).to be_draft
         expect(puzzle.user).to eq(user)
-        expect(response).to redirect_to(play_path(puzzle.share_token))
+        expect(response).to redirect_to(puzzles_path)
       end
 
       it "persists the four nested groups" do
@@ -119,7 +144,7 @@ RSpec.describe "Puzzles", type: :request do
         }.to change(Puzzle, :count).by(1)
 
         expect(Puzzle.last).to be_draft
-        expect(response).to redirect_to(play_path(Puzzle.last.share_token))
+        expect(response).to redirect_to(puzzles_path)
       end
     end
 

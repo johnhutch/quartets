@@ -8,7 +8,7 @@ import { Controller } from "@hotwired/stimulus"
 //   data-autosave-debounce-value="1000"   (ms; tune on a phone)
 //   data-autosave-target="status"         (optional save indicator)
 export default class extends Controller {
-  static targets = ["status"]
+  static targets = ["status", "submitLabel"]
   static values = { debounce: { type: Number, default: 1000 } }
 
   connect() {
@@ -16,6 +16,7 @@ export default class extends Controller {
     this.saving = false
     this.dirty = false
     this.setStatus("idle")
+    this.refreshSubmitLabel()
   }
 
   disconnect() {
@@ -25,8 +26,27 @@ export default class extends Controller {
   // Wire to the form's input/change events.
   schedule() {
     this.setStatus("pending")
+    this.refreshSubmitLabel()
     clearTimeout(this.timer)
     this.timer = setTimeout(() => this.save(), this.debounceValue)
+  }
+
+  // "Save draft" until every word, category, and the title are filled, then
+  // "Finish" — kept live as the author types.
+  refreshSubmitLabel() {
+    if (!this.hasSubmitLabelTarget) return
+    this.submitLabelTarget.textContent = this.complete() ? "Finish" : "Save draft"
+  }
+
+  complete() {
+    const form = this.element
+    const filled = (el) => el && el.value.trim().length > 0
+    const words = [...form.querySelectorAll('input[name$="[words][]"]')]
+    const cats  = [...form.querySelectorAll('input[name$="[description]"]')]
+    const title = form.querySelector('input[name="puzzle[title]"]')
+    return words.length >= 16 && words.every(filled) &&
+           cats.length >= 4 && cats.every(filled) &&
+           filled(title)
   }
 
   async save() {

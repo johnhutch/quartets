@@ -60,6 +60,26 @@ RSpec.describe Puzzle, type: :model do
     end
   end
 
+  describe "#complete?" do
+    it "is true for a fully filled-out puzzle" do
+      expect(build(:published_puzzle)).to be_complete
+    end
+
+    it "is false without a title" do
+      expect(build(:published_puzzle, title: nil)).not_to be_complete
+    end
+
+    it "is false when a group is short on words" do
+      puzzle = build(:published_puzzle)
+      puzzle.groups.first.words = %w[only three words]
+      expect(puzzle).not_to be_complete
+    end
+
+    it "is false for an empty draft" do
+      expect(build(:puzzle, status: :draft)).not_to be_complete
+    end
+  end
+
   describe "associations" do
     it "destroys its groups and attempts when destroyed" do
       puzzle = create(:published_puzzle)

@@ -153,6 +153,7 @@
 
   // Reversible toggle (unpublish).
   &--blue { background: $color-blue; color: #000; }
+  &--purple { background: $color-purple; color: #000; }
 
   // Share — the eye-catching one.
   &--share { background: $color-yellow; color: #000; }
@@ -177,6 +178,46 @@
   }
 
   &:hover { filter: brightness(0.96); }
+
+  // Looks disabled (greyed, no hover lift) but stays focusable so a mobile tap
+  // can surface its tooltip.
+  &.is-disabled,
+  &.is-disabled:hover {
+    filter: grayscale(1) opacity(0.45);
+    cursor: not-allowed;
+  }
+}
+
+// --- Tooltip (e.g. why a greyed button is greyed) -----------------------
+.m-tooltip {
+  position: relative;
+  display: inline-flex;
+
+  &__bubble {
+    position: absolute;
+    bottom: calc(100% + #{$space-xs});
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 15rem;
+    padding: $space-xs $space-sm;
+    font-size: $font-sm;
+    line-height: 1.3;
+    background: $color-ink;
+    color: $color-paper;
+    border-radius: $radius;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  // Desktop hover or mobile tap (focus on the inner button) reveals it.
+  &:hover &__bubble,
+  &:focus-within &__bubble {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 // --- Homepage hero ------------------------------------------------------
@@ -419,6 +460,13 @@
   &__field {
     display: grid;
     gap: $space-xs;
+  }
+
+  // Explains the autosave up front so the (rare) Save button feels optional.
+  &__note {
+    margin: 0;
+    color: $color-muted;
+    font-size: $font-sm;
   }
 
   // Auto-save indicator. Quiet by default; only the failure state shouts.

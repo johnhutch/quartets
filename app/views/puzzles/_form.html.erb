@@ -4,6 +4,7 @@
         "autosave-debounce-value": 1000,
         action: "input->autosave#schedule change->autosave#schedule"
       } do |f| %>
+  <p class="m-form__note">Drafts save automatically as you type — close the tab any time, your work is safe.</p>
   <p class="m-form__autosave" data-autosave-target="status" aria-live="polite"></p>
 
   <% if puzzle.errors.any? %>
@@ -16,6 +17,16 @@
       </ul>
     </div>
   <% end %>
+
+  <div class="m-form__field">
+    <%= f.label :title %>
+    <%= f.text_field :title %>
+  </div>
+
+  <div class="m-form__field">
+    <%= f.label :author_name, "Author" %>
+    <%= f.text_field :author_name %>
+  </div>
 
   <%# Groups in swellgarfo order (blue → green → yellow → purple), and within
       each block: answers first, then the category — matching the form muscle
@@ -42,19 +53,9 @@
     </fieldset>
   <% end %>
 
-  <div class="m-form__field">
-    <%= f.label :title %>
-    <%= f.text_field :title %>
-  </div>
-
-  <div class="m-form__field">
-    <%= f.label :author_name, "Author" %>
-    <%= f.text_field :author_name %>
-  </div>
-
   <div class="m-form__submit">
     <%= f.button type: :submit, class: "m-btn" do %>
-      <%= icon(:save) %><span><%= puzzle.persisted? ? "Save" : "Save draft" %></span>
+      <%= icon(:save) %><span data-autosave-target="submitLabel"><%= puzzle.complete? ? "Finish" : "Save draft" %></span>
     <% end %>
   </div>
 <% end %>

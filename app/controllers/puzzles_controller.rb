@@ -9,7 +9,8 @@ class PuzzlesController < ApplicationController
   PER_PAGE = 10
 
   def index
-    scope = owned_puzzles.order(updated_at: :desc, id: :desc)
+    # eager-load groups — the row template calls complete? on each puzzle.
+    scope = owned_puzzles.includes(:groups).order(updated_at: :desc, id: :desc)
     @puzzles_total = scope.count
     @total_pages = [(@puzzles_total / PER_PAGE.to_f).ceil, 1].max
     @page = params[:page].to_i.clamp(1, @total_pages)
@@ -44,8 +45,8 @@ class PuzzlesController < ApplicationController
       if autosave?
         head :created, location: edit_puzzle_path(@puzzle)
       else
-        # "Save draft" lands the author on the show page to preview + publish.
-        redirect_to play_path(@puzzle.share_token)
+        # "Save draft" / "Finish" drops the author back on their dashboard.
+        redirect_to puzzles_path
       end
     else
       ensure_four_groups
@@ -64,8 +65,8 @@ class PuzzlesController < ApplicationController
       if autosave?
         head :no_content
       else
-        # A manual "Save" is the author signalling they're done — preview it.
-        redirect_to play_path(@puzzle.share_token)
+        # A manual save drops the author back on their dashboard.
+        redirect_to puzzles_path
       end
     else
       ensure_four_groups
