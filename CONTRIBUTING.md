@@ -8,9 +8,8 @@ and playing Connections-style puzzles — but issues and PRs are welcome.
 - **TDD.** New behavior gets a failing spec first, then the code to pass it, then
   a refactor. Red → green → refactor. Bug fixes start with a spec that reproduces
   the bug.
-- **Match the house style.** Read [`VOICE.md`](VOICE.md) before writing comments,
-  docs, or commit messages — confident, terse, no fluff. Commit messages match
-  the casual existing log.
+- **Match the house style.** Keep comments, docs, and commit messages confident,
+  terse, and fluff-free. Commit messages match the casual existing log.
 - **Decisions are documented.** The big ones live in [`DECISIONS.md`](DECISIONS.md)
   and `docs/`. If your change reverses one, update it in the same PR.
 

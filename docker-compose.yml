@@ -1,9 +1,10 @@
 # Compose project for the Synology (DSM Container Manager → Projects).
 #
-# Dev is native — this file is production-only. The image is built by CI and
-# pulled from GHCR; the NAS never compiles anything (the Celeron would hate it).
-# Secrets live in a sibling .env on the NAS (gitignored) — see .env.example and
-# docs/DEPLOY.md.
+# Dev is native — this file is production-only. The web image is built on the Mac
+# and shipped over SSH by bin/deploy (no registry, no CI — ADR-0004); the NAS
+# never compiles anything. A cloudflared sidecar exposes the app at
+# playquartets.com via a Cloudflare Tunnel. Secrets live in a sibling .env on the
+# NAS (gitignored) — see .env.example and docs/DEPLOY.md.
 name: quartets
 
 services:
@@ -42,11 +43,34 @@ services:
       SOLID_QUEUE_IN_PUMA: "true"
       WEB_CONCURRENCY: "2"
       RAILS_MAX_THREADS: "3"
-    # Container listens on 80 (Thruster → Puma). Map to a host port and point
-    # DSM's reverse proxy (with Let's Encrypt) at it. Thruster stays HTTP-only;
-    # TLS terminates at the Synology proxy, and Rails' assume_ssl handles the rest.
+      # Public host — mailer link host (share URLs follow the request host).
+      APP_HOST: ${APP_HOST:-playquartets.com}
+      # Outbound mail (forgot-password). Leave SMTP_* blank until you have a
+      # provider — mail simply won't send (the app boots fine either way).
+      MAILER_SENDER: ${MAILER_SENDER:-no-reply@playquartets.com}
+      SMTP_ADDRESS: ${SMTP_ADDRESS:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
+    # Container listens on 80 (Thruster → Puma), HTTP-only. The Cloudflare Tunnel
+    # reaches it at web:80 over the compose network; TLS terminates at Cloudflare's
+    # edge and Rails' assume_ssl handles the rest. The host-port mapping is just
+    # for direct LAN access / debugging.
     ports:
       - "${WEB_PORT:-3000}:80"
+
+  # Outbound-only tunnel: exposes the app at playquartets.com with no port
+  # forwarding and no exposed home IP. Create the tunnel in Cloudflare Zero Trust,
+  # set its public hostname → http://web:80, and drop the token in .env.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
+    depends_on:
+      - web
 
 volumes:
   pgdata:
