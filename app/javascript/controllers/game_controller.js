@@ -78,15 +78,23 @@ export default class extends Controller {
 
   // --- internals --------------------------------------------------------
 
-  toggle(word) {
+  // Toggle selection on the live tile (no full re-render) so the CSS lift/tilt
+  // actually animates — a rebuilt element would pop in already-selected.
+  toggle(word, tile) {
     if (this.over) return
     const at = this.selected.indexOf(word)
     if (at >= 0) {
       this.selected.splice(at, 1)
+      tile.classList.remove("is-selected")
+      tile.removeAttribute("aria-pressed")
     } else if (this.selected.length < 4) {
       this.selected.push(word)
+      tile.classList.add("is-selected")
+      tile.setAttribute("aria-pressed", "true")
     }
-    this.render()
+    if (this.hasSubmitTarget) {
+      this.submitTarget.disabled = this.over || this.selected.length !== 4
+    }
   }
 
   lockGroup(color) {
@@ -212,11 +220,13 @@ export default class extends Controller {
       tile.className = "m-card"
       tile.textContent = card.word
       tile.disabled = this.over
+      // Each tile leans a little differently (−3°…+3°) when it lifts.
+      tile.style.setProperty("--tilt", `${(Math.random() * 6 - 3).toFixed(1)}deg`)
       if (this.selected.includes(card.word)) {
         tile.classList.add("is-selected")
         tile.setAttribute("aria-pressed", "true")
       }
-      tile.addEventListener("click", () => this.toggle(card.word))
+      tile.addEventListener("click", (e) => this.toggle(card.word, e.currentTarget))
       this.boardTarget.appendChild(tile)
     })
 

@@ -186,6 +186,7 @@ body.theme-brutal {
 .theme-brutal .m-board { gap: $space-sm; }
 
 .theme-brutal .m-card {
+  --tilt: 0deg; // randomized per tile in JS (−3°…+3°)
   font-family: $font-display;
   font-weight: 700;
   background: $brutal-ink;
@@ -193,12 +194,17 @@ body.theme-brutal {
   border: $brutal-border solid $brutal-ink;
   border-radius: 0;
   box-shadow: 4px 4px 0 rgba($brutal-ink, 0.22);
+  // Springy lift/settle on select (overshoots, then settles).
+  transition: transform 0.22s cubic-bezier(0.34, 1.7, 0.5, 1), box-shadow 0.22s ease;
 
+  // Selected tiles pluck UP off the page and tilt, rather than pressing down.
   &.is-selected {
     background: $color-card-sel; // keep the existing neutral grey
     color: $brutal-ink;
-    box-shadow: none;
-    transform: translate(3px, 3px);
+    transform: translate(-3px, -9px) rotate(var(--tilt));
+    box-shadow: 9px 14px 0 rgba($brutal-ink, 0.3);
+    position: relative;
+    z-index: 1; // ride above neighbors while lifted + tilted
   }
 }
 
