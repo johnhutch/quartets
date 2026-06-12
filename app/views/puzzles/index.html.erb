@@ -12,7 +12,7 @@
   </div>
 
   <% if @puzzles_total > 0 %>
-    <ul class="m-puzzle-list">
+    <ul class="m-puzzle-list m-puzzle-list--dash">
       <% @puzzles.each do |puzzle| %>
         <li class="m-puzzle-list__item">
           <% title = puzzle.title.presence || "Untitled draft" %>
@@ -20,58 +20,47 @@
             <%= link_to multicolor(title),
                   (puzzle.published? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
                   class: "m-puzzle-list__title" %>
-            <span class="m-puzzle-list__meta">
+            <span class="m-puzzle-list__status">
               <% if puzzle.published? %>
-                <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
-                <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+                Published &middot; <%= pluralize(puzzle.attempts.count, "play") %>
               <% else %>
-                <span class="m-puzzle-list__flag">Draft</span>
+                Draft
               <% end %>
             </span>
           </div>
 
+          <%# One filled accent button per row (the encouraged next step), then
+              quiet secondary links, then the danger group pushed to the right. %>
           <div class="m-puzzle-list__actions">
             <% if puzzle.published? %>
-              <%= button_to unpublish_puzzle_path(puzzle), method: :patch,
-                    class: "m-btn m-btn--sm m-btn--purple" do %>
-                <%= icon(:eye_slash) %><span>Unpublish</span>
-              <% end %>
-              <%= tag.button type: "button", class: "m-btn m-btn--sm m-btn--share",
+              <%= tag.button type: "button", class: "m-btn m-btn--sm",
                     data: { controller: "clipboard", clipboard_text_value: play_url(puzzle.share_token),
                             action: "clipboard#copy" } do %>
                 <%= icon(:share) %><span data-clipboard-target="label">Share</span>
               <% end %>
-            <% else %>
-              <%# Complete drafts can publish (and just need an Edit); incomplete
-                  ones get a "Finish" nudge and a greyed-out, un-clickable Publish
-                  with a tooltip explaining why. %>
-              <%= link_to edit_puzzle_path(puzzle), class: "m-btn m-btn--sm m-btn--blue" do %>
-                <%= icon(:edit) %><span><%= puzzle.complete? ? "Edit" : "Finish" %></span>
+              <%= link_to "Play", play_path(puzzle.share_token), class: "m-puzzle-list__link" %>
+              <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+            <% elsif puzzle.complete? %>
+              <%= button_to publish_puzzle_path(puzzle), method: :patch,
+                    class: "m-btn m-btn--sm m-btn--go" do %>
+                <%= icon(:eye) %><span>Publish</span>
               <% end %>
-              <% if puzzle.complete? %>
-                <%= button_to publish_puzzle_path(puzzle), method: :patch,
-                      class: "m-btn m-btn--sm m-btn--go" do %>
-                  <%= icon(:eye) %><span>Publish</span>
-                <% end %>
-              <% else %>
-                <span class="m-tooltip">
-                  <button type="button" aria-disabled="true"
-                          class="m-btn m-btn--sm m-btn--go is-disabled"
-                          aria-describedby="pub-tip-<%= puzzle.id %>">
-                    <%= icon(:eye) %><span>Publish</span>
-                  </button>
-                  <span class="m-tooltip__bubble" id="pub-tip-<%= puzzle.id %>" role="tooltip">
-                    This puzzle is incomplete! Finish it before publishing.
-                  </span>
-                </span>
+              <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+            <% else %>
+              <%= link_to edit_puzzle_path(puzzle), class: "m-btn m-btn--sm" do %>
+                <%= icon(:edit) %><span>Finish</span>
               <% end %>
             <% end %>
 
-            <%= button_to puzzle, method: :delete,
-                  class: "m-btn m-btn--xs m-puzzle-list__delete",
-                  data: { turbo_confirm: "Delete this puzzle?" } do %>
-              <%= icon(:trash) %><span>Delete</span>
-            <% end %>
+            <span class="m-puzzle-list__danger">
+              <% if puzzle.published? %>
+                <%= link_to "Unpublish?", unpublish_puzzle_path(puzzle), class: "m-puzzle-list__unpublish",
+                      data: { turbo_method: :patch,
+                              turbo_confirm: "Are you sure you want to unpublish #{title}?" } %>
+              <% end %>
+              <%= button_to "Delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
+                    data: { turbo_confirm: "Delete “#{title}”? This can’t be undone." } %>
+            </span>
           </div>
         </li>
       <% end %>

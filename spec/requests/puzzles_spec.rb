@@ -86,7 +86,7 @@ RSpec.describe "Puzzles", type: :request do
         expect(response.body).not_to match(/you've made so far/i) # claim CTA is anon-only
       end
 
-      it "an incomplete draft says 'Finish' and can't be published from the list" do
+      it "an incomplete draft offers 'Finish' (the editor) and no Publish" do
         draft = create(:puzzle, user: user, title: "WIP", status: :draft) # no groups
 
         get puzzles_path
@@ -94,21 +94,17 @@ RSpec.describe "Puzzles", type: :request do
         text = Nokogiri::HTML(response.body).text
         expect(response.body).to include(edit_puzzle_path(draft))
         expect(text).to include("Finish")
-        # No working publish form — just the greyed button + its tooltip.
-        expect(response.body).not_to include(publish_puzzle_path(draft))
-        expect(response.body).to include("is-disabled")
-        expect(text).to include("This puzzle is incomplete!")
+        expect(response.body).not_to include(publish_puzzle_path(draft)) # can't publish yet
       end
 
-      it "a complete draft says 'Edit' and offers a real Publish" do
+      it "a complete draft offers a real Publish plus a quiet Edit" do
         draft = create(:puzzle, :complete, user: user, status: :draft)
 
         get puzzles_path
 
         text = Nokogiri::HTML(response.body).text
-        expect(text).to match(/\bEdit\b/)
         expect(response.body).to include(publish_puzzle_path(draft))
-        expect(response.body).not_to include("This puzzle is incomplete!")
+        expect(text).to match(/\bEdit\b/)
       end
     end
 

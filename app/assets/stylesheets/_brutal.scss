@@ -159,15 +159,6 @@ body.theme-brutal {
   box-shadow: 4px 4px 0 rgba($brutal-ink, 0.3);
 }
 
-// Draft flag reads as a quiet tag, not a button.
-.theme-brutal .m-puzzle-list__flag {
-  font-family: $font-display;
-  font-weight: 700;
-  color: $brutal-muted;
-  border: 2px dashed $brutal-muted;
-  border-radius: 0;
-}
-
 // --- Board + tiles ----------------------------------------------------------
 .theme-brutal .m-board { gap: $space-sm; }
 
@@ -249,24 +240,19 @@ body.theme-brutal {
   &--error { background: $color-wrong; color: $brutal-paper; }
 }
 
-// --- Puzzle lists (public browse + author dashboard) ------------------------
+// --- Public browse list (boxed cards) ---------------------------------------
 .theme-brutal .m-puzzle-list {
   gap: $space-md;
 
-  // Every row is a brutal card; the thin module border is overridden here.
-  li {
-    padding: $space-md;
-    border: $brutal-border solid $brutal-ink;
-    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
-  }
-
-  // Public browse rows stay a single flex line (title + author); the dashboard
-  // rows keep their grid (title row over action row) from the module layer.
+  // Public browse rows are boxed brutal cards on a single flex line.
   li:not(.m-puzzle-list__item) {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: $space-sm;
+    padding: $space-md;
+    border: $brutal-border solid $brutal-ink;
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
 
     > a:first-of-type {
       flex: 1 1 auto;
@@ -278,8 +264,17 @@ body.theme-brutal {
     }
   }
 
-  // Dashboard titles: big display type, underlined + colorized (multicolor spans).
-  &__title {
+  &__author { font-size: $font-sm; font-style: italic; color: $brutal-muted; }
+}
+
+// --- Author dashboard list (dense, divided; title-forward) ------------------
+.theme-brutal .m-puzzle-list--dash {
+  gap: 0;
+
+  .m-puzzle-list__item { border-bottom: 2px solid rgba($brutal-ink, 0.25); }
+
+  // The hero — big display type, underlined, carrying the color ribbon.
+  .m-puzzle-list__title {
     font-family: $font-display;
     font-weight: 700;
     font-size: $font-lg;
@@ -287,13 +282,26 @@ body.theme-brutal {
     text-decoration: underline;
   }
 
-  &__link {
+  .m-puzzle-list__status {
     font-family: $font-display;
-    font-weight: 700;
     text-transform: uppercase;
+    color: $brutal-muted;
   }
 
-  &__author { font-size: $font-sm; font-style: italic; color: $brutal-muted; }
+  // Quiet caps text-links for the secondary actions.
+  .m-puzzle-list__link,
+  .m-puzzle-list__unpublish,
+  .m-puzzle-list__delete {
+    font-family: $font-display;
+    text-transform: uppercase;
+    text-decoration: underline;
+  }
+
+  .m-puzzle-list__link   { color: $brutal-ink; }
+  .m-puzzle-list__link:hover { color: $color-yellow; opacity: 1; }
+  .m-puzzle-list__unpublish { color: $color-purple; }
+  .m-puzzle-list__delete { color: $brutal-muted; }
+  .m-puzzle-list__delete:hover { color: $color-wrong; }
 }
 
 .theme-brutal .m-byline { font-style: italic; color: $brutal-muted; }

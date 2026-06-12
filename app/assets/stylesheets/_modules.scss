@@ -269,12 +269,14 @@
   display: grid;
   gap: $space-sm;
 
-  // Title row (title + edit/stats or draft flag) stacked over the action row,
-  // so the buttons always get their own line beneath the name.
+  // Dashboard variant: a dense, divided list (no per-row boxes).
+  &--dash { gap: 0; }
+
+  // Title row over a quiet action row.
   &__item {
     display: grid;
     gap: $space-sm;
-    padding: $space-sm 0;
+    padding: $space-md 0;
     border-bottom: 1px solid $color-line;
   }
 
@@ -286,7 +288,7 @@
     gap: $space-xs $space-sm;
   }
 
-  // Title takes the row and wraps when long; edit/stats stay pinned right.
+  // The hero: title takes the row and wraps when long.
   &__title {
     flex: 1 1 auto;
     min-width: 0;
@@ -296,33 +298,48 @@
     text-decoration: underline;
   }
 
-  &__meta {
+  &__status {
     flex: none;
-    display: flex;
-    align-items: baseline;
-    gap: $space-sm;
+    font-size: $font-sm;
+    color: $color-muted;
   }
 
   &__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: $space-sm;
+    gap: $space-sm $space-md;
   }
 
-  &__delete { margin-left: auto; }
+  // Destructive actions cluster together and ride the right edge.
+  &__danger {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-md;
 
-  &__link { font-size: $font-sm; }
+    form { margin: 0; display: contents; } // unwrap button_to (Delete)
+  }
 
-  // Status tag — deliberately not button-shaped, so it never reads as clickable.
-  &__flag {
+  // Quiet secondary actions — plain text links/buttons, no button chrome, so the
+  // one filled accent button per row stays the loudest thing besides the title.
+  &__link,
+  &__unpublish,
+  &__delete {
+    font: inherit;
     font-size: $font-sm;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    background: none;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+    cursor: pointer;
+  }
+
+  &__unpublish { color: $color-purple; }
+
+  &__delete {
     color: $color-muted;
-    border: 1px dashed $color-line;
-    border-radius: $radius;
-    padding: 0 $space-xs;
+    &:hover { color: $color-wrong; }
   }
 
   &__author {
