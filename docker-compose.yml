@@ -39,6 +39,7 @@ services:
       SOLID_QUEUE_IN_PUMA: "true"
       WEB_CONCURRENCY: "2"
       RAILS_MAX_THREADS: "3"
+      DB_POOL: "12" # 3 for Puma + 5 for Solid Queue + overhead
       # Public host — mailer link host (share URLs follow the request host).
       APP_HOST: ${APP_HOST:-playquartets.com}
       # Outbound mail (forgot-password). Leave SMTP_* blank until you have a
