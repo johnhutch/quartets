@@ -49,29 +49,16 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
-    # Bypass Thruster and run Puma directly on its default port 3000. 
-    # Cloudflare handles our proxy/SSL needs perfectly, so we don't need Thruster.
-    command: ["./bin/rails", "server"]
+      # Tell Thruster to run on port 3000 since non-root users can't bind to 80
+      PORT: "3000"
     # The Cloudflare Tunnel reaches it at web:3000 over the compose network.
+    # The host-port mapping is just for direct LAN access / debugging.
     ports:
       - "${WEB_PORT:-3000}:3000"
 
-  solid_queue:
-    build: .
-    stdin_open: true
-    tty: true
-    command: bundle exec rake solid_queue:start
-    depends_on:
-      - database
-    environment:
-      - DATABASE_URL=postgresql://postgres@database
-    volumes:
-      - .:/usr/src/app
-      - gem_cache:/gems
-
   # Outbound-only tunnel: exposes the app at playquartets.com with no port
   # forwarding and no exposed home IP. Create the tunnel in Cloudflare Zero Trust,
-  # set its public hostname → http://web:3000, and drop the token in .env.
+  # set its public hostname → http://web:80, and drop the token in .env.
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
