@@ -1,10 +1,10 @@
 # Compose project for the Synology (DSM Container Manager → Projects).
 #
-# Dev is native — this file is production-only. The web image is built on the Mac
-# and shipped over SSH by bin/deploy (no registry, no CI — ADR-0004); the NAS
-# never compiles anything. A cloudflared sidecar exposes the app at
-# playquartets.com via a Cloudflare Tunnel. Secrets live in a sibling .env on the
-# NAS (gitignored) — see .env.example and docs/DEPLOY.md.
+# Dev is native — this file is production-only. The web image is built automatically
+# via GitHub Actions and published to GHCR. Watchtower automatically pulls updates 
+# and restarts the app. A cloudflared sidecar exposes the app at playquartets.com 
+# via a Cloudflare Tunnel. Secrets live in a sibling .env on the NAS (gitignored) 
+# — see .env.example and docs/DEPLOY.md.
 name: quartets
 
 services:
@@ -24,10 +24,8 @@ services:
       retries: 5
 
   web:
-    # Built on the dev machine and shipped here by bin/deploy (no registry, no
-    # CI). pull_policy: never keeps Compose from trying to fetch it from a hub.
-    image: quartets:latest
-    pull_policy: never
+    # Automatically built via GitHub Actions and published to GHCR.
+    image: ghcr.io/johnhutch/quartets:latest
     restart: unless-stopped
     depends_on:
       db:
@@ -71,6 +69,20 @@ services:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
     depends_on:
       - web
+
+  # Automatically updates containers when a new image is pushed to GHCR
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Check for updates every 5 minutes (300 seconds)
+    command: --interval 300
+    environment:
+      # If your GHCR repo is private, Watchtower needs authentication to pull.
+      # You can supply a GitHub Personal Access Token (PAT) via .env
+      REPO_USER: ${GITHUB_ACTOR:-}
+      REPO_PASS: ${GITHUB_TOKEN:-}
 
 volumes:
   pgdata:
