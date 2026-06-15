@@ -1,4 +1,10 @@
 <% content_for :title, @puzzle.title + " | Quartets"%>
+<% content_for :meta do %>
+  <meta property="og:title" content="<%= @puzzle.title %> | Quartets">
+  <meta name="twitter:title" content="<%= @puzzle.title %> | Quartets">
+  <meta property="og:description" content="Play this puzzle by <%= @puzzle.author_name.presence || 'Anonymous' %> on Quartets.">
+  <meta name="twitter:description" content="Play this puzzle by <%= @puzzle.author_name.presence || 'Anonymous' %> on Quartets.">
+<% end %>
 
 <div class="l-container">
   <% if owns?(@puzzle) && @puzzle.draft? %>

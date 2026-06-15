@@ -11,12 +11,37 @@
 
     <%= yield :head %>
 
+    <meta property="og:site_name" content="Quartets">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <% if content_for?(:meta) %>
+      <%= yield :meta %>
+    <% else %>
+      <meta property="og:title" content="<%= content_for(:title) || "Quartets" %>">
+      <meta name="twitter:title" content="<%= content_for(:title) || "Quartets" %>">
+      <meta property="og:description" content="Create and play Connections-style puzzles.">
+      <meta name="twitter:description" content="Create and play Connections-style puzzles.">
+    <% end %>
+
+    <meta property="og:url" content="<%= request.original_url %>">
+
+    <%# Absolute image URL + dimensions so iMessage / Slack / Facebook all
+        render the large card reliably. ?v= busts stale social-scraper caches. %>
+    <meta property="og:image" content="<%= root_url %>share.png?v=2">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Quartets">
+    <meta name="twitter:image" content="<%= root_url %>share.png?v=2">
+
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
