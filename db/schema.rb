@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_15_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,14 +43,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_120000) do
     t.string "author_name"
     t.datetime "created_at", null: false
     t.string "creator_token"
+    t.string "description"
     t.boolean "featured", default: false, null: false
     t.string "share_token"
+    t.boolean "specialized", default: false, null: false
     t.integer "status"
     t.string "title"
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.index ["creator_token"], name: "index_puzzles_on_creator_token"
     t.index ["share_token"], name: "index_puzzles_on_share_token", unique: true
+    t.index ["specialized"], name: "index_puzzles_on_specialized"
     t.index ["user_id"], name: "index_puzzles_on_user_id"
   end
 
@@ -196,6 +199,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_120000) do
     t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
   end
 
+  create_table "taggings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "tag_id", null: false
+    t.bigint "taggable_id", null: false
+    t.string "taggable_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tag_id"], name: "index_taggings_on_tag_id"
+    t.index ["taggable_type", "taggable_id", "tag_id"], name: "index_taggings_on_taggable_and_tag", unique: true
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_tags_on_name", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -217,4 +237,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_120000) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "taggings", "tags"
 end
