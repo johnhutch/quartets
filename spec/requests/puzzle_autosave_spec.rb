@@ -24,7 +24,7 @@ RSpec.describe "Puzzle auto-save", type: :request do
       }.to change(Puzzle, :count).by(1)
 
       puzzle = Puzzle.last
-      expect(puzzle).to be_draft
+      expect(puzzle).to be_unlisted
       expect(puzzle.title).to be_blank
     end
 
@@ -38,7 +38,7 @@ RSpec.describe "Puzzle auto-save", type: :request do
 
   describe "PATCH /puzzles/:id (subsequent auto-saves)" do
     it "persists a partially-filled puzzle across a reload" do
-      puzzle = create(:puzzle, user: user, title: "Draft", status: :draft)
+      puzzle = create(:puzzle, user: user, title: "Draft", status: :unlisted)
 
       patch puzzle_path(puzzle), params: {
         autosave: "1",
@@ -52,7 +52,7 @@ RSpec.describe "Puzzle auto-save", type: :request do
       }
 
       puzzle.reload
-      expect(puzzle).to be_draft
+      expect(puzzle).to be_unlisted
       expect(puzzle.title).to be_blank
 
       blue  = puzzle.groups.find_by(color: :blue)
@@ -62,7 +62,7 @@ RSpec.describe "Puzzle auto-save", type: :request do
     end
 
     it "answers with no content and no flash, so the save stays invisible" do
-      puzzle = create(:puzzle, user: user, status: :draft)
+      puzzle = create(:puzzle, user: user, status: :unlisted)
 
       patch puzzle_path(puzzle), params: { autosave: "1", puzzle: { author_name: "Hutch" } }
 

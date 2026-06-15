@@ -78,7 +78,7 @@ RSpec.describe "Attempts", type: :request do
     end
 
     it "won't record against a draft" do
-      puzzle = create(:puzzle, :complete, status: :draft)
+      puzzle = create(:puzzle, :complete, status: :unlisted)
 
       post play_attempts_path(puzzle.share_token),
            params: { attempt: { solved: true, mistakes_count: 0 } }, as: :json

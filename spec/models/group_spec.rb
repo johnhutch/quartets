@@ -30,7 +30,7 @@ RSpec.describe Group, type: :model do
 
   describe "draft leniency" do
     it "allows blank description and words while the puzzle is a draft" do
-      draft = create(:puzzle, status: :draft)
+      draft = create(:puzzle, status: :unlisted)
       group = build(:group, puzzle: draft, description: nil, words: [])
       expect(group).to be_valid
     end

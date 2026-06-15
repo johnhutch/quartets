@@ -77,7 +77,7 @@ class PuzzlesController < ApplicationController
     end
   end
 
-  # Flip a draft to published. The full 4×4 structural rules fire here.
+  # Flip an unlisted puzzle to published. The full 4×4 structural rules fire here.
   def publish
     @puzzle.status = :published
 
@@ -86,18 +86,18 @@ class PuzzlesController < ApplicationController
       # (?published=1 distinguishes the just-published moment from a later visit).
       redirect_to play_path(@puzzle.share_token, published: 1)
     else
-      @puzzle.status = :draft # keep it a draft; just show what's missing
+      @puzzle.status = :unlisted # keep it unlisted; just show what's missing
       flash.now[:alert] = "Can't publish yet — fix the issues below."
       ensure_four_groups
       render :edit, status: :unprocessable_content
     end
   end
 
-  # Pull a published puzzle back to draft — hides it from the public play surfaces
-  # while the author reworks it. Lenient draft rules apply again.
+  # Pull a published puzzle back to unlisted — off the public play surfaces, but
+  # the link still works — while the author reworks it. Lenient rules apply again.
   def unpublish
-    @puzzle.update!(status: :draft)
-    redirect_to puzzles_path, notice: "Unpublished — back to a draft."
+    @puzzle.update!(status: :unlisted)
+    redirect_to puzzles_path, notice: "Made unlisted — the link still works, just not listed."
   end
 
   def destroy

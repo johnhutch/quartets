@@ -12,7 +12,7 @@ RSpec.describe "Puzzles", type: :request do
       }.to change(Puzzle, :count).by(1)
 
       puzzle = Puzzle.last
-      expect(puzzle).to be_draft
+      expect(puzzle).to be_unlisted
       expect(puzzle.user).to be_nil
       expect(puzzle.creator_token).to be_present
       expect(response).to redirect_to(puzzles_path)
@@ -58,7 +58,7 @@ RSpec.describe "Puzzles", type: :request do
     it "publishes its own anonymous draft" do
       post puzzles_path, params: { puzzle: { title: "Anon" } } # mints my cookie
       mine = Puzzle.last
-      mine.update!(status: :draft)
+      mine.update!(status: :unlisted)
       %i[blue green yellow purple].each_with_index do |color, i|
         mine.groups.create!(color: color, description: color.to_s, words: %w[a b c d], position: i)
       end
@@ -87,7 +87,7 @@ RSpec.describe "Puzzles", type: :request do
       end
 
       it "an incomplete draft offers 'Finish' (the editor) and no Publish" do
-        draft = create(:puzzle, user: user, title: "WIP", status: :draft) # no groups
+        draft = create(:puzzle, user: user, title: "WIP", status: :unlisted) # no groups
 
         get puzzles_path
 
@@ -98,7 +98,7 @@ RSpec.describe "Puzzles", type: :request do
       end
 
       it "a complete draft offers a real Publish plus a quiet Edit" do
-        draft = create(:puzzle, :complete, user: user, status: :draft)
+        draft = create(:puzzle, :complete, user: user, status: :unlisted)
 
         get puzzles_path
 
@@ -115,7 +115,7 @@ RSpec.describe "Puzzles", type: :request do
         }.to change(Puzzle, :count).by(1)
 
         puzzle = Puzzle.last
-        expect(puzzle).to be_draft
+        expect(puzzle).to be_unlisted
         expect(puzzle.user).to eq(user)
         expect(response).to redirect_to(puzzles_path)
       end
@@ -139,14 +139,14 @@ RSpec.describe "Puzzles", type: :request do
           post puzzles_path, params: { puzzle: { title: "" } }
         }.to change(Puzzle, :count).by(1)
 
-        expect(Puzzle.last).to be_draft
+        expect(Puzzle.last).to be_unlisted
         expect(response).to redirect_to(puzzles_path)
       end
     end
 
     describe "PATCH /puzzles/:id/publish" do
       it "publishes a complete draft and lands on its public board" do
-        puzzle = create(:puzzle, :complete, user: user, status: :draft)
+        puzzle = create(:puzzle, :complete, user: user, status: :unlisted)
 
         patch publish_puzzle_path(puzzle)
 
@@ -155,11 +155,11 @@ RSpec.describe "Puzzles", type: :request do
       end
 
       it "refuses to publish an incomplete draft" do
-        puzzle = create(:puzzle, user: user, status: :draft) # no groups
+        puzzle = create(:puzzle, user: user, status: :unlisted) # no groups
 
         patch publish_puzzle_path(puzzle)
 
-        expect(puzzle.reload).to be_draft
+        expect(puzzle.reload).to be_unlisted
         expect(response).to have_http_status(:unprocessable_content)
       end
     end
@@ -170,7 +170,7 @@ RSpec.describe "Puzzles", type: :request do
 
         patch unpublish_puzzle_path(puzzle)
 
-        expect(puzzle.reload).to be_draft
+        expect(puzzle.reload).to be_unlisted
         expect(response).to redirect_to(puzzles_path)
       end
     end

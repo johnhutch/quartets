@@ -61,7 +61,7 @@
     <%# Editing an unpublished puzzle: Publish rides the same line, but stays
         greyed (and un-submittable, with a tooltip) until the puzzle is complete.
         It's a second submit on this form via formaction → the publish action. %>
-    <% if puzzle.persisted? && puzzle.draft? %>
+    <% if puzzle.persisted? && puzzle.unlisted? %>
       <span class="m-tooltip<%= ' is-blocked' unless puzzle.complete? %>"
             data-autosave-target="publishGuard">
         <%= tag.button type: :submit, formaction: publish_puzzle_path(puzzle),

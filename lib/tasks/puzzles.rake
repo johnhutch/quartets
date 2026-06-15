@@ -13,8 +13,8 @@ namespace :puzzles do
     summary = ObsidianArchive.import(File.read(path), user: owner)
 
     puts "Imported as #{owner.email}:"
-    puts "  published: #{summary[:published].size}  drafts: #{summary[:drafted].size}  skipped: #{summary[:skipped].size}"
-    summary[:drafted].each { |title| puts "  • draft (incomplete): #{title}" }
+    puts "  published: #{summary[:published].size}  unlisted: #{summary[:unlisted].size}  skipped: #{summary[:skipped].size}"
+    summary[:unlisted].each { |title| puts "  • unlisted (incomplete): #{title}" }
     summary[:skipped].each { |title| puts "  • skipped (no groups or already imported): #{title}" }
   end
 end

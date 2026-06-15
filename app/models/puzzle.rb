@@ -13,7 +13,12 @@ class Puzzle < ApplicationRecord
   has_many :attempts, dependent: :destroy
   accepts_nested_attributes_for :groups
 
-  enum :status, { draft: 0, published: 1 }, default: :draft
+  # Visibility, not lifecycle (ADR-0008). `unlisted` (default) = not on the site
+  # or in search, but playable by anyone with the link once it's `complete?`.
+  # `published` = listed + indexable. Completeness is derived (see #complete?),
+  # never stored. ("unlisted" also dodges the Ruby `private`/`Module#private`
+  # collision a "private" enum value would have hit.)
+  enum :status, { unlisted: 0, published: 1 }, default: :unlisted
 
   # Hand-picked for the homepage rotation. Curated, not "everything published."
   scope :featured, -> { where(featured: true) }

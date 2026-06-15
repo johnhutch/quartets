@@ -8,7 +8,7 @@ RSpec.describe Puzzle, type: :model do
   it "lets a draft save without a title" do
     # The form is answers-first with the title at the bottom, so a half-typed
     # draft auto-saves before a title exists.
-    expect(build(:puzzle, title: nil, status: :draft)).to be_valid
+    expect(build(:puzzle, title: nil, status: :unlisted)).to be_valid
   end
 
   it "requires a title to publish" do
@@ -17,8 +17,28 @@ RSpec.describe Puzzle, type: :model do
     expect(puzzle.errors[:title]).to be_present
   end
 
-  it "defaults to draft status" do
-    expect(Puzzle.new.status).to eq("draft")
+  it "defaults to unlisted status" do
+    expect(Puzzle.new.status).to eq("unlisted")
+  end
+
+  describe "visibility (ADR-0008)" do
+    # Two axes: visibility (status enum) × completeness (derived). The three
+    # author-facing states fall out of the combination.
+    it "is incomplete when unlisted and not fully filled out" do
+      puzzle = build(:puzzle)
+      expect(puzzle).to be_unlisted
+      expect(puzzle).not_to be_complete
+    end
+
+    it "is unlisted-but-ready when complete and not yet published" do
+      puzzle = build(:puzzle, :complete)
+      expect(puzzle).to be_unlisted
+      expect(puzzle).to be_complete
+    end
+
+    it "is published once the author publishes" do
+      expect(build(:published_puzzle)).to be_published
+    end
   end
 
   it "auto-generates a share_token on create" do
@@ -36,7 +56,7 @@ RSpec.describe Puzzle, type: :model do
 
   describe "structural rules" do
     it "lets a draft save with fewer than four groups" do
-      puzzle = build(:puzzle, status: :draft)
+      puzzle = build(:puzzle, status: :unlisted)
       puzzle.groups << build(:group, puzzle: puzzle, color: :blue)
       expect(puzzle).to be_valid
     end
@@ -76,7 +96,7 @@ RSpec.describe Puzzle, type: :model do
     end
 
     it "is false for an empty draft" do
-      expect(build(:puzzle, status: :draft)).not_to be_complete
+      expect(build(:puzzle, status: :unlisted)).not_to be_complete
     end
   end
 

@@ -7,18 +7,18 @@ RSpec.describe "Publishing from the editor", type: :system, js: true do
   before { login_as(user, scope: :user) }
 
   it "greys out Publish and blocks it while the draft is incomplete" do
-    draft = create(:puzzle, user: user, title: "WIP", status: :draft)
+    draft = create(:puzzle, user: user, title: "WIP", status: :unlisted)
 
     visit edit_puzzle_path(draft)
 
     expect(page).to have_css("button.is-disabled", text: /publish/i)
     find("button.is-disabled", text: /publish/i).click # guarded — does nothing
     expect(page).to have_current_path(edit_puzzle_path(draft))
-    expect(draft.reload).to be_draft
+    expect(draft.reload).to be_unlisted
   end
 
   it "lets a complete draft publish from the editor" do
-    draft = create(:puzzle, :complete, user: user, status: :draft)
+    draft = create(:puzzle, :complete, user: user, status: :unlisted)
 
     visit edit_puzzle_path(draft)
 
