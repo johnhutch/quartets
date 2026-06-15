@@ -65,7 +65,7 @@ RSpec.describe "Play (public)", type: :request do
       expect(response).to redirect_to(edit_puzzle_path(puzzle))
     end
 
-    it "lets the owner preview their own complete-but-unlisted puzzle with a publish CTA" do
+    it "lets the owner preview their own complete-but-unlisted puzzle with share + publish CTAs" do
       user = create(:user)
       sign_in user
       unlisted = create(:puzzle, :complete, user: user, status: :unlisted)
@@ -73,7 +73,9 @@ RSpec.describe "Play (public)", type: :request do
       get play_path(unlisted.share_token)
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Look good? Publish it")
+      expect(response.body).to include("Share the link with anyone")     # honest copy
+      expect(response.body).to include(play_url(unlisted.share_token))   # the share link itself
+      expect(response.body).to include(publish_puzzle_path(unlisted))    # publish CTA
     end
 
     it "celebrates a just-published puzzle (?published=1)" do
@@ -92,7 +94,7 @@ RSpec.describe "Play (public)", type: :request do
       get play_path(puzzle.share_token)
 
       expect(response.body).not_to include("is published!")
-      expect(response.body).not_to include("Look good? Publish it")
+      expect(response.body).not_to include("Share the link with anyone")
     end
 
     it "tells search engines not to index an unlisted puzzle (ADR-0008)" do
