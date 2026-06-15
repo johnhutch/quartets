@@ -35,20 +35,42 @@ RSpec.describe "Play (public)", type: :request do
       expect(response.cookies["player_token"]).to be_present
     end
 
-    it "404s a draft — it isn't public yet" do
-      puzzle = create(:puzzle, :complete, status: :unlisted)
+    # Playability gates on completeness, not visibility (ADR-0008): a finished
+    # puzzle plays for anyone with the link, listed or not. Only the "published"
+    # flag controls whether it shows up on the public surfaces.
+    it "serves a complete but unlisted puzzle to anyone with the link" do
+      puzzle = create(:puzzle, :complete, status: :unlisted, title: "Link only")
+
+      get play_path(puzzle.share_token)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Link only")
+    end
+
+    it "404s an incomplete puzzle for a stranger — there's nothing to play" do
+      puzzle = create(:puzzle, status: :unlisted, title: "Half built") # no groups
 
       get play_path(puzzle.share_token)
 
       expect(response).to have_http_status(:not_found)
     end
 
-    it "lets the owner preview their own draft with a publish CTA" do
+    it "redirects the owner of an incomplete puzzle to the editor" do
       user = create(:user)
       sign_in user
-      draft = create(:puzzle, :complete, user: user, status: :unlisted)
+      puzzle = create(:puzzle, user: user, status: :unlisted) # incomplete
 
-      get play_path(draft.share_token)
+      get play_path(puzzle.share_token)
+
+      expect(response).to redirect_to(edit_puzzle_path(puzzle))
+    end
+
+    it "lets the owner preview their own complete-but-unlisted puzzle with a publish CTA" do
+      user = create(:user)
+      sign_in user
+      unlisted = create(:puzzle, :complete, user: user, status: :unlisted)
+
+      get play_path(unlisted.share_token)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Look good? Publish it")
@@ -71,6 +93,23 @@ RSpec.describe "Play (public)", type: :request do
 
       expect(response.body).not_to include("is published!")
       expect(response.body).not_to include("Look good? Publish it")
+    end
+
+    it "tells search engines not to index an unlisted puzzle (ADR-0008)" do
+      puzzle = create(:puzzle, :complete, status: :unlisted, title: "Hidden gem")
+
+      get play_path(puzzle.share_token)
+
+      expect(response.body).to include('name="robots"')
+      expect(response.body).to include("noindex")
+    end
+
+    it "lets search engines index a published puzzle" do
+      puzzle = create(:published_puzzle)
+
+      get play_path(puzzle.share_token)
+
+      expect(response.body).not_to include("noindex")
     end
 
     it "404s an unknown token" do

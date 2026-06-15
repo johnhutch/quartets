@@ -1,5 +1,10 @@
 <% content_for :title, @puzzle.title + " | Quartets"%>
 <% content_for :meta do %>
+  <%# Unlisted puzzles stay out of search, but keep the OG/Twitter tags so a
+      shared link still unfurls a preview card (ADR-0008). %>
+  <% unless @puzzle.published? %>
+    <meta name="robots" content="noindex, nofollow">
+  <% end %>
   <meta property="og:title" content="<%= @puzzle.title %> | Quartets">
   <meta name="twitter:title" content="<%= @puzzle.title %> | Quartets">
   <meta property="og:description" content="Play this puzzle by <%= @puzzle.author_name.presence || 'Anonymous' %> on Quartets.">

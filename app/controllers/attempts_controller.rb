@@ -5,7 +5,11 @@ class AttemptsController < ApplicationController
   include AnonymousPlayer
 
   def create
-    puzzle = Puzzle.published.find_by!(share_token: params[:share_token])
+    # Mirror the play gate (ADR-0008): any complete puzzle records, listed or not.
+    # Incomplete (or unknown) → 404, same as the play page — nothing to play.
+    puzzle = Puzzle.find_by(share_token: params[:share_token])
+    return head :not_found unless puzzle&.complete?
+
     attempt = puzzle.attempts.create!(attempt_params.merge(player_token: current_player_token))
     # Hand back the cube (for the on-screen grid) and the full share block — title
     # + cube + a direct link — so the just-finished game can show one and copy the
@@ -14,8 +18,6 @@ class AttemptsController < ApplicationController
     cube = EmojiCube.new(attempt.guesses).to_s
     share = ShareText.new(title: puzzle.title, cube:, url: play_url(puzzle.share_token)).to_s
     render json: { cube:, share: }, status: :created
-  rescue ActiveRecord::RecordNotFound
-    head :not_found
   rescue ActiveRecord::RecordInvalid
     head :unprocessable_content
   end

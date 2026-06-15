@@ -15,16 +15,20 @@
     <ul class="m-puzzle-list m-puzzle-list--dash">
       <% @puzzles.each do |puzzle| %>
         <li class="m-puzzle-list__item">
-          <% title = puzzle.title.presence || "Untitled draft" %>
+          <% title = puzzle.title.presence || "Untitled" %>
           <div class="m-puzzle-list__head">
+            <%# Complete puzzles (published or unlisted) are playable, so the title
+                opens the board; an incomplete one opens the editor instead. %>
             <%= link_to multicolor(title),
-                  (puzzle.published? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
+                  (puzzle.complete? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
                   class: "m-puzzle-list__title" %>
             <span class="m-puzzle-list__status">
               <% if puzzle.published? %>
                 Published &middot; <%= pluralize(puzzle.attempts.count, "play") %>
+              <% elsif puzzle.complete? %>
+                Unlisted &middot; link only
               <% else %>
-                Draft
+                Incomplete
               <% end %>
             </span>
           </div>
@@ -54,9 +58,9 @@
 
             <span class="m-puzzle-list__danger">
               <% if puzzle.published? %>
-                <%= link_to "Unpublish?", unpublish_puzzle_path(puzzle), class: "m-puzzle-list__unpublish",
+                <%= link_to "Make unlisted", unpublish_puzzle_path(puzzle), class: "m-puzzle-list__unpublish",
                       data: { turbo_method: :patch,
-                              turbo_confirm: "Are you sure you want to unpublish #{title}?" } %>
+                              turbo_confirm: "Make #{title} unlisted? The link still works, it just won't be listed." } %>
               <% end %>
               <%= button_to "Delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
                     data: { turbo_confirm: "Delete “#{title}”? This can’t be undone." } %>

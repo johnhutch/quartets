@@ -67,10 +67,11 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     fill_in "Title", with: "Phone-authored"
 
     expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
-    # Now that every field is filled, the save button promotes itself to "Finish".
-    expect(page).to have_button("Finish")
+    # Now that every field is filled, the save button promotes itself to the
+    # "keep it unlisted" choice (and Publish lights up).
+    expect(page).to have_button("Keep it unlisted (link only)")
 
-    # The draft now exists; its editor is where Publish lives.
+    # The puzzle now exists; its editor is where Publish lives.
     visit edit_puzzle_path(Puzzle.last)
     click_button "Publish"
 

@@ -31,11 +31,11 @@ export default class extends Controller {
     this.timer = setTimeout(() => this.save(), this.debounceValue)
   }
 
-  // Keep the save button ("Save draft" → "Finish") and the publish button
-  // (greyed + tooltip until the puzzle is complete) in sync as the author types.
+  // Keep the save button ("Save" → "Keep it unlisted (link only)") and the publish
+  // button (greyed + tooltip until the puzzle is complete) in sync as the author types.
   refresh() {
     const done = this.complete()
-    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = done ? "Finish" : "Save draft"
+    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = done ? "Keep it unlisted (link only)" : "Save"
     if (this.hasPublishGuardTarget) this.publishGuardTarget.classList.toggle("is-blocked", !done)
     if (this.hasPublishTarget) this.publishTarget.classList.toggle("is-disabled", !done)
   }

@@ -1,5 +1,6 @@
-# Public, login-free play. Everything here is open to the internet; the only
-# gate is "published" — drafts stay invisible until their author ships them.
+# Public, login-free play. Everything here is open to the internet. The index
+# lists only published puzzles; an individual board is playable as soon as it's
+# complete, listed or not (ADR-0008) — "published" only controls visibility.
 class PlayController < ApplicationController
   include AnonymousPlayer
   include Creator # for owns? — the owner gets a share prompt on their own puzzle
@@ -10,9 +11,16 @@ class PlayController < ApplicationController
 
   def show
     @puzzle = Puzzle.find_by!(share_token: params[:share_token])
-    # Published puzzles are public; an unpublished one is visible only to its
-    # owner, who lands here to preview + publish it (ADR-0005).
-    head :not_found unless @puzzle.published? || owns?(@puzzle)
+
+    # Playability gates on completeness, not visibility (ADR-0008): a finished
+    # puzzle plays for anyone with the link (published or just unlisted). An
+    # incomplete one can't be played — its owner is bounced to the editor to
+    # finish it; everyone else gets a 404 (it effectively doesn't exist yet).
+    unless @puzzle.complete?
+      return redirect_to(edit_puzzle_path(@puzzle)) if owns?(@puzzle)
+
+      head :not_found
+    end
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end

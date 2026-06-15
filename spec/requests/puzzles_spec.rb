@@ -86,24 +86,26 @@ RSpec.describe "Puzzles", type: :request do
         expect(response.body).not_to match(/you've made so far/i) # claim CTA is anon-only
       end
 
-      it "an incomplete draft offers 'Finish' (the editor) and no Publish" do
-        draft = create(:puzzle, user: user, title: "WIP", status: :unlisted) # no groups
+      it "tags an incomplete puzzle 'Incomplete' and offers 'Finish' (the editor), no Publish" do
+        puzzle = create(:puzzle, user: user, title: "WIP", status: :unlisted) # no groups
 
         get puzzles_path
 
         text = Nokogiri::HTML(response.body).text
-        expect(response.body).to include(edit_puzzle_path(draft))
+        expect(text).to include("Incomplete")
+        expect(response.body).to include(edit_puzzle_path(puzzle))
         expect(text).to include("Finish")
-        expect(response.body).not_to include(publish_puzzle_path(draft)) # can't publish yet
+        expect(response.body).not_to include(publish_puzzle_path(puzzle)) # can't publish yet
       end
 
-      it "a complete draft offers a real Publish plus a quiet Edit" do
-        draft = create(:puzzle, :complete, user: user, status: :unlisted)
+      it "tags a complete-but-unlisted puzzle 'Unlisted' and offers a real Publish plus a quiet Edit" do
+        puzzle = create(:puzzle, :complete, user: user, status: :unlisted)
 
         get puzzles_path
 
         text = Nokogiri::HTML(response.body).text
-        expect(response.body).to include(publish_puzzle_path(draft))
+        expect(text).to include("Unlisted")
+        expect(response.body).to include(publish_puzzle_path(puzzle))
         expect(text).to match(/\bEdit\b/)
       end
     end
