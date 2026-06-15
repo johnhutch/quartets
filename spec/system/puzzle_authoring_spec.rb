@@ -29,6 +29,34 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     end
   end
 
+  it "auto-saves continuously across the POST-to-PATCH boundary without ID collisions" do
+    visit new_puzzle_path
+
+    # Step 1: Type the first word. This triggers the initial POST autosave.
+    within(".m-group--blue") do
+      fill_in "Word 1", with: "first"
+    end
+
+    # Wait for the first save to finish and mint the draft
+    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+    expect(Puzzle.count).to eq(1)
+
+    # Step 2: Keep typing. The form has now switched to PATCH mode.
+    within(".m-group--blue") do
+      fill_in "Word 2", with: "second"
+    end
+
+    # If the ID mismatch bug is present, the PATCH will hit the uniqueness
+    # validation, fail with a 422, and the UI will say "Save failed".
+    # Capybara will time out here waiting for it to return to "Saved".
+    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+
+    # Final sanity check: ensure the database actually received the second word
+    # and didn't accidentally duplicate the groups.
+    puzzle = Puzzle.last
+    expect(puzzle.groups.find_by(color: "blue").words).to include("second")
+    expect(puzzle.groups.count).to eq(4)
+  end
   it "authors a full puzzle, publishes it, and lands on its shareable board" do
     visit new_puzzle_path
 

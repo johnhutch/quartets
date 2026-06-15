@@ -43,7 +43,10 @@ class PuzzlesController < ApplicationController
       # Auto-save's first POST creates the record; hand the editor URL back in
       # the Location header so the controller can switch to PATCH from here on.
       if autosave?
-        head :created, location: edit_puzzle_path(@puzzle)
+        group_ids = @puzzle.groups.to_h { |g| [g.color, g.id] }
+        render json: { patch_url: puzzle_path(@puzzle), group_ids: group_ids }, 
+               status: :created, 
+               location: edit_puzzle_path(@puzzle)
       else
         # "Save draft" / "Finish" drops the author back on their dashboard.
         redirect_to puzzles_path
