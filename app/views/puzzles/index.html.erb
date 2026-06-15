@@ -49,6 +49,12 @@
                     class: "m-btn m-btn--sm m-btn--go" do %>
                 <%= icon(:eye) %><span>Publish</span>
               <% end %>
+              <%# Unlisted but complete = playable by link, so the owner gets a Share too. %>
+              <%= tag.button type: "button", class: "m-btn m-btn--sm",
+                    data: { controller: "clipboard", clipboard_text_value: play_url(puzzle.share_token),
+                            action: "clipboard#copy" } do %>
+                <%= icon(:share) %><span data-clipboard-target="label">Share</span>
+              <% end %>
               <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
             <% else %>
               <%= link_to edit_puzzle_path(puzzle), class: "m-btn m-btn--sm" do %>

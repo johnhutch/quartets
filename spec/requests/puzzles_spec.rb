@@ -106,6 +106,7 @@ RSpec.describe "Puzzles", type: :request do
         text = Nokogiri::HTML(response.body).text
         expect(text).to include("Unlisted")
         expect(response.body).to include(publish_puzzle_path(puzzle))
+        expect(response.body).to include(play_url(puzzle.share_token)) # a share link, since it's playable by link
         expect(text).to match(/\bEdit\b/)
       end
     end
