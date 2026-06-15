@@ -1,4 +1,4 @@
-<% content_for :title, @puzzle.title %>
+<% content_for :title, @puzzle.title + " | Quartets"%>
 
 <div class="l-container">
   <% if owns?(@puzzle) && @puzzle.draft? %>
