@@ -31,6 +31,13 @@ migration** (name + random-suffix play URLs) — see the TODOS reminder.
 
 ## Shipped log (most recent first)
 
+- **One play per logged-in user + result view (ADR-0009).** `Attempt` gained an
+  optional `user_id`; logged-in plays attribute to the account and are capped at
+  one per puzzle (partial unique index; `attempts#create` idempotent). Win or
+  loss uses it up. Revisiting a finished puzzle (signed-in non-owner) shows a
+  **result view** — emoji cube + revealed answers + Share — instead of a
+  replayable board; `/play` badges completed puzzles ("✓ Played"). Owners never
+  gated on their own puzzles; anonymous play unchanged. TDD, 168 green.
 - **Visibility model — "draft" retired for unlisted/published (ADR-0008).**
   `status` enum is now visibility (`unlisted` default / `published`, zero data
   migration); *playability* is derived from `#complete?`. `play#show` and

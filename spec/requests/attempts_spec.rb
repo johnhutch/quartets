@@ -113,5 +113,33 @@ RSpec.describe "Attempts", type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
     end
+
+    context "when signed in (ADR-0009)" do
+      it "attributes the attempt to the account" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle)
+
+        post play_attempts_path(puzzle.share_token),
+             params: { attempt: { solved: true, mistakes_count: 0 } }, as: :json
+
+        expect(Attempt.last.user).to eq(user)
+      end
+
+      it "records only one attempt per puzzle — a repeat POST is idempotent" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle)
+
+        expect {
+          2.times do
+            post play_attempts_path(puzzle.share_token),
+                 params: { attempt: { solved: true, mistakes_count: 0 } }, as: :json
+          end
+        }.to change(Attempt, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+      end
+    end
   end
 end

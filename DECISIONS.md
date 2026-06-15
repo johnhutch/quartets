@@ -292,6 +292,52 @@ is what keeps unlisted puzzles unadvertised.
 
 ---
 
+## 0009 — One play per logged-in user: account-attributed attempts + result view
+
+**Date:** 2026-06-15
+**Status:** accepted (extends 0005's player model)
+
+**Context.** Plays were purely anonymous — an `Attempt` carried only a signed
+`player_token` cookie (ADR-0005: "no player accounts"). The owner wants a
+logged-in user limited to **one play per puzzle**, shown **their result** (the
+emoji cube + the solution) when they revisit, and wants **browse lists to mark
+which puzzles they've already completed**. That requires attributing plays to the
+account — a soft extension of 0005, not a separate player-account system.
+
+**Decision.**
+
+- **Attempts gain an optional `user_id`** (`belongs_to :user, optional: true`).
+  A logged-in play is attributed to the account *and* still carries a
+  `player_token`; anonymous plays are unchanged. `User has_many :attempts,
+  dependent: :nullify` — deleting an account keeps the play in the puzzle's
+  aggregate stats, just anonymized.
+- **One play per logged-in user per puzzle**, enforced by a **partial unique
+  index** `(user_id, puzzle_id) WHERE user_id IS NOT NULL`. `attempts#create` is
+  idempotent for a signed-in repeat (returns the existing result, no duplicate
+  row). Anonymous plays (NULL `user_id`) stay unconstrained/replayable — you
+  can't reliably gate a cookie, and that's fine.
+- **"Used up" = any finished attempt — win OR loss.** Attempts are only recorded
+  at game-over, so a loss locks the puzzle just like a win.
+- **`play#show` shows a result, not a board,** when a signed-in **non-owner** has
+  an attempt for a complete puzzle: their cube, solved/lost status, a Share, and
+  the **revealed answer groups** (they can't replay, so the solution is the
+  payoff). Owners are **never** gated on their own puzzle. Anonymous visitors are
+  unchanged.
+- **`/play` badges completed puzzles** for signed-in users (a "✓ Played" chip),
+  via `current_user.attempts.pluck(:puzzle_id)`.
+- **Scope:** logged-in only. **No retroactive claim** of prior anonymous
+  (cookie) attempts onto the account at login — deferred (see TODOS).
+
+**Consequence.** Accounts now carry play history when logged in — attribution,
+not a parallel player-account system; the anonymous `player_token` path is
+untouched. The DB constraint makes "one play" a real invariant, not just a UI
+gate. The home page's featured board is **not** yet result-gated (a logged-in
+user who already played the featured puzzle still sees a fresh board there, though
+a replay won't duplicate the attempt) — deferred. Read `Attempt` with the new
+dual identity (`player_token` always; `user_id` when logged in).
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

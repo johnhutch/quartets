@@ -39,7 +39,9 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
   yellow, purple` (enum). Authoring/form order is blue→green→yellow→purple
   (swellgarfo muscle memory), *not* NYT difficulty order.
-- **Attempt** — one anonymous play-through, keyed by a `player_token` cookie.
+- **Attempt** — one play-through, keyed by a `player_token` cookie; also
+  attributed to `user_id` when the player is logged in (ADR-0009). Logged-in
+  players get **one attempt per puzzle** (partial unique index).
 - **share_token** — a puzzle's unguessable public slug; the public play URL is
   `/p/:share_token` (`play#show`).
 - **creator_token** — a signed, permanent cookie that owns a logged-out author's
@@ -64,9 +66,12 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   sketch. `WORDS_PER_GROUP = 4`. `#filled_words` strips the blanks the form
   leaves. `description`/exactly-four-words validated only when the parent is
   published.
-- **Attempt** (`player_token`, `solved`, `mistakes_count`, `guesses` jsonb).
-  Stats (emoji cube, common wrong guesses) derive from `guesses` — no extra
-  tables. Indexed on `player_token`. The public play loop records these (the
+- **Attempt** (`player_token`, optional `user_id`, `solved`, `mistakes_count`,
+  `guesses` jsonb). `belongs_to :user, optional:` — anonymous plays carry only a
+  `player_token`; logged-in plays also attribute to the account, capped at one per
+  puzzle by a partial unique index `(user_id, puzzle_id) WHERE user_id IS NOT NULL`
+  (ADR-0009). Stats (emoji cube, common wrong guesses) derive from `guesses` — no
+  extra tables. Indexed on `player_token`. The public play loop records these (the
   Stimulus `game_controller.js` POSTs to `play_attempts_path`).
 - **PuzzlesController** — **public, no `authenticate_user!`** (ADR-0005). Includes
   the `Creator` concern; every query is scoped to `owned_puzzles` — `current_user`
@@ -83,7 +88,10 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   `player_token` for stats). `PlayController#show` gates on `complete?` (ADR-0008):
   any complete puzzle plays for anyone with the link (published or unlisted); an
   incomplete one redirects its owner to the editor and 404s everyone else.
-  `AttemptsController#create` mirrors that gate.
+  `AttemptsController#create` mirrors that gate (and attributes the attempt to
+  `current_user` when signed in, idempotently — ADR-0009). For a signed-in
+  non-owner who's already finished a puzzle, `show` renders `play/_result` (their
+  cube + revealed answers) instead of the board; `index` badges completed puzzles.
 
 ## Gotchas
 

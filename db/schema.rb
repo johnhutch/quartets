@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_13_171149) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,8 +22,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_13_171149) do
     t.bigint "puzzle_id", null: false
     t.boolean "solved"
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.index ["player_token"], name: "index_attempts_on_player_token"
     t.index ["puzzle_id"], name: "index_attempts_on_puzzle_id"
+    t.index ["user_id", "puzzle_id"], name: "index_attempts_on_user_and_puzzle", unique: true, where: "(user_id IS NOT NULL)"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -207,6 +209,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_13_171149) do
   end
 
   add_foreign_key "attempts", "puzzles"
+  add_foreign_key "attempts", "users"
   add_foreign_key "groups", "puzzles"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

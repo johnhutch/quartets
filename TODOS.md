@@ -27,6 +27,18 @@ Planned work that has been scoped but not yet started. Read this at session star
   inline aggregates per row: # of completions, # of *successful* completions, and
   avg mistakes. (Builds on `puzzles#index` + `PuzzleStats`.)
 
+### Follow-ups from the one-play-per-user work (ADR-0009)
+
+- **Gate the home page's featured board too.** `home#show` renders a replayable
+  board even if the signed-in user already finished that featured puzzle (a replay
+  won't duplicate the attempt, but it's inconsistent with `play#show`). Apply the
+  same `@my_attempt` → result-view treatment, or just send finished players to the
+  result.
+- **Claim anonymous attempts on login.** Like the `creator_token` claim (ADR-0005),
+  optionally reassign a player's cookie-attributed attempts to their account on
+  sign-in so pre-login plays count toward the one-play cap + "✓ Played" badges.
+  Deliberately skipped for now.
+
 ### Slug migration ↔ unlisted (reminder)
 
 The visibility model (ADR-0008) shipped. When the play URL becomes

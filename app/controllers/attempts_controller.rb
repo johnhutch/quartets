@@ -10,7 +10,16 @@ class AttemptsController < ApplicationController
     puzzle = Puzzle.find_by(share_token: params[:share_token])
     return head :not_found unless puzzle&.complete?
 
-    attempt = puzzle.attempts.create!(attempt_params.merge(player_token: current_player_token))
+    # One recorded play per logged-in user (ADR-0009): a repeat POST just returns
+    # their existing result instead of stacking duplicate attempts. Anonymous
+    # plays are unchanged (player_token only).
+    base = attempt_params.merge(player_token: current_player_token)
+    attempt =
+      if user_signed_in?
+        puzzle.attempts.find_by(user: current_user) || puzzle.attempts.create!(base.merge(user: current_user))
+      else
+        puzzle.attempts.create!(base)
+      end
     # Hand back the cube (for the on-screen grid) and the full share block — title
     # + cube + a direct link — so the just-finished game can show one and copy the
     # other. play_url uses the request host, so the share link follows whatever
