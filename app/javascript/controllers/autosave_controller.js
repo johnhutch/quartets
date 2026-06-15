@@ -85,8 +85,27 @@ export default class extends Controller {
       // First save just minted the record — switch to updating it in place so
       // the next keystroke PATCHes instead of creating a duplicate.
       if (response.status === 201) {
+        const data = await response.json()
         const location = response.headers.get("Location")
-        if (location) this.becomeEditable(location)
+
+        if (location && data.patch_url) {
+          this.becomeEditable(data.patch_url, location)
+        }
+
+        if (data.group_ids) {
+          Object.entries(data.group_ids).forEach(([color, id]) => {
+            const fieldset = form.querySelector(`.m-group--${color}`)
+            const colorInput = fieldset?.querySelector('input[name$="[color]"]')
+
+            if (colorInput) {
+              const idInput = document.createElement("input")
+              idInput.type = "hidden"
+              idInput.name = colorInput.name.replace('[color]', '[id]')
+              idInput.value = id
+              fieldset.appendChild(idInput)
+            }
+          })
+        }
       }
 
       this.setStatus("saved")
@@ -100,10 +119,10 @@ export default class extends Controller {
 
   // Re-point a brand-new form at its persisted record: PATCH, edit URL, and a
   // matching browser URL so a reload or back-button lands on the saved draft.
-  becomeEditable(url) {
-    this.element.action = url
+  becomeEditable(actionUrl, browserUrl) {
+    this.element.action = actionUrl
     this.methodField.value = "patch"
-    window.history.replaceState({}, "", url)
+    window.history.replaceState({}, "", browserUrl)
   }
 
   get method() {
