@@ -1,14 +1,14 @@
-<% content_for :title, "Your puzzles" %>
+<% content_for :title, "Your quartets" %>
 
 <div class="l-container">
-  <h1><%= multicolor("Your puzzles") %></h1>
+  <h1><%= multicolor("Your quartets") %></h1>
 
   <% if !user_signed_in? && @puzzles_total > 0 %>
     <%= render "claim_cta", count: @puzzles_total %>
   <% end %>
 
   <div class="m-dashboard-actions">
-    <%= link_to "+ New puzzle", new_puzzle_path, class: "m-btn m-btn--pop" %>
+    <%= link_to "+ New quartet", new_puzzle_path, class: "m-btn m-btn--pop" %>
   </div>
 
   <% if @puzzles_total > 0 %>

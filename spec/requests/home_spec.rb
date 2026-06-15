@@ -52,5 +52,12 @@ RSpec.describe "Home", type: :request do
 
       expect(response.cookies["player_token"]).to be_present
     end
+
+    it "offers a 'Play More Quartets' link to the browse list in the nav" do
+      get root_path
+
+      expect(response.body).to include("Play More Quartets")
+      expect(response.body).to include(play_index_path)
+    end
   end
 end

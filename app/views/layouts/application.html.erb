@@ -52,11 +52,14 @@
       content_for(:body_class) to something else. %>
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "theme-brutal" %>">
     <header class="l-topbar">
-      <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
+      <div class="l-topbar__brand">
+        <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
+        <%= link_to "Play More Quartets ↗", play_index_path, class: "l-topbar__btn" %>
+      </div>
       <nav class="l-topbar__auth">
         <% if user_signed_in? %>
           <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
-          <%= link_to "My puzzles", puzzles_path, class: "l-topbar__btn" %>
+          <%= link_to "My quartets", puzzles_path, class: "l-topbar__btn" %>
         <% else %>
           <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
           <%= link_to "Sign up", new_user_registration_path, class: "l-topbar__btn" %>
