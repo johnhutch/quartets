@@ -65,10 +65,10 @@ the authoring form mirrors that order so the user's muscle memory carries over.
   version drift by preferring a Selenium-cached driver whose major matches the
   installed Chrome. Warden `login_as` for browser-session auth.
 - ✅ **Deploy wired (self-host)** — Synology Container Manager: `docker-compose.yml`
-  (app + Postgres, shared by Solid cache/queue/cable), image built on the dev box
-  and shipped over SSH via `bin/deploy` (no CI, no registry), jobs in Puma,
-  entrypoint migrates/seeds. See ADR-0002 + ADR-0004 + `docs/DEPLOY.md`.
-  *(Config committed; first deploy waits on the one-time NAS setup.)*
+  (app + Postgres, shared by Solid cache/queue/cable). Push to `main` → GitHub
+  Actions builds + pushes to GHCR → Watchtower recreates `web`; a Caddy proxy
+  fronts it so the restart doesn't 502. Jobs in Puma, entrypoint migrates/seeds.
+  See ADR-0006 + ADR-0007 in `DECISIONS.md` + `docs/DEPLOY.md`.
 - ⬜ Seed the single superuser (env-driven creds, not committed). *(Unblocked
   once Devise lands — see Phase 1.)*
 

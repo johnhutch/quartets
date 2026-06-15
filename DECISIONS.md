@@ -189,6 +189,38 @@ sends.
 
 ---
 
+## 0007 — Caddy front proxy to mask the deploy restart (no 502s)
+
+**Date:** 2026-06-15
+**Status:** accepted (extends 0006)
+
+**Context.** With 0006, every push recreates the `web` container (stop → start →
+Rails boot). On the slow DS918+ that's a ~10-15s window, and because `cloudflared`
+pointed straight at `web:3000`, the site returned 502s the whole time. For a
+hobby app, true blue-green (two app instances + health-checked swap + a custom
+deploy script) is more orchestration than it's worth, and it would mean giving up
+Watchtower's hands-off auto-pull.
+
+**Decision.** Insert a lightweight **Caddy** reverse proxy between the tunnel and
+the app: `tunnel → caddy → web`. Caddy uses `lb_try_duration 25s` so a request
+that lands mid-restart is held and retried until the new `web` is accepting,
+rather than erroring. The tunnel's public hostname now targets `caddy:80`.
+Watchtower is scoped via label (`WATCHTOWER_LABEL_ENABLE` + the
+`com.centurylinklabs.watchtower.enable=true` label on `web` only) so it cycles
+just the app — Caddy, Postgres, and the tunnel stay up across a deploy. Config:
+`Caddyfile` (mounted into the container) + the `caddy` service in
+`docker-compose.yml`.
+
+**Consequence.** Deploys stay fully automated (push → GHCR → Watchtower) but
+visitors now see, at worst, a single slow load during the swap instead of an
+outage. This is a *buffer*, not real zero-downtime: in-flight requests on the old
+container at the instant it's killed can still drop, and a non-idempotent `POST`
+landing in that ~1s kill window won't be retried (Caddy only retries safe GETs).
+If that ever matters, revisit blue-green. One more long-lived container to keep
+pinned (`caddy:2`) so it isn't itself caught in an update.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

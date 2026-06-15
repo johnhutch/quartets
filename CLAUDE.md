@@ -40,10 +40,13 @@ Don't relitigate these without a reason — they came out of a full grill-me pas
   wrong guesses, shareable emoji-cube (🟨🟩🟦🟪).
 - **Export:** JSON download per puzzle.
 - **Hosting:** self-hosted on a Synology DS918+ via DSM Container Manager. Dev is
-  native (no Docker locally); production is a container image built on the dev
-  machine and shipped to the NAS over SSH via `bin/deploy` — **no GitHub CI/CD,
-  no registry** (GitHub is archive-only). Not Render, not Heroku — see ADR-0002
-  + ADR-0004 + `docs/DEPLOY.md`. (Migrate off only if it ever blows up.)
+  native (no Docker locally). Deploys are **push-to-`main`**: a GitHub Actions
+  workflow (`.github/workflows/deploy.yml`) builds the `linux/amd64` image and
+  pushes it to **GHCR**; **Watchtower** on the NAS polls GHCR and recreates the
+  `web` container. A **Caddy** front proxy (tunnel → caddy → web) absorbs the
+  ~10-15s restart so deploys don't 502. Public access is a Cloudflare Tunnel (no
+  open ports). Not Render, not Heroku. The old SSH `bin/deploy` is gone — see
+  ADR-0006 + ADR-0007 in `DECISIONS.md` + `docs/DEPLOY.md`.
 - **Testing:** RSpec + Capybara, TDD. Write the failing test first.
 
 ## Voice

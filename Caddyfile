@@ -1,0 +1,15 @@
+# Front proxy between the Cloudflare Tunnel and the Rails app.
+#
+# Why: Watchtower recreates the `web` container on every new image (stop -> start
+# -> Rails boot = ~10-15s on the slow NAS). cloudflared points HERE instead of at
+# `web` directly, so during that window Caddy holds the connection and retries
+# rather than returning 502s. Users see a one-time slow load, not an outage.
+# See DECISIONS.md ADR-0007.
+:80 {
+	reverse_proxy web:3000 {
+		# Keep trying a backend for up to 25s before giving up on a request, so a
+		# request that lands mid-restart waits out the boot instead of erroring.
+		lb_try_duration 25s
+		lb_try_interval 250ms
+	}
+}

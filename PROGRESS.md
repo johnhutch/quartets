@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-06-12
+**Last updated:** 2026-06-15
 **Active branch:** main
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
@@ -19,12 +19,25 @@ claims it, and the styled Devise flows (signup/login/logout/forgot-password) are
 on-theme. What's left of that thread: the per-creator **public homepage
 (`/u/:handle`)** — deferred (D3) — and turning the dashboard's per-puzzle Stats
 links into an **at-a-glance aggregate table**. The remaining quick-wins (richer
-share payload, debounce tune) need no decisions. Deploy is decided (Synology,
-ADR-0004) but **not yet run end-to-end** — waits on one-time NAS setup, where the
-SMTP creds for forgot-password mail also get filled into the NAS `.env`.
+share payload, debounce tune) need no decisions. Deploy is **live** — push to
+`main` builds + ships to GHCR and Watchtower recreates `web` on the NAS, now with
+a Caddy front proxy so the restart no longer 502s (ADR-0006 + ADR-0007). Still
+outstanding: real SMTP creds in the NAS `.env` for forgot-password mail.
 
 ## Shipped log (most recent first)
 
+- **Deploy automated + made zero-downtime-ish (ADR-0006, ADR-0007).** Push to
+  `main` now builds the image via GitHub Actions and pushes to GHCR; Watchtower on
+  the NAS polls and recreates `web` (killed the old SSH `bin/deploy`). To stop the
+  ~10-15s 502 while `web` restarts on the slow box, a **Caddy** proxy fronts the
+  app (`Caddyfile`, `lb_try_duration 25s`) and cloudflared targets it (tunnel →
+  caddy → web). Watchtower is scoped via label to cycle **only** `web`, so the
+  proxy/db/tunnel stay up across deploys. Set the tunnel hostname → `caddy:80`.
+- **Brand assets — favicon + social share.** Multicolor "Q" favicon (transparent,
+  four puzzle-color quadrants, heavier bowl + lean tail) and a `share.png` (1200×630):
+  QUARTETS on a random 4-color mosaic with a thick black outline, site-matched
+  kerning. Generated from Space Grotesk Bold (`tmp/brand/build.py`); OG/Twitter
+  meta wired in the layout with explicit image dimensions.
 - **Selected tiles lift + tilt (animated).** Picking a tile now plucks it up off
   the grid and rotates it a little (random −3°…+3° per tile, via a `--tilt` CSS
   var) with a springy overshoot, instead of pressing down. The motion only worked
@@ -170,7 +183,8 @@ SMTP creds for forgot-password mail also get filled into the NAS `.env`.
   headers. Spec flipped determinism → re-roll.
 - **Design system (brutalist)** — `_brutal.scss`, Space Grotesk webfonts, a
   `/styleguide` page, and `Multicolor` (the wordmark colorizer). Dropped the
-  generated GitHub Actions CI (archive-only repo, no CI/CD).
+  generated GitHub Actions CI at the time *(later reintroduced for GHCR image
+  builds — ADR-0006)*.
 - **Phase 5 — import + export.** `puzzles:import_obsidian` rake task
   (`ObsidianArchive`, forgiving + idempotent: 4×4 → published, partial → draft,
   junk skipped). JSON export per puzzle (`PuzzleExport`, spec-pinned schema; gated,
@@ -188,7 +202,8 @@ SMTP creds for forgot-password mail also get filled into the NAS `.env`.
 - **Deploy pivot — Render → self-hosted Synology** (ADR-0004). DSM Container
   Manager `docker-compose.yml` (app + one Postgres for Solid cache/queue/cable),
   image built on the Mac (`linux/amd64`) and shipped over SSH via `bin/deploy` —
-  no registry, no CI. Runbook in `docs/DEPLOY.md`.
+  no registry, no CI. *(Superseded by ADR-0006 — GHCR + Watchtower.)* Runbook in
+  `docs/DEPLOY.md`.
 - **Phase 2 — authoring.** Color-coded form (swellgarfo order, answers-first),
   gated `PuzzlesController`, owner-scoped dashboard, publish action, and
   **auto-save drafts** (debounced `autosave_controller.js`: POST to mint, then
