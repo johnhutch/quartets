@@ -4,7 +4,7 @@
         "autosave-debounce-value": 1000,
         action: "input->autosave#schedule change->autosave#schedule"
       } do |f| %>
-  <p class="m-form__note">Drafts save automatically as you type — close the tab any time, your work is safe.</p>
+  <p class="m-form__note">Your work saves automatically as you type — close the tab any time, it's safe.</p>
   <p class="m-form__autosave" data-autosave-target="status" aria-live="polite"></p>
 
   <% if puzzle.errors.any? %>
@@ -54,23 +54,29 @@
   <% end %>
 
   <div class="m-form__submit">
+    <%# Plain save stays first so Enter does the safe thing (never an accidental
+        publish). Once complete, it reads as the "keep it unlisted" choice. %>
     <%= f.button type: :submit, class: "m-btn" do %>
-      <%= icon(:save) %><span data-autosave-target="submitLabel"><%= puzzle.complete? ? "Finish" : "Save draft" %></span>
+      <%= icon(:save) %><span data-autosave-target="submitLabel"><%= puzzle.complete? ? "Keep it unlisted (link only)" : "Save" %></span>
     <% end %>
 
-    <%# Editing an unpublished puzzle: Publish rides the same line, but stays
-        greyed (and un-submittable, with a tooltip) until the puzzle is complete.
-        It's a second submit on this form via formaction → the publish action. %>
+    <%# Publish is the loud, encouraged path once the puzzle is complete — a second
+        submit via formaction → the publish action — greyed and guarded with a
+        tooltip until then. Saving instead keeps it unlisted (ADR-0008). %>
     <% if puzzle.persisted? && puzzle.unlisted? %>
       <span class="m-tooltip<%= ' is-blocked' unless puzzle.complete? %>"
             data-autosave-target="publishGuard">
         <%= tag.button type: :submit, formaction: publish_puzzle_path(puzzle),
               class: "m-btn m-btn--go#{' is-disabled' unless puzzle.complete?}",
               data: { autosave_target: "publish", action: "autosave#guardPublish" } do %>
-          <%= icon(:eye) %><span>Publish</span>
+          <%= icon(:eye) %><span>Publish to the site</span>
         <% end %>
         <span class="m-tooltip__bubble" role="tooltip">This puzzle is incomplete! Finish it before publishing.</span>
       </span>
     <% end %>
   </div>
+
+  <% if puzzle.persisted? && puzzle.unlisted? %>
+    <p class="m-form__note">Not ready to go public? Saving keeps it <strong>unlisted</strong> — anyone with the link can play, but it won't appear on the site or in search.</p>
+  <% end %>
 <% end %>

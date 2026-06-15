@@ -24,14 +24,22 @@ share payload, debounce tune) need no decisions. Deploy is **live** — push to
 a Caddy front proxy so the restart no longer 502s (ADR-0006 + ADR-0007). Still
 outstanding: real SMTP creds in the NAS `.env` for forgot-password mail.
 
-Next design work is scoped but unbuilt: the **visibility model** (ADR-0008) —
-"draft" retires into *incomplete* (derived from `complete?`) vs *unlisted*
-(complete but not on the site, playable by anyone with the link), with publishing
-an explicit-but-prominent step. Build plan in TODOS; meant to land alongside the
-in-flight **slug migration** (name + random-suffix play URLs).
+The **visibility model shipped** (ADR-0008): "draft" retired into *incomplete*
+(derived from `complete?`) vs *unlisted* (complete but off the site, playable by
+anyone with the link) vs *published*. Still in flight separately: the **slug
+migration** (name + random-suffix play URLs) — see the TODOS reminder.
 
 ## Shipped log (most recent first)
 
+- **Visibility model — "draft" retired for unlisted/published (ADR-0008).**
+  `status` enum is now visibility (`unlisted` default / `published`, zero data
+  migration); *playability* is derived from `#complete?`. `play#show` and
+  `attempts#create` gate on `complete?` — a finished puzzle plays for anyone with
+  the link, listed or not; incomplete ones redirect the owner to the editor and
+  404 strangers. Unlisted play pages carry `noindex` but keep OG tags so links
+  still unfurl. Editor finish moment: prominent **Publish to the site** vs
+  **Keep it unlisted (link only)** (no auto-publish). Dashboard pills:
+  Incomplete / Unlisted / Published; unpublish → unlisted. Full TDD, 162 green.
 - **Deploy automated + made zero-downtime-ish (ADR-0006, ADR-0007).** Push to
   `main` now builds the image via GitHub Actions and pushes to GHCR; Watchtower on
   the NAS polls and recreates `web` (killed the old SSH `bin/deploy`). To stop the

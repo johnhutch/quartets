@@ -1,7 +1,8 @@
 require "rails_helper"
 
 # The game posts a finished play here. Anonymous: the attempt is tied to the
-# player's signed cookie token, no account needed. Only published puzzles record.
+# player's signed cookie token, no account needed. Any *complete* puzzle records,
+# matching the play gate (ADR-0008) — incomplete ones (nothing to play) 404.
 RSpec.describe "Attempts", type: :request do
   describe "POST /p/:share_token/attempts" do
     it "records a finished play, tied to the puzzle" do
@@ -77,8 +78,19 @@ RSpec.describe "Attempts", type: :request do
       expect(Attempt.last.player_token).to eq(first_token)
     end
 
-    it "won't record against a draft" do
+    it "records against a complete unlisted puzzle (shared by link)" do
       puzzle = create(:puzzle, :complete, status: :unlisted)
+
+      expect {
+        post play_attempts_path(puzzle.share_token),
+             params: { attempt: { solved: true, mistakes_count: 0 } }, as: :json
+      }.to change(Attempt, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+    end
+
+    it "won't record against an incomplete puzzle — there's nothing to play" do
+      puzzle = create(:puzzle, status: :unlisted) # no groups
 
       post play_attempts_path(puzzle.share_token),
            params: { attempt: { solved: true, mistakes_count: 0 } }, as: :json

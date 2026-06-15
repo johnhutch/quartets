@@ -32,7 +32,10 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
 
 ## Domain Glossary
 
-- **Puzzle** — one Connections board. `draft` or `published` (`status` enum).
+- **Puzzle** — one Connections board. `status` enum is **visibility**: `unlisted`
+  (default) or `published` (ADR-0008). Whether it's *playable* is derived from
+  `#complete?`, independent of visibility — the three author-facing states are
+  incomplete (unlisted & !complete?), unlisted (unlisted & complete?), published.
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
   yellow, purple` (enum). Authoring/form order is blue→green→yellow→purple
   (swellgarfo muscle memory), *not* NYT difficulty order.
@@ -51,9 +54,11 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   `belongs_to :user, optional: true` (logged-out authors own via the cookie —
   ADR-0005). **All validations are publish-only** — title + the 4×4 structural
   rules (`GROUPS_PER_PUZZLE = 4`, four distinct colors) fire only `if: :published?`.
-  `#complete?` (title + 4 groups, each with 4 filled words + a description) drives
-  the editor's "Save draft"→"Finish" label and the Publish gate. `MAX_MISTAKES = 4`.
-  See ADR 0001 + 0005.
+  `#complete?` (title + 4 groups, each with 4 filled words + a description) is the
+  **playability gate** — it drives `play#show`/`attempts` access, the editor's
+  "Save"→"Keep it unlisted (link only)" label, and the Publish gate. `status`
+  (`unlisted`/`published`) only controls listing/indexing. `MAX_MISTAKES = 4`.
+  See ADR 0001 + 0005 + 0008.
 - **Group** (`color` enum, `description`, `position`, `words`). `words` is a
   **jsonb** column (defaults to `[]`) — *not* a PG array, despite the PLAN
   sketch. `WORDS_PER_GROUP = 4`. `#filled_words` strips the blanks the form
@@ -67,16 +72,18 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   the `Creator` concern; every query is scoped to `owned_puzzles` — `current_user`
   if signed in, else the signed `creator_token` cookie (`ensure_creator_token`
   mints it). Cross-owner access 404s. `publish` (PATCH member → redirects to
-  `play_path(…, published: 1)`) and `unpublish` (PATCH member → back to draft) flip
-  status; `create`/`update` are autosave-aware and a manual save redirects to
+  `play_path(…, published: 1)`) and `unpublish` (PATCH member → back to `unlisted`)
+  flip status; `create`/`update` are autosave-aware and a manual save redirects to
   `/puzzles` (see ADR 0001). `resources :puzzles` defines a `show` route but there's
   no `show` action/view — the public board is `play#show`.
 - **Auth concerns** (`app/controllers/concerns/`) — `Creator` (cookie ownership +
   `owned_puzzles` + the `owns?` view helper), `ClaimsPuzzles` (site-wide
   `before_action`: on the first authenticated request, reassigns the cookie's
   puzzles to the account and clears the cookie), `AnonymousPlayer` (the
-  `player_token` for stats). `PlayController#show` lets an owner preview their own
-  unpublished draft (others 404).
+  `player_token` for stats). `PlayController#show` gates on `complete?` (ADR-0008):
+  any complete puzzle plays for anyone with the link (published or unlisted); an
+  incomplete one redirects its owner to the editor and 404s everyone else.
+  `AttemptsController#create` mirrors that gate.
 
 ## Gotchas
 
