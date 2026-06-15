@@ -15,6 +15,22 @@ RSpec.describe "Play (public)", type: :request do
       expect(response.body).to include("Out in the world")
       expect(response.body).not_to include("Still cooking")
     end
+
+    it "marks puzzles the logged-in player has already completed (ADR-0009)" do
+      user = create(:user)
+      sign_in user
+      create(:published_puzzle, title: "Finished it").tap do |p|
+        create(:attempt, puzzle: p, user: user, solved: true)
+      end
+      create(:published_puzzle, title: "Not yet")
+
+      get play_index_path
+
+      text = Nokogiri::HTML(response.body).text
+      expect(response.body).to include("Finished it")
+      expect(response.body).to include("Not yet")
+      expect(text.scan(/Played/).size).to eq(1) # only the finished one is badged
+    end
   end
 
   describe "GET /p/:share_token (show)" do
@@ -112,6 +128,43 @@ RSpec.describe "Play (public)", type: :request do
       get play_path(puzzle.share_token)
 
       expect(response.body).not_to include("noindex")
+    end
+
+    context "when a logged-in player has already finished it (ADR-0009)" do
+      it "shows their result + the answers instead of a replayable board" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle, title: "One and done")
+        create(:attempt, puzzle: puzzle, user: user, solved: true,
+                         guesses: [{ "words" => %w[a b c d], "colors" => %w[blue blue blue blue] }])
+
+        get play_path(puzzle.share_token)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("The answers")             # solution revealed
+        expect(response.body).not_to include('data-controller="game"') # no fresh board
+      end
+
+      it "still serves a fresh board to a logged-in player who hasn't played it" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).to include('data-controller="game"')
+      end
+
+      it "never gates an author out of their own puzzle" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle, user: user)
+        create(:attempt, puzzle: puzzle, user: user, solved: true)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).to include('data-controller="game"')
+      end
     end
 
     it "404s an unknown token" do

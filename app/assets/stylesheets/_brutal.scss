@@ -297,7 +297,19 @@ body.theme-brutal {
   }
 
   &__author { font-size: $font-sm; font-style: italic; color: $brutal-muted; }
+
+  // "✓ Played" badge — a small green chip in the display face.
+  &__done {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    color: $color-green;
+  }
 }
+
+// "Already played" result view — muted note reads on the dark page.
+.theme-brutal .m-result__note { color: $brutal-muted; }
 
 // --- Author dashboard list (dense, divided; title-forward) ------------------
 .theme-brutal .m-puzzle-list--dash {

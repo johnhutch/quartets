@@ -1,0 +1,32 @@
+<%# Shown when a signed-in player revisits a puzzle they've already finished —
+    one play per puzzle (ADR-0009). Their emoji cube + the revealed solution,
+    since they can't play it again. Expects `puzzle` and `attempt` locals. %>
+<% cube = EmojiCube.new(attempt.guesses).to_s %>
+<div class="m-result">
+  <p class="m-result__status">
+    <%= attempt.solved? ? "You solved this one." : "You didn't crack this one." %>
+    <span class="m-result__note">You've already played it — one shot per puzzle.</span>
+  </p>
+
+  <% if cube.present? %>
+    <div class="m-game__share">
+      <div class="m-cube"><%= cube %></div>
+      <%= tag.button type: "button", class: "m-btn m-btn--share",
+            data: { controller: "clipboard",
+                    clipboard_text_value: ShareText.new(title: puzzle.title, cube: cube, url: play_url(puzzle.share_token)).to_s,
+                    action: "clipboard#copy" } do %>
+        <%= icon(:share) %><span data-clipboard-target="label">Copy result</span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <h2 class="m-result__heading">The answers</h2>
+  <div class="m-game__solved">
+    <% puzzle.groups.each do |group| %>
+      <div class="m-game__group m-group--<%= group.color %>">
+        <p class="m-game__group-name"><%= group.description %></p>
+        <p><%= group.filled_words.join(" · ") %></p>
+      </div>
+    <% end %>
+  </div>
+</div>

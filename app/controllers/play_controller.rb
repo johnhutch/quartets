@@ -7,6 +7,8 @@ class PlayController < ApplicationController
 
   def index
     @puzzles = Puzzle.published.order(created_at: :desc)
+    # Which of these the signed-in player has already finished, for the badge.
+    @completed_ids = user_signed_in? ? current_user.attempts.distinct.pluck(:puzzle_id).to_set : Set.new
   end
 
   def show
@@ -19,8 +21,12 @@ class PlayController < ApplicationController
     unless @puzzle.complete?
       return redirect_to(edit_puzzle_path(@puzzle)) if owns?(@puzzle)
 
-      head :not_found
+      return head :not_found
     end
+
+    # One play per logged-in player (ADR-0009): once they've finished a puzzle
+    # that isn't their own, show their saved result instead of a fresh board.
+    @my_attempt = current_user.attempts.find_by(puzzle: @puzzle) if user_signed_in? && !owns?(@puzzle)
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end

@@ -40,7 +40,11 @@
     <p class="m-byline">by <%= @puzzle.author_name %></p>
   <% end %>
 
-  <%= render "play/board", puzzle: @puzzle %>
+  <% if @my_attempt %>
+    <%= render "play/result", puzzle: @puzzle, attempt: @my_attempt %>
+  <% else %>
+    <%= render "play/board", puzzle: @puzzle %>
+  <% end %>
 
   <% unless owns?(@puzzle) %>
     <p class="m-play-back"><%= link_to "← More puzzles", play_index_path %></p>

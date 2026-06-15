@@ -352,6 +352,30 @@
     color: $color-muted;
     font-size: $font-sm;
   }
+
+  // "✓ Played" badge on the browse list — the puzzles you've already finished.
+  &__done {
+    flex: none;
+    font-size: $font-sm;
+    font-weight: 700;
+    color: $color-green;
+  }
+}
+
+// The "already played" result view — one play per puzzle (ADR-0009): the cube +
+// the revealed solution shown in place of a replayable board.
+.m-result {
+  display: grid;
+  gap: $space-md;
+
+  &__note {
+    display: block;
+    font-size: $font-sm;
+    font-weight: 400;
+    color: $color-muted;
+  }
+
+  &__heading { margin-top: $space-md; }
 }
 
 // Inline icon, sized to the surrounding text.

@@ -6,4 +6,7 @@ class User < ApplicationRecord
          :rememberable, :validatable
 
   has_many :puzzles, dependent: :destroy
+  # Plays the account has recorded. Nullify on delete so the play still counts in
+  # the puzzle's aggregate stats — it just goes back to anonymous (ADR-0009).
+  has_many :attempts, dependent: :nullify
 end

@@ -1,5 +1,9 @@
 class Attempt < ApplicationRecord
   belongs_to :puzzle
+  # Optional: anonymous plays carry only a player_token (ADR-0005). A logged-in
+  # play is also attributed to the account, which caps it at one per puzzle and
+  # powers the "already played" result view (ADR-0009).
+  belongs_to :user, optional: true
 
   # Defaults so a fresh attempt is well-formed without the caller spelling it out.
   attribute :solved, default: false
