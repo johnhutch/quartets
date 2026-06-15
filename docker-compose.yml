@@ -1,10 +1,11 @@
 # Compose project for the Synology (DSM Container Manager → Projects).
 #
 # Dev is native — this file is production-only. The web image is built automatically
-# via GitHub Actions and published to GHCR. Watchtower automatically pulls updates 
-# and restarts the app. A cloudflared sidecar exposes the app at playquartets.com 
-# via a Cloudflare Tunnel. Secrets live in a sibling .env on the NAS (gitignored) 
-# — see .env.example and docs/DEPLOY.md.
+# via GitHub Actions and published to GHCR. Watchtower automatically pulls updates
+# and restarts web. A Caddy proxy sits in front so deploys don't 502 during the
+# restart, and a cloudflared sidecar exposes the app at playquartets.com via a
+# Cloudflare Tunnel (tunnel → caddy → web). Secrets live in a sibling .env on the
+# NAS (gitignored) — see .env.example and docs/DEPLOY.md.
 services:
   db:
     image: postgres:17-alpine
@@ -25,6 +26,11 @@ services:
     # Automatically built via GitHub Actions and published to GHCR.
     image: ghcr.io/johnhutch/quartets:latest
     restart: unless-stopped
+    # Watchtower only auto-updates containers carrying this label (it runs with
+    # WATCHTOWER_LABEL_ENABLE), so a new image cycles ONLY web — never the proxy,
+    # db, or tunnel. That's what keeps the Caddy buffer up across a deploy.
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     depends_on:
       db:
         condition: service_healthy
@@ -57,9 +63,22 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
 
+  # Front proxy (see Caddyfile). cloudflared targets THIS, not web directly, so it
+  # can hold/retry requests while Watchtower recreates web on a deploy — no 502s
+  # during the ~10-15s restart. Caddy is pinned and never auto-updated, so it stays
+  # up across deploys.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - web
+
   # Outbound-only tunnel: exposes the app at playquartets.com with no port
   # forwarding and no exposed home IP. Create the tunnel in Cloudflare Zero Trust,
-  # set its public hostname → http://web:80, and drop the token in .env.
+  # set its public hostname → http://caddy:80, and drop the token in .env.
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
@@ -67,7 +86,7 @@ services:
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
     depends_on:
-      - web
+      - caddy
 
   # Automatically updates containers when a new image is pushed to GHCR
   watchtower:
@@ -78,6 +97,8 @@ services:
     # Check for updates every 5 minutes (300 seconds)
     command: --interval 300
     environment:
+      # Only watch containers labelled watchtower.enable=true — i.e. just web.
+      WATCHTOWER_LABEL_ENABLE: "true"
       # If your GHCR repo is private, Watchtower needs authentication to pull.
       # You can supply a GitHub Personal Access Token (PAT) via .env
       REPO_USER: ${GITHUB_ACTOR:-}
@@ -85,3 +106,4 @@ services:
 
 volumes:
   pgdata:
+  caddy_data:
