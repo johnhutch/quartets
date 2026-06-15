@@ -15,6 +15,6 @@ RSpec.describe "Your puzzles dashboard", type: :system, js: true do
 
     # The row re-renders as a draft (the Unpublish link is gone).
     expect(page).to have_no_link("Unpublish?")
-    expect(puzzle.reload).to be_draft
+    expect(puzzle.reload).to be_unlisted
   end
 end

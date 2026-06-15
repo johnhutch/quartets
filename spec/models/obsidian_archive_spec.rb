@@ -56,13 +56,13 @@ RSpec.describe ObsidianArchive do
   describe ".import" do
     let(:user) { create(:user) }
 
-    it "publishes complete puzzles, drafts partial ones, and skips junk" do
+    it "publishes complete puzzles, leaves partial ones unlisted, and skips junk" do
       summary = described_class.import(markdown, user: user)
 
       expect(summary[:published]).to contain_exactly(
         "Gillespie", "Heroes and Villains", "my favorite hockey boys"
       )
-      expect(summary[:drafted]).to contain_exactly("balls")
+      expect(summary[:unlisted]).to contain_exactly("balls")
       expect(summary[:skipped]).to contain_exactly("WORLD CHAMPIONS OF BASEBALL")
     end
 
@@ -77,7 +77,7 @@ RSpec.describe ObsidianArchive do
 
     it "salvages a partial puzzle as a draft" do
       described_class.import(markdown, user: user)
-      expect(user.puzzles.find_by(title: "balls")).to be_draft
+      expect(user.puzzles.find_by(title: "balls")).to be_unlisted
     end
 
     it "is idempotent — re-running imports nothing new" do

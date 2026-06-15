@@ -221,6 +221,77 @@ pinned (`caddy:2`) so it isn't itself caught in an update.
 
 ---
 
+## 0008 — Drafts retired: completeness (derived) × visibility (unlisted/published)
+
+**Date:** 2026-06-15
+**Status:** accepted (not yet built — build plan in TODOS.md; reframes the
+draft/published model from ADR-0001)
+
+**Context.** "Draft" was overloaded: it meant both *unfinished* (fields missing)
+and *finished-but-not-on-the-site*. The owner wants those split, a lively public
+homepage (so publishing should be encouraged, not buried), and complete-but-hidden
+puzzles to be **playable by anyone with the link** (today a non-owner 404s on any
+unpublished puzzle). A separate change landing this week makes the play URL a
+name slug + random suffix (`/p/my-super-cool-puzzle-230492351nfs`, still under
+`/p/`), which interacts with how hidden puzzles stay unadvertised.
+
+**Decision.**
+
+- **Two axes, not a three-state enum.** Completeness stays **derived** —
+  `Puzzle#complete?` (title + 4 groups, each with 4 words + a description), never
+  stored. `status` becomes a pure **visibility** toggle. The three things the
+  author sees fall out of the combination:
+  - *incomplete* = `unlisted` & `!complete?`
+  - *unlisted* = `unlisted` & `complete?`
+  - *published* = `published` (only reachable once `complete?`)
+- **Enum rename, zero data migration.** `{ draft: 0, published: 1 }` →
+  `{ unlisted: 0, published: 1 }`, default `:unlisted`. Existing rows don't move:
+  old complete drafts become `unlisted + complete?`, old incomplete drafts become
+  `unlisted + !complete?`. The word "draft" retires.
+- **Terminology: "Unlisted."** The owner first wanted "Private," then switched —
+  the deciding factor was that a `private` enum value collides with Ruby's
+  `Module#private` (it'd break the generated `Puzzle.private` scope; the
+  controllers lean on `Puzzle.published`). "Unlisted" is also simply the honest
+  term: it is **obscurity, not access control** — every unlisted link is playable
+  by anyone who has it. Symbol and UI label now agree (`unlisted?` ↔ "Unlisted").
+  Microcopy still states it plainly: *"Anyone with the link can play. Won't appear
+  on the site or in search."* Visibility is explicitly low-stakes ("not secret
+  data; just not advertised — if someone guesses it, shrug"), which is why the
+  slug's random suffix is sufficient and no owner-only/true-private state exists.
+- **Playability gates on `complete?`, not `published`.** `play#show`:
+  published → anyone; unlisted + complete → anyone with the link (the new
+  behavior); unlisted + **incomplete** → 404 for strangers, owner redirected to
+  the editor (you can't play a half-built board). One rule: *the play page
+  requires `complete?`; published merely adds "listed."*
+- **No auto-publish, no default-public.** Completeness is reached mid-autosave,
+  so auto-publishing-on-complete would shove a puzzle live the instant the last
+  word is typed — before review. Rejected. Status is **always unlisted until an
+  explicit publish.** The lever against puzzles dying unlisted-by-neglect is
+  **prominence, not automation:** the moment a puzzle is `complete?`, the editor's
+  primary CTA becomes a loud **"Publish to the site"** (`m-btn--go`), with a quiet
+  secondary **"Keep it unlisted (link only)"** carrying the honest one-liner. A
+  conscious one-time choice, Publish visually winning — not a buried checkbox.
+- **`noindex` ⟂ link previews.** Unlisted puzzles emit
+  `<meta name="robots" content="noindex, nofollow">` (search engines stay out);
+  published puzzles omit it (indexable). **Both keep full OG/Twitter tags** so a
+  shared link still unfurls a preview card in iMessage/Slack/etc. — that's the
+  whole point of an unlisted link, and OG scrapers fire on-demand, not by crawling.
+- **Unpublish → unlisted.** `published → unlisted` keeps all data and the working
+  link; there's no separate draft state to fall back to. The dashboard's
+  "Unpublish?" becomes "Make unlisted." `featured` still implies published (an
+  unlisted puzzle can't be featured).
+
+**Consequence.** `status`'s meaning shifts from lifecycle to visibility — read
+any old `draft?`/`published?` call site with that lens (the publish-only
+validations in `Puzzle`/`Group` still key off `published?` and are unaffected).
+The notable behavior change is `play#show`: it must gate on `complete?` and stop
+404-ing complete unlisted puzzles for non-owners. Unlisted is deliberately weak by
+design; don't add access-control machinery for it later without revisiting this.
+The slug migration is orthogonal but should ship compatibly — the random suffix
+is what keeps unlisted puzzles unadvertised.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

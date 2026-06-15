@@ -3,7 +3,7 @@ FactoryBot.define do
     user
     sequence(:title) { |n| "Puzzle #{n}" }
     author_name { "Hutch" }
-    status { :draft }
+    status { :unlisted }
 
     # Adds the four correctly-colored groups a published puzzle needs.
     trait :complete do

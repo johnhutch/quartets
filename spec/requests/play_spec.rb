@@ -7,7 +7,7 @@ RSpec.describe "Play (public)", type: :request do
   describe "GET /play (index)" do
     it "is open to anyone and lists only published puzzles" do
       published = create(:published_puzzle, title: "Out in the world")
-      draft     = create(:puzzle, title: "Still cooking", status: :draft)
+      draft     = create(:puzzle, title: "Still cooking", status: :unlisted)
 
       get play_index_path
 
@@ -36,7 +36,7 @@ RSpec.describe "Play (public)", type: :request do
     end
 
     it "404s a draft — it isn't public yet" do
-      puzzle = create(:puzzle, :complete, status: :draft)
+      puzzle = create(:puzzle, :complete, status: :unlisted)
 
       get play_path(puzzle.share_token)
 
@@ -46,7 +46,7 @@ RSpec.describe "Play (public)", type: :request do
     it "lets the owner preview their own draft with a publish CTA" do
       user = create(:user)
       sign_in user
-      draft = create(:puzzle, :complete, user: user, status: :draft)
+      draft = create(:puzzle, :complete, user: user, status: :unlisted)
 
       get play_path(draft.share_token)
 

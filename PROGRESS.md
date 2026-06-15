@@ -24,6 +24,12 @@ share payload, debounce tune) need no decisions. Deploy is **live** — push to
 a Caddy front proxy so the restart no longer 502s (ADR-0006 + ADR-0007). Still
 outstanding: real SMTP creds in the NAS `.env` for forgot-password mail.
 
+Next design work is scoped but unbuilt: the **visibility model** (ADR-0008) —
+"draft" retires into *incomplete* (derived from `complete?`) vs *unlisted*
+(complete but not on the site, playable by anyone with the link), with publishing
+an explicit-but-prominent step. Build plan in TODOS; meant to land alongside the
+in-flight **slug migration** (name + random-suffix play URLs).
+
 ## Shipped log (most recent first)
 
 - **Deploy automated + made zero-downtime-ish (ADR-0006, ADR-0007).** Push to

@@ -13,9 +13,9 @@ class ObsidianArchive
     new(markdown).parse
   end
 
-  # Returns { published:, drafted:, skipped: } — arrays of titles.
+  # Returns { published:, unlisted:, skipped: } — arrays of titles.
   def self.import(markdown, user:)
-    summary = { published: [], drafted: [], skipped: [] }
+    summary = { published: [], unlisted: [], skipped: [] }
 
     parse(markdown).each do |data|
       groups = data[:groups]
@@ -27,7 +27,7 @@ class ObsidianArchive
 
       puzzle = build_puzzle(data, groups, user)
       puzzle.save!
-      (puzzle.published? ? summary[:published] : summary[:drafted]) << data[:title]
+      (puzzle.published? ? summary[:published] : summary[:unlisted]) << data[:title]
     end
 
     summary
@@ -43,7 +43,7 @@ class ObsidianArchive
         position: i
       )
     end
-    puzzle.status = complete?(groups) ? :published : :draft
+    puzzle.status = complete?(groups) ? :published : :unlisted
     puzzle
   end
   private_class_method :build_puzzle
