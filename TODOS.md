@@ -79,6 +79,10 @@ design — no access control.
   (verify what commit `b3acb2b` already covers first).
 - **Tune the auto-save debounce** — currently 1000ms
   (`data-autosave-debounce-value` on the form). Feel it on a real phone and adjust.
+- **Finish the "quartet" rename in body copy** — chrome (nav/buttons/titles/
+  headings) now says "quartet"; *prose* still says "puzzle" (dashboard/play empty
+  states, claim CTA, privacy page, `og:description`). Sweep if full consistency is
+  wanted — left alone on purpose since the ask was scoped to buttons/nav.
 
 ### Ops
 

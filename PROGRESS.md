@@ -31,6 +31,12 @@ migration** (name + random-suffix play URLs) — see the TODOS reminder.
 
 ## Shipped log (most recent first)
 
+- **UI says "quartets" + "Play More Quartets" nav button.** Swept the user-facing
+  chrome — nav items, action buttons, back-links, page titles + `<h1>`s — from
+  "puzzle" → "quartet" (the `Puzzle` model/table/routes are untouched; body/
+  marketing copy still says "puzzle"). Added a "Play More Quartets ↗" button beside
+  the wordmark (`l-topbar__brand`; header now wraps on a phone). Unlisted-complete
+  puzzles also gained Share buttons on the dashboard + owner preview. 169 green.
 - **One play per logged-in user + result view (ADR-0009).** `Attempt` gained an
   optional `user_id`; logged-in plays attribute to the account and are capped at
   one per puzzle (partial unique index; `attempts#create` idempotent). Win or

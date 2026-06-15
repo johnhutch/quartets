@@ -36,6 +36,8 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   (default) or `published` (ADR-0008). Whether it's *playable* is derived from
   `#complete?`, independent of visibility — the three author-facing states are
   incomplete (unlisted & !complete?), unlisted (unlisted & complete?), published.
+  **Naming:** user-facing chrome (nav, buttons, titles, headings) calls a Puzzle a
+  **"quartet"**; the model, table, and routes stay `Puzzle`/`puzzles`.
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
   yellow, purple` (enum). Authoring/form order is blue→green→yellow→purple
   (swellgarfo muscle memory), *not* NYT difficulty order.
