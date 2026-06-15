@@ -63,9 +63,12 @@ design — no access control.
   each puzzle (play surfaces). Upvotes start at **1**, downvotes at **0** — so a
   fresh puzzle's total score is **1**. The total score shows on the puzzle's
   stats page. Anonymous-safe (one vote per player_token, like attempts).
-- **Superuser admin page** — a gated view listing **all** puzzles in the system
-  (every author's), for the superuser. The one place creation/ownership is still
-  account-gated post-ADR-0005.
+- **Superuser admin page** — a role-gated admin surface (needs a `superuser`/role
+  mechanism on `User` — doesn't exist yet) with **user**, **puzzle**, and **tag**
+  admin. Lists **all** puzzles (every author's); manages users; and — key for the
+  tags cold-start (see below) — lets an admin **edit/merge/delete tags** to clean
+  up spelling divergence ("Star Wars" vs "starwars"). The one place
+  creation/ownership stays account-gated post-ADR-0005.
 - **Bulk "Export my puzzles" (CSV)** — export is now a *separate* function: an
   "Export my puzzles" link at the **bottom of Your Puzzles** downloads **all** of
   the owner's puzzles as one CSV. Per-puzzle export is gone from the UI (the

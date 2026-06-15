@@ -5,9 +5,14 @@ class Puzzle < ApplicationRecord
 
   GROUPS_PER_PUZZLE = 4
 
+  # Short share/discovery blurb — sized to fit a Bluesky post alongside the URL.
+  DESCRIPTION_LIMIT = 200
+
   # Optional: a logged-out author owns puzzles through the signed creator_token
   # cookie instead (ADR-0005). Signing in/up claims them onto the account.
   belongs_to :user, optional: true
+
+  include Taggable
 
   has_many :groups, -> { order(:position) }, dependent: :destroy, inverse_of: :puzzle
   has_many :attempts, dependent: :destroy
@@ -30,6 +35,9 @@ class Puzzle < ApplicationRecord
   # form is answers-first with the title at the bottom, so a half-typed draft
   # routinely has groups but no title yet. Drafts auto-save in that state, so
   # they stay deliberately lenient; publish is where the rules bite.
+  # Optional everywhere (never a publish gate); just capped so it stays a blurb.
+  validates :description, length: { maximum: DESCRIPTION_LIMIT }, allow_blank: true
+
   validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
 

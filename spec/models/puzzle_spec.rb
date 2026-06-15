@@ -21,6 +21,27 @@ RSpec.describe Puzzle, type: :model do
     expect(Puzzle.new.status).to eq("unlisted")
   end
 
+  describe "discovery metadata (specialized + description)" do
+    it "defaults to Classic (not specialized)" do
+      expect(Puzzle.new.specialized).to be(false)
+    end
+
+    it "allows a description up to 200 characters" do
+      expect(build(:puzzle, description: "a" * 200)).to be_valid
+    end
+
+    it "rejects a description over 200 characters" do
+      puzzle = build(:puzzle, description: "a" * 201)
+      expect(puzzle).not_to be_valid
+      expect(puzzle.errors[:description]).to be_present
+    end
+
+    it "is fine with a blank description (optional)" do
+      expect(build(:puzzle, description: nil)).to be_valid
+      expect(build(:puzzle, description: "")).to be_valid
+    end
+  end
+
   describe "visibility (ADR-0008)" do
     # Two axes: visibility (status enum) × completeness (derived). The three
     # author-facing states fall out of the combination.
