@@ -109,11 +109,14 @@
 
     <%# Publish is the loud, encouraged path once the puzzle is complete — a second
         submit via formaction → the publish action — greyed and guarded with a
-        tooltip until then. Saving instead keeps it unlisted (ADR-0008). %>
-    <% if puzzle.persisted? && puzzle.unlisted? %>
+        tooltip until then. Saving instead keeps it unlisted (ADR-0008). A brand-new
+        puzzle has no id yet, so it starts hidden + unwired; the autosave controller
+        reveals it and sets the formaction the moment the first save mints the record. %>
+    <% unless puzzle.published? %>
       <span class="m-tooltip<%= ' is-blocked' unless puzzle.complete? %>"
-            data-autosave-target="publishGuard">
-        <%= tag.button type: :submit, formaction: publish_puzzle_path(puzzle),
+            data-autosave-target="publishGuard"<%= ' hidden' unless puzzle.persisted? %>>
+        <%= tag.button type: :submit,
+              formaction: (publish_puzzle_path(puzzle) if puzzle.persisted?),
               class: "m-btn m-btn--go#{' is-disabled' unless puzzle.complete?}",
               data: { autosave_target: "publish", action: "autosave#guardPublish" } do %>
           <%= icon(:eye) %><span>Publish</span>

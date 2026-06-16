@@ -41,6 +41,16 @@ export default class extends Controller {
     if (this.hasPublishTarget) this.publishTarget.classList.toggle("is-disabled", !done)
   }
 
+  // A brand-new puzzle renders Publish hidden + unwired (no id yet). Once the
+  // first save mints the record, point it at the publish action and reveal it;
+  // refresh() then greys it until the puzzle is complete.
+  enablePublish(url) {
+    if (!this.hasPublishTarget) return
+    this.publishTarget.formAction = url
+    if (this.hasPublishGuardTarget) this.publishGuardTarget.hidden = false
+    this.refresh()
+  }
+
   // Block a publish attempt while the puzzle is still incomplete; the tooltip
   // explains why.
   guardPublish(event) {
@@ -92,6 +102,10 @@ export default class extends Controller {
         if (location && data.patch_url) {
           this.becomeEditable(data.patch_url, location)
         }
+
+        // The record now exists, so Publish can point at the publish action and
+        // show itself (greyed until complete — refresh() handles that).
+        if (data.publish_url) this.enablePublish(data.publish_url)
 
         if (data.group_ids) {
           Object.entries(data.group_ids).forEach(([color, id]) => {

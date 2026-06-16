@@ -68,11 +68,11 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
 
     expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
     # Now that every field is filled, the save button promotes itself to the
-    # "keep it unlisted" choice (and Publish lights up).
+    # "keep it unlisted" choice, and Publish reveals + lights up right here on the
+    # create screen — no reload, no trip to the editor (ADR-0008).
     expect(page).to have_button("Keep it unlisted (link only)")
+    expect(page).to have_button("Publish")
 
-    # The puzzle now exists; its editor is where Publish lives.
-    visit edit_puzzle_path(Puzzle.last)
     click_button "Publish"
 
     # Publishing drops the author straight onto the live, playable board with a
