@@ -87,9 +87,12 @@
       <div class="m-form__field">
         <label>Answers</label>
         <% Group::WORDS_PER_GROUP.times do |i| %>
+          <%# Each input carries its own accessible name (WCAG 3.3.2/4.1.2) — the
+              placeholder isn't a label, and "Answers" sits above all four. %>
           <%= text_field_tag "#{gf.object_name}[words][]",
                 Array(gf.object.words)[i],
-                placeholder: "Word #{i + 1}" %>
+                placeholder: "Word #{i + 1}",
+                "aria-label": "#{gf.object.color.to_s.titleize} answer #{i + 1}" %>
         <% end %>
       </div>
 

@@ -477,6 +477,46 @@ reconstruction shows the terminal revealed state.
 
 ---
 
+## 0013 — Accessibility: WCAG 2.1 AA as a standing bar
+
+**Date:** 2026-06-16
+**Status:** accepted
+
+**Context.** A full Lighthouse audit (mobile, dev server) put the site at a
+uniform **95** accessibility — a strong baseline. The game was already
+keyboard-operable (real `<button>` tiles, `aria-pressed`, `aria-live` status),
+and solved groups render the category as **text**, so colour was never the only
+signal (1.4.1 holds). But axe only automates a third of WCAG, and "95" left real
+gaps: contrast misses on the near-black theme, no skip link or `<main>`, thin
+focus styling, unlabelled answer inputs, role-less flash, and unguarded motion.
+
+**Decision.**
+- **Commit to WCAG 2.1 AA (or better) as a standing bar**, not a one-off cleanup.
+  Tracked in [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) (criterion → status
+  → file), re-checked with Lighthouse after a11y-affecting changes.
+- **Fixed this pass:** muted text moved off the light-theme `$color-muted` onto
+  `$brutal-muted` and dropped the footer-disclaimer opacity (1.4.3); skip link +
+  `<main id="main">` (2.4.1); global `:focus-visible` ring (2.4.7); `aria-label`
+  on the sixteen answer inputs (3.3.2/4.1.2); `role`+`aria-live` on flash by
+  severity (4.1.3); `prefers-reduced-motion` flattens tilt/lift (2.3.3); named
+  the two `<nav>` landmarks (1.3.1). All eight audited surfaces now score **100**.
+- **TDD split:** semantic/markup criteria are pinned in
+  `spec/system/accessibility_spec.rb`; **contrast and reduced-motion are not
+  RSpec'd** — asserting colour math against compiled CSS is brittle and
+  low-value, so they're verified via Lighthouse instead.
+- **Conscious exemptions:** `/styleguide` swatches (demo colour samples, holding
+  them to AA defeats the purpose; unlinked internal tool) and the emoji **cube**
+  (decorative share string). `meta-description` is missing but it's **SEO, not
+  ADA** — deferred to a separate pass, noted only to explain the Lighthouse delta.
+
+**Consequence.** Accessibility is now a durable promise with a paper trail, not
+a vibe. New surfaces inherit the bar: any change that moves a criterion updates
+`ACCESSIBILITY.md` and keeps `accessibility_spec.rb` green. `prefers-reduced-motion`
+means the signature brutalist motion only flattens for users who opt out at the
+OS level — the default experience is untouched.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.
