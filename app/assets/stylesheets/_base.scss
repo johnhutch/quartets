@@ -50,32 +50,34 @@ button {
 // login/signup or my-puzzles/logout on the right. Neutral here; the brutalist
 // theme dresses it up in _brutal.scss.
 .l-topbar {
+  position: relative; // anchor for the mobile hamburger sheet
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap; // keep the brand + auth groups from overflowing on a phone
-  gap: $space-sm;
+  gap: $space-md;
   padding: $space-sm $space-md;
   font-size: $font-lg;
 
-  // Logo + "Play More Puzzles" ride together on the left.
-  &__brand {
+  &__home { font-weight: 700; }
+
+  // Desktop nav: fills the row so "Play More" rides by the logo and the auth
+  // group sits hard right — the layout the topbar's always had.
+  &__inline {
+    flex: 1;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: $space-sm $space-md;
-  }
+    justify-content: space-between;
+    gap: $space-md;
 
-  &__home { font-weight: 700; }
+    // button_to wraps the logout in a form — collapse it so the button sits in
+    // the flex row exactly like the anchor buttons beside it.
+    form { margin: 0; display: contents; }
+  }
 
   &__auth {
     display: flex;
     align-items: center;
     gap: $space-sm;
-
-    // button_to wraps the logout in a form — collapse it so the button sits in
-    // the flex row exactly like the anchor buttons beside it.
-    form { margin: 0; display: contents; }
   }
 
   // Small outline buttons, sized to roughly the cap height of the wordmark. The
@@ -97,6 +99,67 @@ button {
     white-space: nowrap;
     vertical-align: middle;
   }
+}
+
+// Mobile hamburger (CSS-only <details>). Hidden on desktop; the inline nav above
+// shows instead. Below $bp-nav the two swap (see the media query).
+.l-nav {
+  display: none;
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.5rem;
+    list-style: none; // drop the default disclosure triangle
+    &::-webkit-details-marker { display: none; }
+  }
+
+  &__ico { display: inline-flex; }
+  &__ico--close { display: none; }
+  &[open] &__ico--open { display: none; }
+  &[open] &__ico--close { display: inline-flex; }
+
+  // The open menu: a full-width sheet dropping under the bar.
+  &__menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: $space-xs;
+    padding: $space-sm $space-md $space-md;
+
+    form { margin: 0; display: contents; }
+  }
+
+  // Plain menu rows — no outline-button chrome (that's the desktop look).
+  &__link {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: $space-sm $space-xs;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  // The one tilted-yellow item — sized to its text, not the full row.
+  &__create {
+    align-self: flex-start;
+    margin-bottom: $space-sm;
+  }
+}
+
+@media (max-width: $bp-nav) {
+  .l-topbar__inline { display: none; }
+  .l-nav { display: block; }
 }
 
 // Layout primitive: every page is centered on this column.
