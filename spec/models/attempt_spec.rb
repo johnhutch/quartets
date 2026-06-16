@@ -76,6 +76,21 @@ RSpec.describe Attempt, type: :model do
       build(:attempt, solved: true, mistakes_count: 0, guesses: order.map { |c| correct(c) })
     end
 
+    describe "#solved_colors (solve order)" do
+      it "lists the colors cracked, in order" do
+        a = flawless(%w[purple blue green yellow])
+        expect(a.solved_colors).to eq(%w[purple blue green yellow])
+      end
+
+      it "includes only the correct guesses, skipping wrong ones" do
+        a = build(:attempt, solved: false, mistakes_count: 1, guesses: [
+          { "correct" => false, "words" => %w[a b c d], "colors" => %w[blue green blue green] },
+          correct("blue")
+        ])
+        expect(a.solved_colors).to eq(%w[blue])
+      end
+    end
+
     describe "#earned_achievement" do
       it "is reverse_rainbow for a flawless purple→blue→green→yellow win" do
         expect(flawless(%w[purple blue green yellow]).earned_achievement).to eq(:reverse_rainbow)

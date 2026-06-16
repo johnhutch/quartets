@@ -135,9 +135,13 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   any complete puzzle plays for anyone with the link (published or unlisted); an
   incomplete one redirects its owner to the editor and 404s everyone else.
   `AttemptsController#create` mirrors that gate (and attributes the attempt to
-  `current_user` when signed in, idempotently — ADR-0009). For a signed-in
-  non-owner who's already finished a puzzle, `show` renders `play/_result` (their
-  cube + revealed answers) instead of the board; `index` badges completed puzzles.
+  `current_user` when signed in, idempotently — ADR-0009). For a **non-owner** who
+  has already finished a puzzle, `show` renders `play/_result` — the **reconstructed
+  game-over board** (groups in solve order from `attempt.solved_colors`, win/loss
+  stamp, cube + trophies) — instead of a fresh board (ADR-0012). The finished
+  attempt is looked up by account when signed in, else by `player_token`
+  (`PlayController#finished_attempt`); owners are never gated. `index` badges
+  completed puzzles.
 
 ## Gotchas
 

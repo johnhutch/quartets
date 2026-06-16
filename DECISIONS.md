@@ -435,6 +435,48 @@ the dashboard waits on the daily-puzzle frontpage (no "today" without it).
 
 ---
 
+## 0012 — Finished-state on revisit: reconstruct the game-over board + gate anonymous replays
+
+**Date:** 2026-06-16
+**Status:** accepted (narrows 0009's anonymous-replay stance)
+
+**Context.** Plays now record a full guess log (the `Guess` value object, ADR-0011
+follow-up). The revisit view (ADR-0009) showed only a static "The answers" key in
+authoring order — it didn't reflect how the player actually played. And ADR-0009
+deliberately left **anonymous** plays replayable ("you can't reliably gate a
+cookie, and that's fine"). The owner wants revisiting an already-played puzzle to
+show it **in its finished state** — the board as it ended, the guesses made, the
+emoji cube — and to **not be redoable**, for anonymous players too.
+
+**Decision.**
+
+- **Reconstruct the game-over board** from the recorded attempt, server-side and
+  static (no controls): the four group rows revealed **in solve order**
+  (`Attempt#solved_colors`, derived from the guess log's correct guesses), then any
+  unsolved groups, the win/loss **stamp** ("Solved it" / "Out of guesses"), the
+  **cube** + Copy, and the trophies/quip block (ADR-0011). Same markup as the live
+  game's game-over screen. Replaces the old answer-key `_result`.
+- **Gate non-owners by finished attempt.** `play#show` shows the finished board
+  (not a fresh one) when a **non-owner** has an attempt: logged-in → their one
+  attempt (unchanged from 0009); **anonymous → the most recent finished attempt for
+  their `player_token`** (NEW). "Finished" = any recorded attempt (win or loss),
+  since attempts are only recorded at game-over.
+- **Owners are never gated** — they keep a replayable board on their own puzzle
+  (test-play during authoring). Unchanged from 0009.
+- **Anonymous gating is obscurity, not a lock.** Clearing the cookie or using
+  another device replays — accepted, same philosophy as unlisted obscurity
+  (ADR-0008). No retroactive claim of pre-login anonymous attempts (0009 unchanged),
+  so a play recorded while logged out won't gate the same person once signed in.
+
+**Consequence.** ADR-0009's "anonymous stays replayable" is **narrowed**: anonymous
+players now see the finished state on revisit within the same cookie. The revisit
+view is driven by the guess log (solve order), so it depends on `Guess`/`guess_log`.
+The home featured board is still **not** result-gated (deferred, per 0009). The
+emoji cube remains the canonical record of "the guesses I made"; the board
+reconstruction shows the terminal revealed state.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

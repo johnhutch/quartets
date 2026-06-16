@@ -24,10 +24,23 @@ class PlayController < ApplicationController
       return head :not_found
     end
 
-    # One play per logged-in player (ADR-0009): once they've finished a puzzle
-    # that isn't their own, show their saved result instead of a fresh board.
-    @my_attempt = current_user.attempts.find_by(puzzle: @puzzle) if user_signed_in? && !owns?(@puzzle)
+    # One play per non-owner (ADR-0009, ADR-0012): once they've finished a puzzle
+    # that isn't their own, show the reconstructed finished board instead of a
+    # fresh one. Owners are never gated (they replay to test). Logged-in players
+    # are keyed by account; anonymous players by their player_token (best-effort —
+    # clearing the cookie still lets a stranger replay, which is fine).
+    @my_attempt = finished_attempt unless owns?(@puzzle)
   rescue ActiveRecord::RecordNotFound
     head :not_found
+  end
+
+  private
+
+  def finished_attempt
+    if user_signed_in?
+      current_user.attempts.find_by(puzzle: @puzzle)
+    else
+      @puzzle.attempts.where(player_token: current_player_token).order(created_at: :desc).first
+    end
   end
 end

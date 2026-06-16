@@ -34,13 +34,19 @@ class Attempt < ApplicationRecord
     guesses.map { |raw| Guess.new(raw) }
   end
 
+  # The colors solved, in the order they were cracked (the solve order). Drives the
+  # trophy tier and the reconstructed game-over board on revisit.
+  def solved_colors
+    guess_log.select(&:correct?).map(&:solved_color)
+  end
+
   # The tier this attempt earns: only a flawless win (all four solved, no mistakes)
   # scores, and the tier is the solve order — purple is hardest, so reverse rainbow
   # is purple→blue→green→yellow.
   def earned_achievement
     return nil unless solved? && mistakes_count.to_i.zero?
 
-    order = guess_log.select(&:correct?).map(&:solved_color)
+    order = solved_colors
     return :reverse_rainbow if order == %w[purple blue green yellow]
     return :purple_first if order.first == "purple"
 
