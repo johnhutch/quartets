@@ -12,6 +12,12 @@ class Attempt < ApplicationRecord
   # The emoji cube and "common mistakes" both derive from this.
   attribute :guesses, default: -> { [] }
 
+  # Trophy tier a flawless win earned (ADR-0011); nil = none. Ordered so cumulative
+  # counts are `achievement >= n` (reverse rainbow counts toward all three).
+  enum :achievement, { perfect: 1, purple_first: 2, reverse_rainbow: 3 }
+
+  before_create { self.achievement = earned_achievement }
+
   validates :player_token, presence: true
   validates :mistakes_count,
             numericality: {
@@ -19,6 +25,38 @@ class Attempt < ApplicationRecord
               greater_than_or_equal_to: 0,
               less_than_or_equal_to: Puzzle::MAX_MISTAKES
             }
+
+  # Attempts at the given tier or better (e.g. a reverse rainbow is also a perfect).
+  scope :at_least, ->(tier) { where(achievement: achievements.fetch(tier.to_s)..) }
+
+  # The tier this attempt earns: only a flawless win (all four solved, no mistakes)
+  # scores, and the tier is the solve order — purple is hardest, so reverse rainbow
+  # is purple→blue→green→yellow.
+  def earned_achievement
+    return nil unless solved? && mistakes_count.to_i.zero?
+
+    order = guesses.select { |g| g["correct"] || g[:correct] }
+                   .map { |g| (g["colors"] || g[:colors]).to_a.first }
+    return :reverse_rainbow if order == %w[purple blue green yellow]
+    return :purple_first if order.first == "purple"
+
+    :perfect
+  end
+
+  # Cumulative trophies this attempt earned, weakest → strongest (a reverse rainbow
+  # is also a purple-first and a perfect). Empty unless it scored.
+  def earned_tiers
+    tier = earned_achievement
+    return [] unless tier
+
+    level = self.class.achievements.fetch(tier.to_s)
+    self.class.achievements.select { |_, v| v <= level }.keys.map(&:to_sym)
+  end
+
+  # Which quip pool fits the outcome: the earned tier, else a flawed win, else a loss.
+  def quip_bucket
+    earned_achievement || (solved? ? :mistakes : :loss)
+  end
 
   # NYT model: out of mistakes and you didn't solve it.
   def lost?

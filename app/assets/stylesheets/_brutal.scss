@@ -311,6 +311,14 @@ body.theme-brutal {
 // "Already played" result view — muted note reads on the dark page.
 .theme-brutal .m-result__note { color: $brutal-muted; }
 
+// Trophies + dashboard stats (ADR-0011): muted secondary text on the dark page.
+.theme-brutal {
+  .m-awards__total,
+  .m-awards__nudge,
+  .m-trophy-case__name,
+  .m-statbar dt { color: $brutal-muted; }
+}
+
 // --- Author dashboard list (dense, divided; title-forward) ------------------
 .theme-brutal .m-puzzle-list--dash {
   gap: 0;

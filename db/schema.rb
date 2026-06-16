@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_15_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_15_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "attempts", force: :cascade do |t|
+    t.integer "achievement"
     t.datetime "created_at", null: false
     t.jsonb "guesses"
     t.integer "mistakes_count"
@@ -25,6 +26,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_140000) do
     t.bigint "user_id"
     t.index ["player_token"], name: "index_attempts_on_player_token"
     t.index ["puzzle_id"], name: "index_attempts_on_puzzle_id"
+    t.index ["user_id", "achievement"], name: "index_attempts_on_user_id_and_achievement"
     t.index ["user_id", "puzzle_id"], name: "index_attempts_on_user_and_puzzle", unique: true, where: "(user_id IS NOT NULL)"
   end
 

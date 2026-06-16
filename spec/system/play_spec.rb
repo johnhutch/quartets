@@ -81,6 +81,20 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(attempt).to be_solved
   end
 
+  it "awards a reverse rainbow for a flawless hardest-first win (ADR-0011)" do
+    visit play_path(puzzle.share_token)
+
+    # Purple → blue → green → yellow, no mistakes: the top trophy.
+    %i[purple blue green yellow].each { |color| solve(answers[color]) }
+
+    expect(page).to have_css(".m-trophy--reverse-rainbow")
+    # Cumulative: a reverse rainbow is also a purple-first and a perfect.
+    expect(page).to have_css(".m-awards__trophy", count: 3)
+    expect(page).to have_css(".m-awards__quip")
+    # Anonymous players are nudged to sign up rather than shown a farmable total.
+    expect(page).to have_link("Sign up")
+  end
+
   # Picks the four words then submits.
   def solve(words)
     words.each { |word| click_button word }
