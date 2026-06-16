@@ -22,9 +22,15 @@
       <%= link_to "Play another →", root_path, class: "m-btn" %>
       <%= link_to "Browse all", play_index_path, class: "m-btn m-btn--pop" %>
     </nav>
+  <% elsif @cleared_them_all %>
+    <div class="m-empty">
+      <p class="m-home__cleared">You've done them all.</p>
+      <p>Go touch grass, loser.</o>
+      <p>Or, y'know, go <%= link_to "make a new one #{ne_arrow}", new_puzzle_path, class: "m-stamp" %></p>
+    </div>
   <% else %>
     <div class="m-empty">
-      <p>No puzzles featured yet — the board's empty for now.</p>
+      <p>No puzzles yet — the board's empty for now.</p>
       <p><%= link_to "Browse all", play_index_path %> · <%= link_to "Sign in", new_user_session_path %> to create one.</p>
     </div>
   <% end %>
