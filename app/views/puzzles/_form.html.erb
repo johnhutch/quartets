@@ -28,6 +28,50 @@
     <%= f.text_field :author_name %>
   </div>
 
+  <div class="m-form__field" data-controller="charcount"
+       data-charcount-max-value="<%= Puzzle::DESCRIPTION_LIMIT %>">
+    <%= f.label :description, "Short description" %>
+    <%= f.text_area :description, rows: 2, maxlength: Puzzle::DESCRIPTION_LIMIT,
+          data: { charcount_target: "input", action: "input->charcount#update" } %>
+    <p class="m-form__note">Optional — shows when shared. <span data-charcount-target="count"></span></p>
+  </div>
+
+  <%# "Classic" is the default (general, NYT-grade). The YES toggle reveals a tag
+      box for the niche it needs (a fandom, a single domain). CSS-only via :has. %>
+  <fieldset class="m-form__field m-specialized">
+    <legend class="m-specialized__q">Is this a themed Quartet? Do you have to be a super-nerd in your chosen theme to get it?</legend>
+
+    <div class="m-specialized__row">
+    <label class="m-toggle">
+      <%= f.check_box :specialized, class: "m-toggle__box" %>
+      <span class="m-toggle__yes">YES</span>
+    </label>
+
+    <div class="m-specialized__panel">
+      <div class="m-tags" data-controller="tags" data-tags-suggest-url-value="<%= tags_path %>">
+        <ul class="m-tags__chips" data-tags-target="chips">
+          <% puzzle.tag_names.each do |name| %>
+            <li class="m-tags__chip">
+              <span><%= name %></span>
+              <button type="button" class="m-tags__remove" data-action="tags#remove" aria-label="Remove <%= name %>">×</button>
+              <input type="hidden" name="puzzle[tag_names][]" value="<%= name %>">
+            </li>
+          <% end %>
+        </ul>
+        <%# Always-present blank so clearing every tag actually clears them (the
+            server drops the blank via Tag.for_name). %>
+        <input type="hidden" name="puzzle[tag_names][]" value="">
+        <input type="text" id="tag-input" class="m-tags__input" data-tags-target="input"
+               data-action="input->tags#search focus->tags#search keydown->tags#keydown"
+               placeholder="e.g. star wars" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-autocomplete="list">
+        <ul class="m-tags__menu" data-tags-target="menu" role="listbox" hidden></ul>
+      </div>
+      <p class="m-specialized__hint">ok, add some tags about what kinda nerdery you need to know to do your dumb puzzle.</p>
+    </div>
+    </div>
+  </fieldset>
+
   <%# Groups in swellgarfo order (blue → green → yellow → purple), and within
       each block: answers first, then the category — matching the form muscle
       memory the user already has. %>

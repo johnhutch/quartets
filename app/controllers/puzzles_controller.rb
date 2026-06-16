@@ -123,6 +123,9 @@ class PuzzlesController < ApplicationController
     params.require(:puzzle).permit(
       :title,
       :author_name,
+      :description,
+      :specialized,
+      tag_names: [],
       groups_attributes: [:id, :color, :position, :description, { words: [] }]
     )
   end
