@@ -19,7 +19,7 @@
 
     <% if devise_mapping.rememberable? %>
       <label class="m-auth__remember">
-        <%= f.check_box :remember_me %>
+        <%= f.check_box :remember_me, checked: true %>
         <span>Stay logged in</span>
       </label>
     <% end %>
