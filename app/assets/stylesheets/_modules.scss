@@ -663,7 +663,7 @@
     transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
   }
 
-  &:has(.m-toggle__box:checked) {
+  &.is-on {
     .m-specialized__panel {
       flex-grow: 1;
       margin-left: $space-md;
@@ -694,7 +694,7 @@
     display: none; // only appears, below YES, once checked
   }
 
-  .m-specialized:has(.m-toggle__box:checked) .m-specialized__panel {
+  .m-specialized.is-on .m-specialized__panel {
     display: block;
     margin-left: 0;
   }
@@ -741,6 +741,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: $space-xs;
+    // Animates the slide-up when un-specializing clears the tags (JS sets the
+    // measured max-height, then drops it to 0).
+    transition: max-height 0.25s ease, opacity 0.25s ease;
   }
 
   &__chip {

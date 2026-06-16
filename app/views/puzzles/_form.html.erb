@@ -37,13 +37,16 @@
   </div>
 
   <%# "Classic" is the default (general, NYT-grade). The YES toggle reveals a tag
-      box for the niche it needs (a fandom, a single domain). CSS-only via :has. %>
-  <fieldset class="m-form__field m-specialized">
+      box for the niche it needs (a fandom, a single domain). The reveal is CSS
+      (:has); turning it OFF is guarded by the specialized controller. %>
+  <fieldset class="m-form__field m-specialized<%= ' is-on' if puzzle.specialized? %>"
+            data-controller="specialized" data-specialized-tags-outlet=".m-tags">
     <legend class="m-specialized__q">Is this a themed Quartet? Do you have to be a super-nerd in your chosen theme to get it?</legend>
 
     <div class="m-specialized__row">
     <label class="m-toggle">
-      <%= f.check_box :specialized, class: "m-toggle__box" %>
+      <%= f.check_box :specialized, class: "m-toggle__box",
+            data: { specialized_target: "box", action: "change->specialized#toggle" } %>
       <span class="m-toggle__yes">YES</span>
     </label>
 

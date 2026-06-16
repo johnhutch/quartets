@@ -152,6 +152,27 @@ export default class extends Controller {
     this.element.dispatchEvent(new Event("input", { bubbles: true }))
   }
 
+  isEmpty() {
+    return this.selected.size === 0
+  }
+
+  // Slide the chip row up (measured height → 0) then clear it; calls `done` after.
+  clearAnimated(done) {
+    const el = this.chipsTarget
+    el.style.overflow = "hidden"
+    el.style.maxHeight = `${el.scrollHeight}px`
+    requestAnimationFrame(() => {
+      el.style.maxHeight = "0"
+      el.style.opacity = "0"
+    })
+    setTimeout(() => {
+      el.innerHTML = ""
+      el.removeAttribute("style")
+      this.selected.clear()
+      if (done) done()
+    }, 260)
+  }
+
   open() { this.menuTarget.hidden = false; this.inputTarget.setAttribute("aria-expanded", "true") }
   close() { this.menuTarget.hidden = true; this.inputTarget.setAttribute("aria-expanded", "false"); this.items = []; this.active = -1 }
 }
