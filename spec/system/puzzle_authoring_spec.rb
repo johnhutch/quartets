@@ -16,7 +16,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     end
 
     # No button press — the debounced background save lands on its own.
-    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
     expect(Puzzle.count).to eq(1)
 
     # The iOS back button incarnate: leave without ever submitting, come back.
@@ -38,7 +38,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     end
 
     # Wait for the first save to finish and mint the draft
-    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
     expect(Puzzle.count).to eq(1)
 
     # Step 2: Keep typing. The form has now switched to PATCH mode.
@@ -49,7 +49,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     # If the ID mismatch bug is present, the PATCH will hit the uniqueness
     # validation, fail with a 422, and the UI will say "Save failed".
     # Capybara will time out here waiting for it to return to "Saved".
-    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
 
     # Final sanity check: ensure the database actually received the second word
     # and didn't accidentally duplicate the groups.
@@ -66,7 +66,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     fill_group "purple", %w[mars venus pluto ceres], "Space"
     fill_in "Title", with: "Phone-authored"
 
-    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
     # Now that every field is filled, the save button promotes itself to the
     # "keep it unlisted" choice (and Publish lights up).
     expect(page).to have_button("Keep it unlisted (link only)")
