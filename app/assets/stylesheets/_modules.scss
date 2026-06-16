@@ -8,7 +8,10 @@
 // --- Game board: the 4×4 grid of word tiles -----------------------------
 .m-board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  // minmax(0, 1fr) — not plain 1fr — so a long unbreakable word can't blow the
+  // column out past its quarter; tiles stay fixed-width and the JS shrink-to-fit
+  // (game_controller.js) actually has something to shrink against.
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: $grid-gap;
 }
 
@@ -21,11 +24,12 @@
   padding: $space-xs;
   text-align: center;
   font-weight: 700;
-  // Scale down on narrow phones so long answers don't blow out the tile…
+  // Fluid within a floor/ceiling so answers scale with the board, not the tile.
   font-size: clamp(0.62rem, 3vw, $font-sm);
   line-height: 1.1;
   text-transform: uppercase;
-  // …and let a too-long single word wrap rather than clip/overflow.
+  // Whole words stay whole; a too-long one breaks at a hyphenation point (needs
+  // <html lang> to work) — `anywhere` is only the last-resort fallback.
   overflow-wrap: anywhere;
   hyphens: auto;
   color: $color-ink;

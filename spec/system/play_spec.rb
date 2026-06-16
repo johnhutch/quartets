@@ -27,6 +27,18 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(page).to have_css(".m-card", count: 16)
   end
 
+  it "wraps a long answer inside its tile instead of blowing the column out" do
+    long = "supercalifragilisticexpialidocious"
+    puzzle.groups.find_by(color: "blue").update!(words: ["cat", long, "dog", "owl"])
+    visit play_path(puzzle.share_token)
+
+    # minmax(0, 1fr) keeps every tile the same quarter-width; the long word wraps
+    # (hyphenated) inside it rather than expanding its grid column.
+    long_w  = find(".m-card", text: /#{long}/i).evaluate_script("this.clientWidth")
+    short_w = find(".m-card", text: /\Acat\z/i).evaluate_script("this.clientWidth")
+    expect(long_w).to be_within(2).of(short_w)
+  end
+
   it "reveals every group and declares a win" do
     visit play_path(puzzle.share_token)
 
