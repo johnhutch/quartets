@@ -46,6 +46,45 @@ RSpec.describe "Tag combobox", type: :system, js: true do
     expect(puzzle.reload.tag_names).to include("star-wars")
   end
 
+  it "collapses the tag box when you un-specialize with no tags (no confirm needed)" do
+    puzzle = create(:puzzle, :complete, user: user)
+    visit edit_puzzle_path(puzzle)
+    check "YES"
+    expect(page).to have_selector("#tag-input", visible: :visible)
+    find("#puzzle_specialized").click # uncheck — no tags, no confirm
+    expect(page).to have_selector("#tag-input", visible: :hidden)
+  end
+
+  it "confirms before clearing tags when you turn specialized off, then removes them on accept" do
+    puzzle = create(:puzzle, :complete, user: user)
+    puzzle.update!(specialized: true, tag_names: ["star-wars"])
+    visit edit_puzzle_path(puzzle)
+    expect(page).to have_css(".m-tags__chip", text: /star-wars/i)
+
+    accept_confirm("Remove all tags from this quartet?") do
+      find("#puzzle_specialized").click
+    end
+
+    expect(page).to have_no_css(".m-tags__chip")
+    expect(page).to have_selector("#tag-input", visible: :hidden) # the box slid closed
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
+    expect(puzzle.reload.tag_names).to eq([])
+    expect(puzzle.reload).not_to be_specialized
+  end
+
+  it "keeps the tags (and stays specialized) when you decline" do
+    puzzle = create(:puzzle, :complete, user: user)
+    puzzle.update!(specialized: true, tag_names: ["star-wars"])
+    visit edit_puzzle_path(puzzle)
+
+    dismiss_confirm("Remove all tags from this quartet?") do
+      find("#puzzle_specialized").click
+    end
+
+    expect(page).to have_css(".m-tags__chip", text: /star-wars/i)
+    expect(puzzle.reload).to be_specialized
+  end
+
   it "suggests an existing tag instead of creating a duplicate" do
     Tag.create!(name: "star-wars")
     puzzle = create(:puzzle, :complete, user: user)
