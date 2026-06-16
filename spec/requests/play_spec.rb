@@ -130,8 +130,8 @@ RSpec.describe "Play (public)", type: :request do
       expect(response.body).not_to include("noindex")
     end
 
-    context "when a logged-in player has already finished it (ADR-0009)" do
-      it "shows their result + the answers instead of a replayable board" do
+    context "when a non-owner has already finished it (ADR-0009, ADR-0012)" do
+      it "reconstructs the finished board instead of a replayable one (logged-in)" do
         user = create(:user)
         sign_in user
         puzzle = create(:published_puzzle, title: "One and done")
@@ -141,17 +141,45 @@ RSpec.describe "Play (public)", type: :request do
         get play_path(puzzle.share_token)
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("The answers")             # solution revealed
+        expect(response.body).to include("Solved it")               # the win stamp / finished state
+        expect(response.body).to include("🟦🟦🟦🟦")                  # the cube
         expect(response.body).not_to include('data-controller="game"') # no fresh board
       end
 
-      it "still serves a fresh board to a logged-in player who hasn't played it" do
+      it "shows a loss's finished state with the 'out of guesses' stamp" do
         user = create(:user)
         sign_in user
         puzzle = create(:published_puzzle)
+        create(:attempt, puzzle: puzzle, user: user, solved: false, mistakes_count: 4)
 
         get play_path(puzzle.share_token)
 
+        expect(response.body).to include("Out of guesses")
+        expect(response.body).not_to include('data-controller="game"')
+      end
+
+      it "gates an anonymous player who finished it, keyed by the player_token (ADR-0012)" do
+        puzzle = create(:published_puzzle)
+        # An anonymous game-over records the attempt and sets the player_token cookie.
+        post play_attempts_path(puzzle.share_token), as: :json, params: { attempt: {
+          solved: true, mistakes_count: 0,
+          guesses: [{ words: %w[a b c d], colors: %w[purple purple purple purple] }]
+        } }
+
+        get play_path(puzzle.share_token) # same cookie jar
+
+        expect(response.body).to include("Solved it")
+        expect(response.body).not_to include('data-controller="game"')
+      end
+
+      it "still serves a fresh board to a player who hasn't played it (logged-in or anon)" do
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token) # anonymous, no prior attempt
+        expect(response.body).to include('data-controller="game"')
+
+        sign_in create(:user)
+        get play_path(puzzle.share_token)
         expect(response.body).to include('data-controller="game"')
       end
 
