@@ -319,6 +319,10 @@
   position: relative;
   display: inline-flex;
 
+  // `display` above otherwise beats the UA `[hidden]` rule — restore it so a
+  // not-yet-persisted Publish button stays hidden until autosave reveals it.
+  &[hidden] { display: none; }
+
   &__bubble {
     position: absolute;
     bottom: calc(100% + #{$space-xs});

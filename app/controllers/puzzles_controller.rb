@@ -48,8 +48,10 @@ class PuzzlesController < ApplicationController
       # the Location header so the controller can switch to PATCH from here on.
       if autosave?
         group_ids = @puzzle.groups.to_h { |g| [g.color, g.id] }
-        render json: { patch_url: puzzle_path(@puzzle), group_ids: group_ids }, 
-               status: :created, 
+        # publish_url lets the just-minted form reveal + wire its Publish button
+        # without a reload (the button needs an id, which only exists now).
+        render json: { patch_url: puzzle_path(@puzzle), publish_url: publish_puzzle_path(@puzzle), group_ids: group_ids },
+               status: :created,
                location: edit_puzzle_path(@puzzle)
       else
         # "Save draft" / "Finish" drops the author back on their dashboard.
