@@ -145,11 +145,11 @@ export default class extends Controller {
     this.notifyChange()
   }
 
-  // Chips are added/removed in JS, which fires no native input/change event — so
-  // tell the form a change happened, or the autosave controller never sees the
-  // tag edit and it's lost on the next navigation.
+  // Chips are added/removed in JS, which fires no native input event — so tell the
+  // form one happened (it autosaves on `input`), or the autosave controller never
+  // sees the tag edit and it's lost on the next navigation.
   notifyChange() {
-    this.element.dispatchEvent(new Event("change", { bubbles: true }))
+    this.element.dispatchEvent(new Event("input", { bubbles: true }))
   }
 
   open() { this.menuTarget.hidden = false; this.inputTarget.setAttribute("aria-expanded", "true") }
