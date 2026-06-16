@@ -20,20 +20,15 @@ class AttemptsController < ApplicationController
       else
         puzzle.attempts.create!(base)
       end
-    # Hand back the cube (for the on-screen grid) and the full share block — title
-    # + cube + a direct link — so the just-finished game can show one and copy the
-    # other. play_url uses the request host, so the share link follows whatever
-    # domain we're served on.
-    cube = EmojiCube.new(attempt.guess_log).to_s
-    share = ShareText.new(title: puzzle.title, cube:, url: play_url(puzzle.share_token)).to_s
-    # The trophies + quip block (ADR-0011). A signed-in winner also gets a running
-    # count of their top trophy; anonymous plays can't (uncapped, so it'd be farmed)
-    # and see a sign-up nudge instead. Pre-rendered so the JS just injects the HTML.
-    top_tier = attempt.earned_tiers.last
-    total = current_user.attempts.at_least(top_tier).count if user_signed_in? && top_tier
+    # The result payload the game injects: cube (on-screen grid), full share block
+    # (title + cube + link, host from the request), the earned tier, and the
+    # pre-rendered trophies block. PlayResult owns the shaping — the revisit view
+    # builds the same one. ERB rendering stays here (PlayResult is a pure PORO).
+    result = PlayResult.new(attempt, url: play_url(puzzle.share_token), viewer: current_user)
     awards = render_to_string(partial: "play/achievement", formats: [:html],
-                              locals: { attempt:, total:, signed_in: user_signed_in? })
-    render json: { cube:, share:, achievement: attempt.achievement, awards: }, status: :created
+                              locals: result.awards_locals)
+    render json: { cube: result.cube, share: result.share, achievement: result.achievement, awards: },
+           status: :created
   rescue ActiveRecord::RecordInvalid
     head :unprocessable_content
   end

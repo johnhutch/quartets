@@ -4,7 +4,7 @@
     cracked, then any unsolved ones — with the win/loss stamp, the emoji cube, and
     the trophies. Static: there's nothing to play, it's done. Expects `puzzle` and
     `attempt` locals. %>
-<% cube = EmojiCube.new(attempt.guess_log).to_s %>
+<% result = PlayResult.new(attempt, url: play_url(puzzle.share_token), viewer: current_user) %>
 <% solved = attempt.solved_colors %>
 <% by_color = puzzle.groups.index_by(&:color) %>
 <% ordered = solved.filter_map { |color| by_color[color] } +
@@ -27,16 +27,14 @@
   </div>
 
   <%# Trophies + quip (ADR-0011); a logged-in trophy shows its running total. %>
-  <% top = attempt.earned_tiers.last %>
-  <%= render "play/achievement", attempt: attempt, signed_in: user_signed_in?,
-        total: (current_user.attempts.at_least(top).count if user_signed_in? && top) %>
+  <%= render "play/achievement", **result.awards_locals %>
 
-  <% if cube.present? %>
+  <% if result.cube.present? %>
     <div class="m-game__share">
-      <div class="m-cube"><%= cube %></div>
+      <div class="m-cube"><%= result.cube %></div>
       <%= tag.button type: "button", class: "m-btn m-btn--share",
             data: { controller: "clipboard",
-                    clipboard_text_value: ShareText.new(title: puzzle.title, cube: cube, url: play_url(puzzle.share_token)).to_s,
+                    clipboard_text_value: result.share,
                     action: "clipboard#copy" } do %>
         <%= icon(:share) %><span data-clipboard-target="label">Copy result</span>
       <% end %>

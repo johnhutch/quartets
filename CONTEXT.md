@@ -109,6 +109,14 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   nil`) → `signed_in?` false, created-only. `AttemptsController#create` returns a
   server-rendered `play/_achievement` partial (trophies + quip + total/nudge) the
   game injects on game over; the `trophy(tier)` helper renders the fillable SVG.
+- **PlayResult** (`app/models/`) — value object owning the finished-play payload:
+  `#cube`, `#share` (composes `EmojiCube` + `ShareText`), `#achievement` (the tier),
+  and `#awards_locals` (the `play/_achievement` locals — folds the top-trophy
+  `#total` count for a signed-in winner, else nudge). `PlayResult.new(attempt, url:,
+  viewer:)` — `url` handed in for the request host, `viewer` is `current_user`/nil.
+  Consumed by **both** `AttemptsController#create` (JSON the game injects) and the
+  revisit `play/_result` view, so the shaping lives once. Pure PORO — recording and
+  ERB rendering stay in the controller/view.
 - **Tag / Tagging / `Taggable`** (ADR-0010) — `Tag` (`name` unique). `Tag.normalize`
   → hyphen-slug; `Tag.for_name` find-or-creates (rescues `RecordNotUnique` → re-find
   for the concurrent-insert race). `Tagging` `belongs_to :taggable, polymorphic`
