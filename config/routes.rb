@@ -11,6 +11,10 @@ Rails.application.routes.draw do
     end
   end
 
+  # Tag autocomplete for the authoring combobox — JSON list of existing tag
+  # names matching ?q=. Public (creation is public, ADR-0005).
+  get "/tags", to: "tags#index", as: :tags
+
   # Public play surface — no login. Browse published puzzles, open one by its
   # unguessable share token.
   get "/play", to: "play#index", as: :play_index

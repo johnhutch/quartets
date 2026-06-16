@@ -552,12 +552,153 @@
     font-weight: 700;
   }
 
-  input,
+  // Text-ish inputs stretch full width; checkboxes keep their natural size so
+  // they align with their labels (fixes the login + toggle checkboxes alike).
+  input:not([type="checkbox"]),
   textarea {
     width: 100%;
     padding: $space-sm;
     font: inherit;
     border: 1px solid $color-line;
     border-radius: $radius;
+  }
+}
+
+// Discovery: the big "YES" toggle reveals a tag combobox (CSS-only via :has).
+.m-specialized {
+  border: 0;
+  padding: 0;
+  margin: 0 0 $space-md;
+
+  &__q { font-weight: 700; margin-bottom: $space-sm; }
+
+  // YES on the left; the tag panel rides to its right and slides open to fill the
+  // row when checked (grid second track 0fr → 1fr is the smooth "expand to fill").
+  &__row {
+    display: flex;
+    // Top-align so the YES box doesn't drift when the hint unfurls below the input.
+    align-items: flex-start;
+  }
+
+  // Left-anchored grow: the panel sits at width 0 right next to YES; growing its
+  // flex share (0 → 1) slides its right edge out to full width (left → right).
+  // Clipped while collapsed; visible once open so the autocomplete menu can spill.
+  &__panel {
+    flex: 0 1 0%;
+    min-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    transition: flex-grow 0.3s ease, margin-left 0.3s ease;
+  }
+
+  // Helper line below the row that unfurls downward once the box is out.
+  &__hint {
+    margin: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    font-size: $font-sm;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  }
+
+  &:has(.m-toggle__box:checked) {
+    .m-specialized__panel {
+      flex-grow: 1;
+      margin-left: $space-md;
+      overflow: visible;
+    }
+
+    .m-specialized__hint {
+      max-height: 5rem;
+      margin-top: $space-sm;
+      opacity: 1;
+      transition-delay: 0.3s; // wait out the horizontal slide before dropping down
+    }
+  }
+}
+
+// Big chunky YES toggle — clicking lifts + colorizes like selecting a board tile.
+.m-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+  // Sits in the flex row at its own (standard button) width — never stretched.
+  flex: none;
+  cursor: pointer;
+  padding: $space-sm $space-lg;
+  border: 1px solid $color-line;
+  border-radius: $radius;
+  user-select: none;
+
+  &__box {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+    margin: 0;
+  }
+
+  &__yes {
+    font-weight: 700;
+    font-size: $font-lg;
+    letter-spacing: 0.05em;
+  }
+}
+
+// Creatable tag combobox (see tags_controller.js).
+.m-tags {
+  position: relative;
+  min-width: 0; // let it collapse to 0 cleanly when the panel is closed
+
+  &__input { min-width: 0; }
+
+  &__chips {
+    list-style: none;
+    margin: 0 0 $space-xs;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-xs;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+    padding: 0.1em 0.5em;
+    font-size: $font-sm;
+    border: 1px solid $color-line;
+    border-radius: $radius;
+  }
+
+  &__remove {
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1.1em;
+    line-height: 1;
+  }
+
+  &__menu {
+    list-style: none;
+    margin: $space-xs 0 0;
+    padding: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: $color-paper;
+    border: 1px solid $color-line;
+    border-radius: $radius;
+    max-height: 14rem;
+    overflow-y: auto;
+  }
+
+  &__option {
+    padding: $space-xs $space-sm;
+    cursor: pointer;
+
+    &.is-active,
+    &:hover { background: $color-card; }
   }
 }

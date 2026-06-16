@@ -447,7 +447,11 @@ body.theme-brutal {
     letter-spacing: -0.01em;
   }
 
-  input,
+  // Checkboxes opt out of the dark text-box treatment (it mis-renders + misaligns
+  // them); they get a native control tinted with accent-color instead.
+  input[type="checkbox"] { accent-color: $color-green; }
+
+  input:not([type="checkbox"]),
   textarea {
     background: $brutal-paper;
     color: $brutal-ink;
@@ -623,4 +627,57 @@ body.theme-brutal {
 
   &__license a { text-transform: none; }
   &__disclaimer { font-style: italic; color: $brutal-muted; }
+}
+
+// --- Discovery: specialized toggle + tag combobox ---------------------------
+.theme-brutal {
+  .m-specialized__q { font-family: $font-display; text-transform: uppercase; }
+
+  .m-specialized__hint { color: $brutal-muted; }
+
+  // Big YES toggle: checking it lifts + tilts + colorizes, same springy motion
+  // as selecting a board tile (.m-card.is-selected).
+  .m-toggle {
+    border: $brutal-border solid $brutal-ink;
+    border-radius: 0;
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35);
+    transition: transform 0.22s cubic-bezier(0.34, 1.7, 0.5, 1),
+                box-shadow 0.22s ease, background 0.15s, color 0.15s;
+
+    &__box { accent-color: $color-purple; }
+    &__yes { font-family: $font-display; text-transform: uppercase; }
+
+    &:has(.m-toggle__box:checked) {
+      background: $color-yellow;
+      color: #000;
+      transform: translate(-3px, -9px) rotate(-3deg);
+      box-shadow: 9px 14px 0 rgba($brutal-ink, 0.3);
+    }
+  }
+
+  .m-tags__chip {
+    border: 2px solid $brutal-ink;
+    border-radius: 0;
+    font-family: $font-display;
+    text-transform: uppercase;
+  }
+
+  .m-tags__menu {
+    background: $brutal-paper;
+    border: 3px solid $brutal-ink;
+    border-radius: 0;
+    box-shadow: 6px 6px 0 rgba(244, 242, 236, 0.2);
+  }
+
+  .m-tags__option {
+    font-family: $font-display;
+    text-transform: uppercase;
+    font-size: $font-sm;
+
+    &.is-active,
+    &:hover {
+      background: $brutal-ink;
+      color: $brutal-paper;
+    }
+  }
 }

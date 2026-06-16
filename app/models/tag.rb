@@ -14,8 +14,16 @@ class Tag < ApplicationRecord
   end
 
   # Find-or-create by normalized name; nil for input that normalizes to nothing.
+  # find_or_create_by is select-then-insert, so a concurrent create of the same
+  # new tag can still lose the unique-index race — rescue it and re-find rather
+  # than 500. (create_or_find_by is no good here: the uniqueness validation
+  # short-circuits its insert, so it never sees the RecordNotUnique to recover.)
   def self.for_name(raw)
     name = normalize(raw)
-    name && find_or_create_by(name:)
+    return unless name
+
+    find_or_create_by(name:)
+  rescue ActiveRecord::RecordNotUnique
+    find_by(name:)
   end
 end
