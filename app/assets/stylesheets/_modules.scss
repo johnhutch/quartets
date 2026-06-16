@@ -572,8 +572,8 @@
 
   &__q { font-weight: 700; margin-bottom: $space-sm; }
 
-  // YES on the left; the tag panel rides to its right and slides open to fill the
-  // row when checked (grid second track 0fr → 1fr is the smooth "expand to fill").
+  // YES on the left; the tag panel rides to its right (see &__panel for the
+  // flex-grow slide that fills the row when checked).
   &__row {
     display: flex;
     // Top-align so the YES box doesn't drift when the hint unfurls below the input.
