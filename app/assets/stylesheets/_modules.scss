@@ -679,6 +679,27 @@
   }
 }
 
+// On a narrow viewport there's no room for YES + tags side by side — stack the
+// tag box below the YES box (shown full-width once YES is checked).
+@media (max-width: $bp-stack) {
+  .m-specialized__row {
+    flex-direction: column;
+    gap: $space-sm;
+  }
+
+  .m-specialized__panel {
+    flex: none;
+    width: 100%;
+    margin-left: 0;
+    display: none; // only appears, below YES, once checked
+  }
+
+  .m-specialized:has(.m-toggle__box:checked) .m-specialized__panel {
+    display: block;
+    margin-left: 0;
+  }
+}
+
 // Big chunky YES toggle — clicking lifts + colorizes like selecting a board tile.
 .m-toggle {
   display: inline-flex;
