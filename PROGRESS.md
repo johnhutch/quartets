@@ -37,6 +37,15 @@ yet** (see TODOS).
 
 ## Shipped log (most recent first)
 
+- **Home falls back to an unplayed puzzle.** With nothing featured, `home#show`
+  serves a random *published* puzzle you haven't finished (by account, else
+  `player_token`); cleared the whole board → a snarky empty state that sends you to
+  make one. Featured path unchanged.
+- **Publish from the create screen.** The authoring form now reveals + wires its
+  Publish button the moment autosave mints the record (was edit-screen only —
+  gated on `persisted?`); the save button reads "Keep it unlisted (link only)" once
+  complete (ADR-0008). Needed `.m-tooltip[hidden] { display: none }` since the
+  tooltip's `display` otherwise beat the UA `[hidden]` rule.
 - **Play gate → `Playability` policy object** (architecture review candidate 3).
   ADR-0008's "playable iff `complete?`" rule + the owner-redirect/404 trichotomy,
   previously mirrored across `play#show` and `attempts#create`, now live in
