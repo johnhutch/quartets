@@ -56,5 +56,8 @@ isn't the only signal — 1.4.1 holds).
 
 ## Not ADA, tracked separately
 
-- **`meta-description`** is missing site-wide. It's SEO, not accessibility —
-  deferred to an SEO pass, noted here only so the Lighthouse delta is explained.
+- **`meta-description`** — was missing site-wide (SEO, not accessibility).
+  **Resolved:** a site-default description plus a per-puzzle one (the author's
+  blurb, or a generated spoiler-free fallback) now feed `<meta name="description">`
+  and the OG/Twitter tags. See `app/helpers/application_helper.rb`
+  (`puzzle_meta_description`) and `spec/requests/meta_tags_spec.rb`.

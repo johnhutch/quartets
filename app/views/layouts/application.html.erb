@@ -15,13 +15,19 @@
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     
+    <%# Description is structural: every page emits one. A page sets its own via
+        content_for(:description); otherwise the site default. Hoisted out of the
+        :meta branch so coverage never depends on per-page discipline. %>
+    <% page_description = content_for(:description).presence || ApplicationHelper::SITE_DESCRIPTION %>
+    <meta name="description" content="<%= page_description %>">
+
     <% if content_for?(:meta) %>
       <%= yield :meta %>
     <% else %>
       <meta property="og:title" content="<%= content_for(:title) || "Quartets" %>">
       <meta name="twitter:title" content="<%= content_for(:title) || "Quartets" %>">
-      <meta property="og:description" content="Create and play Connections-style puzzles.">
-      <meta name="twitter:description" content="Create and play Connections-style puzzles.">
+      <meta property="og:description" content="<%= page_description %>">
+      <meta name="twitter:description" content="<%= page_description %>">
     <% end %>
 
     <meta property="og:url" content="<%= request.original_url %>">

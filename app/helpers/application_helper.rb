@@ -1,4 +1,19 @@
 module ApplicationHelper
+  # The site-wide default <meta name="description"> — used on the homepage and
+  # any page that doesn't set its own.
+  SITE_DESCRIPTION = "Create and play Connections-style puzzles.".freeze
+
+  # SEO description for a puzzle page. Prefer the author's shareable blurb (it's
+  # purpose-built — "shows when shared"); otherwise a generated, spoiler-free
+  # line. The same string feeds <meta name="description">, og:, and twitter: so
+  # the SERP snippet and social unfurl agree.
+  def puzzle_meta_description(puzzle)
+    return puzzle.description.squish if puzzle.description.present?
+
+    by = puzzle.author_name.present? ? " by #{puzzle.author_name}" : ""
+    "A Connections-style puzzle (but better)#{by}. Play it free on Quartets."
+  end
+
   # Renders text as a multicolor ribbon (see Multicolor) — for the wordmark and
   # big display headings under the brutalist theme. Each color run is a span the
   # theme paints; spaces ride along inside their run.

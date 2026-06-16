@@ -1,4 +1,10 @@
 <% content_for :title, @puzzle.title + " | Quartets"%>
+<%# One description feeds SERP + social: the author's blurb if they wrote one,
+    else a generated spoiler-free line (see puzzle_meta_description). The layout
+    renders <meta name="description"> from content_for(:description); the :meta
+    block carries the OG/Twitter tags (og:title needs the puzzle title). %>
+<% desc = puzzle_meta_description(@puzzle) %>
+<% content_for :description, desc %>
 <% content_for :meta do %>
   <%# Unlisted puzzles stay out of search, but keep the OG/Twitter tags so a
       shared link still unfurls a preview card (ADR-0008). %>
@@ -7,8 +13,8 @@
   <% end %>
   <meta property="og:title" content="<%= @puzzle.title %> | Quartets">
   <meta name="twitter:title" content="<%= @puzzle.title %> | Quartets">
-  <meta property="og:description" content="Play this puzzle by <%= @puzzle.author_name.presence || 'Anonymous' %> on Quartets.">
-  <meta name="twitter:description" content="Play this puzzle by <%= @puzzle.author_name.presence || 'Anonymous' %> on Quartets.">
+  <meta property="og:description" content="<%= desc %>">
+  <meta name="twitter:description" content="<%= desc %>">
 <% end %>
 
 <div class="l-container">
