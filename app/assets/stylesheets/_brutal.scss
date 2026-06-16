@@ -398,6 +398,12 @@ body.theme-brutal {
   white-space: nowrap;
 }
 
+// On phones the hamburger already offers Create, so the page's header sticker is
+// redundant — drop it. (Matches the themed selector's specificity to win.)
+@media (max-width: $bp-nav) {
+  .theme-brutal .m-create-sticker { display: none; }
+}
+
 // --- Nameplate: a small white blackletter "NOTimes" layered over QUARTETS ----
 // The serif gothic over the multicolor sans wordmark is the whole gag. The
 // stack shrinks to the wordmark's width so the nameplate centers across it.
@@ -531,6 +537,26 @@ body.theme-brutal {
   &__btn {
     border: 2px solid $brutal-ink;
     font-weight: 700;
+    &:hover { background: $color-yellow; color: #000; opacity: 1; }
+  }
+}
+
+// Mobile hamburger menu, brutalist: a hard-edged sheet under the bar, the toggle
+// and rows in the display face.
+.theme-brutal .l-nav {
+  &__toggle { color: $brutal-ink; }
+
+  &__menu {
+    background: $brutal-paper;
+    border-bottom: $brutal-border solid $brutal-ink;
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  }
+
+  &__link {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba($brutal-ink, 0.15);
     &:hover { background: $color-yellow; color: #000; opacity: 1; }
   }
 }

@@ -52,19 +52,45 @@
       content_for(:body_class) to something else. %>
   <body class="<%= content_for?(:body_class) ? content_for(:body_class) : "theme-brutal" %>">
     <header class="l-topbar">
-      <div class="l-topbar__brand">
-        <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
-        <%= link_to "Play More ↗", play_index_path, class: "l-topbar__btn" %>
-      </div>
-      <nav class="l-topbar__auth">
-        <% if user_signed_in? %>
-          <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
-          <%= link_to "Your stuff", puzzles_path, class: "l-topbar__btn" %>
-        <% else %>
-          <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
-          <%= link_to "Sign up", new_user_registration_path, class: "l-topbar__btn" %>
-        <% end %>
+      <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
+
+      <%# Desktop nav: inline, unchanged. Hidden below $bp-nav, where the hamburger
+          below takes over (see _base.scss). %>
+      <nav class="l-topbar__inline">
+        <%= link_to "Play More #{ne_arrow}", play_index_path, class: "l-topbar__btn" %>
+        <span class="l-topbar__auth">
+          <% if user_signed_in? %>
+            <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
+            <%= link_to "Your stuff", puzzles_path, class: "l-topbar__btn" %>
+          <% else %>
+            <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
+            <%= link_to "Sign up", new_user_registration_path, class: "l-topbar__btn" %>
+          <% end %>
+        </span>
       </nav>
+
+      <%# Mobile nav: CSS-only hamburger (no JS). Closed <details> hides everything
+          but the toggle; Turbo resets it closed on navigation. Create is the one
+          tilted-yellow item; the rest are plain menu rows. %>
+      <details class="l-nav">
+        <summary class="l-nav__toggle" aria-label="Menu">
+          <span class="l-nav__ico l-nav__ico--open"><%= icon(:menu) %></span>
+          <span class="l-nav__ico l-nav__ico--close"><%= icon(:close) %></span>
+        </summary>
+        <nav class="l-nav__menu">
+          <% unless authoring_page? %>
+            <%= link_to "Create #{ne_arrow}", new_puzzle_path, class: "m-sticker l-nav__create" %>
+          <% end %>
+          <%= link_to "Play More #{ne_arrow}", play_index_path, class: "l-nav__link" %>
+          <% if user_signed_in? %>
+            <%= link_to "Your stuff", puzzles_path, class: "l-nav__link" %>
+            <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-nav__link" %>
+          <% else %>
+            <%= link_to "Log in", new_user_session_path, class: "l-nav__link" %>
+            <%= link_to "Sign up", new_user_registration_path, class: "l-nav__link" %>
+          <% end %>
+        </nav>
+      </details>
     </header>
 
     <% flash.each do |type, message| %>

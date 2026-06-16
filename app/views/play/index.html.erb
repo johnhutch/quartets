@@ -3,7 +3,7 @@
 <div class="l-container">
   <header class="m-play-head">
     <h1><%= multicolor("Play") %></h1>
-    <%= link_to "Create ↗", new_puzzle_path, class: "m-sticker m-create-sticker" %>
+    <%= link_to "Create #{ne_arrow}", new_puzzle_path, class: "m-sticker m-create-sticker" %>
   </header>
 
   <% if @puzzles.any? %>
