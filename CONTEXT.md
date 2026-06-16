@@ -42,8 +42,11 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   default), optional `description` (≤200), and `tags` (only meaningful when
   specialized). Surfacing/filtering is not built yet.
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
-  yellow, purple` (enum). Authoring/form order is blue→green→yellow→purple
-  (swellgarfo muscle memory), *not* NYT difficulty order.
+  yellow, purple` (enum integers blue:0…purple:3, unchanged). Authoring/form block
+  order is **reverse rainbow** — purple→blue→green→yellow, hardest first
+  (`PuzzlesController::FORM_COLOR_ORDER`, applied via `position` in
+  `ensure_four_groups`); it drives the form blocks + the answers list, not the
+  shuffled play board.
 - **Attempt** — one play-through, keyed by a `player_token` cookie; also
   attributed to `user_id` when the player is logged in (ADR-0009). Logged-in
   players get **one attempt per puzzle** (partial unique index).
