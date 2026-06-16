@@ -1,0 +1,32 @@
+<%# Game-over awards block (ADR-0011): the trophies this play earned (cumulative,
+    strongest first), one snarky quip for the outcome, and — for a signed-in
+    player — how many of the top trophy they now hold; anonymous players get a
+    nudge to start a trophy case instead. Rendered both in-game (injected by
+    game_controller.js) and on the logged-in revisit view. %>
+<% tiers = attempt.earned_tiers %>
+<div class="m-awards">
+  <% if tiers.any? %>
+    <ul class="m-awards__trophies">
+      <% tiers.reverse_each do |tier| %>
+        <li class="m-awards__trophy">
+          <%= trophy(tier) %>
+          <span class="m-awards__name"><%= t("quartets.trophies.#{tier}") %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <p class="m-awards__quip"><%= t("quartets.quips.#{attempt.quip_bucket}").sample %></p>
+
+  <% if tiers.any? %>
+    <% if signed_in %>
+      <p class="m-awards__total">
+        That's your <%= total.ordinalize %> <%= t("quartets.trophies.#{tiers.last}").downcase %>.
+      </p>
+    <% else %>
+      <p class="m-awards__nudge">
+        <%= link_to "Sign up", new_user_registration_path %> to keep a trophy case.
+      </p>
+    <% end %>
+  <% end %>
+</div>
