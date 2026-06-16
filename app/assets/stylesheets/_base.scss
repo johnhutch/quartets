@@ -194,6 +194,54 @@ button {
   &__disclaimer {
     margin-bottom: 0;
     font-style: italic;
-    opacity: 0.7;
+    // No opacity dimming — 0.7 dragged the muted grey under 4.5:1 (WCAG 1.4.3).
+    // The colour already reads as fine print on its own.
+  }
+}
+
+// --- Accessibility (ADR-0013) -----------------------------------------------
+// Skip link (WCAG 2.4.1 Bypass Blocks): parked off the top edge until it takes
+// focus, then slams in top-left as a high-contrast chip.
+.l-skiplink {
+  position: fixed;
+  left: $space-sm;
+  top: -4rem;
+  z-index: 1000;
+  padding: $space-sm $space-md;
+  background: $brutal-ink;
+  color: $brutal-paper;
+  font-weight: 700;
+  text-decoration: none;
+  border: $brutal-border solid $brutal-ink;
+  transition: top 0.15s ease;
+
+  &:focus { top: $space-sm; }
+}
+
+// Visible focus on every interactive control (WCAG 2.4.7). :focus-visible so a
+// mouse click doesn't draw the ring, but keyboard / AT navigation always does.
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.m-card:focus-visible {
+  outline: $brutal-border solid $color-blue;
+  outline-offset: 2px;
+}
+
+// Honour reduced-motion (WCAG 2.3.3 / 2.2.2): flatten the tilt/lift transitions
+// and any animation for users who've asked the OS to ease off. The default
+// brutalist motion is untouched for everyone else.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
