@@ -134,10 +134,15 @@ class PuzzlesController < ApplicationController
     )
   end
 
+  # Authoring/form block order: reverse rainbow (purple → blue → green → yellow),
+  # hardest group first. Drives the form blocks (via position) and the answers
+  # list — not the enum's stored integers (blue:0…purple:3) or the shuffled board.
+  FORM_COLOR_ORDER = %w[purple blue green yellow].freeze
+
   # The form always shows all four colored blocks, even on a sparse old draft.
   def ensure_four_groups
     present = @puzzle.groups.map { |g| g.color&.to_sym }
-    Group.colors.keys.each_with_index do |color, i|
+    FORM_COLOR_ORDER.each_with_index do |color, i|
       @puzzle.groups.build(color: color, position: i) unless present.include?(color.to_sym)
     end
   end
