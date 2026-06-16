@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
 
-if ! gem list foreman -i --silent; then
+# Check for foreman with a plain PATH lookup, not `gem list`. A `gem` command
+# loads RubyGems plugins, and with two rdoc gems installed (the Ruby-bundled one
+# plus a newer user gem) both plugins load and spew "already initialized
+# constant RDoc::*" warnings on every boot. `command -v` never touches RubyGems.
+if ! command -v foreman >/dev/null 2>&1; then
   echo "Installing foreman..."
   gem install foreman
 fi
