@@ -21,6 +21,7 @@ export default class extends Controller {
 
   disconnect() {
     clearTimeout(this.timer)
+    clearTimeout(this.hideTimer)
   }
 
   // Wire to the form's input/change events.
@@ -148,6 +149,7 @@ export default class extends Controller {
 
   setStatus(state) {
     if (!this.hasStatusTarget) return
+    clearTimeout(this.hideTimer)
     this.statusTarget.dataset.state = state
     this.statusTarget.textContent = {
       idle: "",
@@ -156,5 +158,7 @@ export default class extends Controller {
       saved: "Saved",
       error: "Save failed — keep going, we'll retry"
     }[state]
+    // Dismiss the bar 1.5s after a successful save (errors stay until the next try).
+    if (state === "saved") this.hideTimer = setTimeout(() => this.setStatus("idle"), 1500)
   }
 }

@@ -42,7 +42,7 @@ RSpec.describe "Tag combobox", type: :system, js: true do
 
     # No submit click — adding the chip must trigger the background autosave so
     # the tag survives an iOS-back-button navigation.
-    expect(page).to have_css('[data-autosave-target="status"]', text: "Saved")
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
     expect(puzzle.reload.tag_names).to include("star-wars")
   end
 
