@@ -29,3 +29,57 @@
 
 en:
   hello: "Hello world"
+
+  # Snarky game-over quips (ADR-0011). One is picked at random per finished game.
+  # Each bucket needles you toward the next rung — except reverse_rainbow, which has
+  # nothing above it to diminish. Append freely; the game just samples the array.
+  quartets:
+    trophies:
+      perfect: "Perfect"
+      purple_first: "Purple first"
+      reverse_rainbow: "Reverse rainbow"
+    quips:
+      loss:
+        - "Oof."
+        - "So close."
+        - "Maybe next time."
+        - "Eh, you'll get 'em next time."
+        - "The puzzle won. It happens."
+        - "Sad." 
+        - "Embarrassing."
+        - "Gross." 
+        - "Shameful." 
+      mistakes:
+        - "A win's a win, I guess."
+        - "Solved it. Barely."
+        - "Good job! Ish." 
+        - "You got there. Eventually."
+        - "Nice."
+        - "That'll do, pig."
+        - "Good enough!"
+        - "Not bad. Not great, but not bad." 
+      perfect:
+        - "Perfect! Pretty good." 
+        - "Not a single mistake. Respectable. Not purple-first respectable, but it'll do." 
+        - "Clean sweep! Now try cracking the hard group first."
+        - "Perfect run. The purple-first players are condescendingly."
+        - "Well done! Purple-first next time?"
+        - "FLAWLESS VICTORY."
+        - "PERFECT!"
+        - "Look at you not making any mistakes! Not bad!"
+      purple_first:
+        - "PURPLE FIRST! PURPLE FIRST! PURPLE FIRST!"
+        - "Ooo, purple first. Respect." 
+        - "Hardest group out of the gate. Good stuff. Almost a perfect rainbow, even." 
+        - "Purple first — slick. The reverse-rainbow folks are slicker tho." 
+        - "Bold open. One ladder rung left to climb."
+        - "So good it's almost a reverse rainbow!"
+      reverse_rainbow:
+        - "Reverse rainbow!"
+        - "Purple to yellow, no mistakes. Hell yeah."
+        - "The full reverse. Absolute filth. No notes."
+        - "Hardest-first, perfect, in order. \m/"
+        - "GOAT"
+        - "Lookit that stack. Love it."
+        - "Reverse rainbow! What a stud."
+        - "Reverse rainbow? You nerd. Look at the nerdy nerd with their nerdy reverse rainbow. ...Nerd."

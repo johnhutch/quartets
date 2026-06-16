@@ -382,6 +382,58 @@ doesn't reliably re-evaluate after a *programmatic* `.checked` change.
 
 ---
 
+## 0011 — Trophies: flawless-win tiers, cumulative, on the attempt
+
+**Date:** 2026-06-15
+**Status:** accepted
+
+**Context.** Players wanted recognition for *how* they win, not just that they
+did. A full grill settled the shape: only a **flawless** win counts (solved with
+**zero mistakes** — any mistake or a loss earns nothing), and the reward scales
+with how hard you made it on yourself by the solve order (purple is hardest).
+
+**Decision.**
+
+- **Three nested tiers**, all requiring a flawless win:
+  **perfect** (any order) → **purple_first** (first group solved is purple) →
+  **reverse_rainbow** (purple→blue→green→yellow, hardest-first). The hierarchy is
+  strictly nested, so counting is **cumulative**: a reverse rainbow also counts as
+  a purple-first *and* a perfect ("you get all three trophies").
+- **Storage:** one ordered, nullable `achievement` enum on **Attempt**
+  (`{ perfect: 1, purple_first: 2, reverse_rainbow: 3 }`, nil = none — nil, not a
+  zero value, to avoid colliding with the `Attempt.none` AR scope). Computed in a
+  `before_create` from the guess log + zero-mistakes gate. Cumulative counts are a
+  cheap `achievement >= n` (the `at_least(tier)` scope) — no denormalized counters.
+  This required the JS to start logging each guess's `correct` flag (the solve
+  order = the colors of the correct guesses).
+- **Quips** live in `config/locales/en.yml` under `quartets.quips.{bucket}` (5
+  buckets: `loss`, `mistakes`, `perfect`, `purple_first`, `reverse_rainbow`), each
+  an array sampled at random per finished game. Each bucket needles you toward the
+  next rung; only `reverse_rainbow` is pure praise (nothing above it).
+- **Trophy visuals:** one fillable SVG silhouette (the stroke-only `icon` helper
+  can't fill), recolored per tier — perfect = ink, purple-first = solid purple,
+  reverse-rainbow = a striped purple→blue→green→yellow gradient (hardest at top).
+  The `trophy(tier)` helper renders it.
+- **Scope:** trophies + totals are **account-scoped**. Logged-in players get a
+  running total of their top trophy; anonymous players see the trophies + quip for
+  *that* game but **no total** — a sign-up nudge instead — because anonymous
+  attempts aren't capped at one-per-puzzle (ADR-0009), so a cookie total would be
+  farmable.
+- **Display:** `attempts#create` computes the tier + total and returns a
+  server-rendered awards partial (`play/_achievement`) the game injects on game
+  over; the logged-in revisit view (`play/_result`) renders the same partial. The
+  "Your stuff" dashboard (renamed from "My/Your quartets") leads with a trophy case
+  (3 tiers + cumulative counts) over a stat row (Played · Solved · Solve rate ·
+  Created); anonymous authors see only Created + a nudge.
+
+**Consequence.** Trophies are derived, not stored as counters — adding a tier or
+re-tuning the rules is a migration of the enum + a recompute, not a data backfill.
+The guess log is now load-bearing for trophies (each entry needs `correct`), on
+top of the cube/stats. **Deferred:** a **streak** stat on the dashboard waits on
+the daily-puzzle frontpage (no "today" without it).
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

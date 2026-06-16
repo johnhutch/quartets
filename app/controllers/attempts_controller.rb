@@ -26,7 +26,14 @@ class AttemptsController < ApplicationController
     # domain we're served on.
     cube = EmojiCube.new(attempt.guesses).to_s
     share = ShareText.new(title: puzzle.title, cube:, url: play_url(puzzle.share_token)).to_s
-    render json: { cube:, share: }, status: :created
+    # The trophies + quip block (ADR-0011). A signed-in winner also gets a running
+    # count of their top trophy; anonymous plays can't (uncapped, so it'd be farmed)
+    # and see a sign-up nudge instead. Pre-rendered so the JS just injects the HTML.
+    top_tier = attempt.earned_tiers.last
+    total = current_user.attempts.at_least(top_tier).count if user_signed_in? && top_tier
+    awards = render_to_string(partial: "play/achievement", formats: [:html],
+                              locals: { attempt:, total:, signed_in: user_signed_in? })
+    render json: { cube:, share:, achievement: attempt.achievement, awards: }, status: :created
   rescue ActiveRecord::RecordInvalid
     head :unprocessable_content
   end

@@ -74,6 +74,10 @@ yet. To build (data + form already exist):
   4. the puzzle with the **oldest `last_featured` date**.
   Replaces today's `RANDOM()` featured pick in `HomeController`. (Depends on the
   upvote/downvote feature for step 3, and a views counter for step 2.)
+  **Unblocks:** the **dashboard streak stat** (deferred from ADR-0011) — there's no
+  "today"/consecutive-days notion to count until a daily puzzle exists. When this
+  lands, add a Streak cell next to Played · Solved · Solve rate · Created in the
+  "Your stuff" trophy/stats block (`_dashboard_stats`, `PlayerStats`).
 - **Upvote / downvote per puzzle** — thumbs-up / thumbs-down icons shown below
   each puzzle (play surfaces). Upvotes start at **1**, downvotes at **0** — so a
   fresh puzzle's total score is **1**. The total score shows on the puzzle's

@@ -65,9 +65,10 @@ export default class extends Controller {
 
     const colors = this.selected.map((word) => this.colorOf[word])
     const correct = colors.every((color) => color === colors[0])
-    // Log the picked words + the true color of each — the cube and the
-    // common-mistakes stats both read off this.
-    this.guesses.push({ words: [...this.selected], colors })
+    // Log the picked words + the true color of each, plus whether the guess landed
+    // — the cube and common-mistakes read the colors; trophies (ADR-0011) read the
+    // solve order, i.e. the colors of the correct guesses.
+    this.guesses.push({ words: [...this.selected], colors, correct })
 
     if (correct) {
       this.lockGroup(colors[0])
@@ -172,11 +173,18 @@ export default class extends Controller {
       this.element.dataset.recorded = "true"
       if (response.ok) {
         const data = await response.json().catch(() => ({}))
+        this.renderAwards(data.awards)
         this.renderShare(data.cube, data.share)
       }
     } catch {
       // Stats are nice-to-have; a failed save shouldn't break the player's game.
     }
+  }
+
+  // The trophies + quip block (ADR-0011), rendered server-side from our own
+  // partial — trusted markup, so inject it as-is above the shareable cube.
+  renderAwards(html) {
+    if (html) this.element.insertAdjacentHTML("beforeend", html)
   }
 
   // The shareable cube + a copy-to-clipboard button, for bragging over text. The

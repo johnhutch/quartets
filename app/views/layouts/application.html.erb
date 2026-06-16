@@ -59,7 +59,7 @@
       <nav class="l-topbar__auth">
         <% if user_signed_in? %>
           <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
-          <%= link_to "My quartets", puzzles_path, class: "l-topbar__btn" %>
+          <%= link_to "Your stuff", puzzles_path, class: "l-topbar__btn" %>
         <% else %>
           <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
           <%= link_to "Sign up", new_user_registration_path, class: "l-topbar__btn" %>

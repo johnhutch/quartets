@@ -8,6 +8,11 @@
     <span class="m-result__note">You've already played it — one shot per puzzle.</span>
   </p>
 
+  <%# Trophies + quip (ADR-0011). Revisits are signed-in, so a trophy shows its total. %>
+  <% top = attempt.earned_tiers.last %>
+  <%= render "play/achievement", attempt: attempt, signed_in: user_signed_in?,
+        total: (current_user.attempts.at_least(top).count if user_signed_in? && top) %>
+
   <% if cube.present? %>
     <div class="m-game__share">
       <div class="m-cube"><%= cube %></div>

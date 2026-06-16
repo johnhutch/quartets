@@ -30,4 +30,35 @@ module ApplicationHelper
             class: "m-icon", viewBox: "0 0 24 24", fill: "none",
             stroke: "currentColor", "stroke-width": "1.6", "aria-hidden": "true")
   end
+
+  # Filled trophy silhouette (ADR-0011). The icon helper is stroke-only, so trophies
+  # get their own fillable path: one shape, recolored per tier via .m-trophy
+  # modifiers (perfect = ink, purple-first = solid purple) — except reverse-rainbow,
+  # which fills from a striped purple→blue→green→yellow gradient (hardest at top).
+  TROPHY_PATH = "M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .748 3.806 19.5 19.5 0 0 1-.748-3.806zm10.804 0a19.5 19.5 0 0 1-.748 3.806 2 2 0 0 0 .748-3.806z".freeze
+  # Top-to-bottom hard-edged bands: hardest group (purple) at the top, easiest
+  # (yellow) at the bottom — the difficulty rainbow, reversed.
+  RAINBOW_BANDS = %w[#ba81c5 #b0c4ef #a0c35a #f9df6d].freeze
+
+  def trophy(tier)
+    tier = tier.to_s
+    rainbow = tier == "reverse_rainbow"
+    body = tag.path(d: TROPHY_PATH, fill: rainbow ? "url(#trophy-rainbow)" : "currentColor")
+    contents = rainbow ? safe_join([rainbow_gradient, body]) : body
+    tag.svg(contents,
+            class: "m-trophy m-trophy--#{tier.dasherize}",
+            viewBox: "0 0 16 16", role: "img",
+            "aria-label": t("quartets.trophies.#{tier}"))
+  end
+
+  private
+
+  def rainbow_gradient
+    stops = RAINBOW_BANDS.each_with_index.flat_map do |color, i|
+      [tag.stop(offset: "#{i * 25}%", "stop-color": color),
+       tag.stop(offset: "#{(i + 1) * 25}%", "stop-color": color)]
+    end
+    tag.defs(tag.linearGradient(safe_join(stops),
+                                id: "trophy-rainbow", x1: "0", y1: "0", x2: "0", y2: "1"))
+  end
 end

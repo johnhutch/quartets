@@ -65,6 +65,56 @@ RSpec.describe "Attempts", type: :request do
       expect(share).to include(play_url(puzzle.share_token))
     end
 
+    # ADR-0011: a flawless win earns a trophy; the response carries the tier and a
+    # pre-rendered awards block (trophies + quip) the game injects.
+    def flawless_win(order)
+      { solved: true, mistakes_count: 0,
+        guesses: order.map { |c| { correct: true, words: %w[a b c d], colors: [c, c, c, c] } } }
+    end
+
+    it "returns the earned tier and an awards block on a flawless win" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token),
+           params: { attempt: flawless_win(%w[purple blue green yellow]) }, as: :json
+
+      expect(response.parsed_body["achievement"]).to eq("reverse_rainbow")
+      awards = response.parsed_body["awards"]
+      expect(awards).to include("Reverse rainbow").and include("Purple first").and include("Perfect")
+    end
+
+    it "nudges an anonymous winner to sign up instead of showing a total" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token),
+           params: { attempt: flawless_win(%w[yellow green blue purple]) }, as: :json
+
+      expect(response.parsed_body["awards"]).to include("Sign up")
+      expect(response.parsed_body["awards"]).not_to include("That's your")
+    end
+
+    it "gives a signed-in winner a running total of their top trophy" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token),
+           params: { attempt: flawless_win(%w[purple green blue yellow]) }, as: :json
+
+      expect(response.parsed_body["awards"]).to include("That's your 1st purple first")
+    end
+
+    it "carries a quip but no trophy on a loss" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token),
+           params: { attempt: { solved: false, mistakes_count: 4 } }, as: :json
+
+      expect(response.parsed_body["achievement"]).to be_nil
+      expect(response.parsed_body["awards"]).to include("m-awards__quip")
+      expect(response.parsed_body["awards"]).not_to include("m-awards__trophies")
+    end
+
     it "reuses the same player token across plays (the anonymous identity)" do
       puzzle = create(:published_puzzle)
 

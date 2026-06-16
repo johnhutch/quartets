@@ -66,6 +66,124 @@
   white-space: pre; // preserve the rows exactly as generated
 }
 
+// --- Trophies + game-over awards (ADR-0011) -----------------------------
+// One silhouette, recolored per tier. Perfect/purple-first fill from currentColor
+// (set per modifier); reverse-rainbow fills from its own embedded gradient.
+.m-trophy {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+
+  &--perfect { color: $brutal-ink; }
+  &--purple-first { color: $color-purple; }
+}
+
+// The earned-trophy row + quip + total/nudge shown when a game ends.
+.m-awards {
+  display: grid;
+  justify-items: center;
+  gap: $space-sm;
+  margin-top: $space-md;
+  text-align: center;
+
+  &__trophies {
+    display: flex;
+    gap: $space-lg;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__trophy {
+    display: grid;
+    justify-items: center;
+    gap: $space-xs;
+  }
+
+  &__name {
+    font-size: $font-sm;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  &__quip {
+    margin: 0;
+    font-size: $font-lg;
+    font-weight: 700;
+  }
+
+  &__total,
+  &__nudge {
+    margin: 0;
+    font-size: $font-sm;
+    color: $color-muted;
+  }
+}
+
+// "Your stuff" dashboard top block: trophy case over a play-stat row.
+.m-dash-stats {
+  display: grid;
+  gap: $space-md;
+  margin-bottom: $space-lg;
+}
+
+.m-trophy-case {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-xl;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__item {
+    display: grid;
+    justify-items: center;
+    gap: $space-xs;
+  }
+
+  &__count {
+    font-family: $font-display;
+    font-size: $font-xl;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__name {
+    font-size: $font-sm;
+    color: $color-muted;
+  }
+}
+
+.m-statbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-xl;
+  margin: 0;
+
+  &__cell {
+    display: grid;
+    justify-items: center;
+    gap: $space-xs;
+
+    dt {
+      font-size: $font-sm;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $color-muted;
+    }
+
+    dd {
+      margin: 0;
+      font-family: $font-display;
+      font-size: $font-lg;
+      font-weight: 700;
+    }
+  }
+}
+
 // --- Stats panel --------------------------------------------------------
 .m-stats {
   border: 1px solid $color-line;

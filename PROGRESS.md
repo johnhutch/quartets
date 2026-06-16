@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-06-15
+**Last updated:** 2026-06-16
 **Active branch:** main
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
@@ -37,6 +37,16 @@ yet** (see TODOS).
 
 ## Shipped log (most recent first)
 
+- **Trophies shipped (ADR-0011).** Flawless wins earn one of three nested tiers —
+  perfect → purple-first → reverse-rainbow — counted cumulatively off a new ordered
+  `achievement` enum on Attempt (computed in `before_create`; `at_least` scope for
+  counts). Game over shows the earned trophies + a random snarky quip (5 buckets in
+  `en.yml`) + a top-trophy total (logged-in) or sign-up nudge (anon, since their
+  attempts are uncapped/farmable). The "My quartets" nav/dashboard became **"Your
+  stuff"** with a trophy case + Played · Solved · Solve rate · Created stat row
+  (`PlayerStats`). Custom fillable `trophy(tier)` SVG (ink / purple / striped
+  gradient). Guesses now log a `correct` flag for the solve order. Streak stat is
+  deferred until the daily-puzzle frontpage.
 - **Board tiles wrap cleanly — no more orphan-letter breaks.** Long answers now
   hyphenate at syllables instead of breaking anywhere: the fix was `<html lang="en">`
   (without a `lang`, `hyphens: auto` silently does nothing and falls through to

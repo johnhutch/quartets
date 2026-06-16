@@ -79,12 +79,24 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   leaves. `description`/exactly-four-words validated only when the parent is
   published.
 - **Attempt** (`player_token`, optional `user_id`, `solved`, `mistakes_count`,
-  `guesses` jsonb). `belongs_to :user, optional:` — anonymous plays carry only a
-  `player_token`; logged-in plays also attribute to the account, capped at one per
-  puzzle by a partial unique index `(user_id, puzzle_id) WHERE user_id IS NOT NULL`
-  (ADR-0009). Stats (emoji cube, common wrong guesses) derive from `guesses` — no
-  extra tables. Indexed on `player_token`. The public play loop records these (the
-  Stimulus `game_controller.js` POSTs to `play_attempts_path`).
+  `guesses` jsonb, `achievement` enum). `belongs_to :user, optional:` — anonymous
+  plays carry only a `player_token`; logged-in plays also attribute to the account,
+  capped at one per puzzle by a partial unique index `(user_id, puzzle_id) WHERE
+  user_id IS NOT NULL` (ADR-0009). Stats (emoji cube, common wrong guesses) derive
+  from `guesses` — no extra tables. Each guess entry now carries a **`correct`**
+  bool (was just `words`+`colors`) because trophies read the solve order off it.
+  Indexed on `player_token`. **Trophies (ADR-0011):** `achievement` is an ordered,
+  nullable enum (`perfect:1, purple_first:2, reverse_rainbow:3`, nil = none),
+  computed in a `before_create` (`earned_achievement`) — only a flawless win (all
+  solved, zero mistakes) scores. `at_least(tier)` scope = cumulative `>= n` count;
+  `earned_tiers`/`quip_bucket` drive the awards view. The public play loop records
+  these (the Stimulus `game_controller.js` POSTs to `play_attempts_path`).
+- **PlayerStats** (`app/models/`) — value object for the "Your stuff" dashboard
+  top block (ADR-0011): trophy counts (`at_least` per tier), played/solved/solve
+  rate from an account's `attempts`, and a created count. Anonymous (`attempts:
+  nil`) → `signed_in?` false, created-only. `AttemptsController#create` returns a
+  server-rendered `play/_achievement` partial (trophies + quip + total/nudge) the
+  game injects on game over; the `trophy(tier)` helper renders the fillable SVG.
 - **Tag / Tagging / `Taggable`** (ADR-0010) — `Tag` (`name` unique). `Tag.normalize`
   → hyphen-slug; `Tag.for_name` find-or-creates (rescues `RecordNotUnique` → re-find
   for the concurrent-insert race). `Tagging` `belongs_to :taggable, polymorphic`
