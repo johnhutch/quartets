@@ -5,10 +5,11 @@ class AttemptsController < ApplicationController
   include AnonymousPlayer
 
   def create
-    # Mirror the play gate (ADR-0008): any complete puzzle records, listed or not.
-    # Incomplete (or unknown) → 404, same as the play page — nothing to play.
+    # The same play gate as play#show (ADR-0008): any complete puzzle records,
+    # listed or not; incomplete or unknown → 404 (nothing to play). One rule, one
+    # place (Playability) — the recorder doesn't need the owner/editor branch.
     puzzle = Puzzle.find_by(share_token: params[:share_token])
-    return head :not_found unless puzzle&.complete?
+    return head :not_found unless Playability.new(puzzle).playable?
 
     # One recorded play per logged-in user (ADR-0009): a repeat POST just returns
     # their existing result instead of stacking duplicate attempts. Anonymous

@@ -139,11 +139,14 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   `owned_puzzles` + the `owns?` view helper), `ClaimsPuzzles` (site-wide
   `before_action`: on the first authenticated request, reassigns the cookie's
   puzzles to the account and clears the cookie), `AnonymousPlayer` (the
-  `player_token` for stats). `PlayController#show` gates on `complete?` (ADR-0008):
-  any complete puzzle plays for anyone with the link (published or unlisted); an
-  incomplete one redirects its owner to the editor and 404s everyone else.
-  `AttemptsController#create` mirrors that gate (and attributes the attempt to
-  `current_user` when signed in, idempotently — ADR-0009). For a **non-owner** who
+  `player_token` for stats). The play gate (ADR-0008) lives in the **`Playability`**
+  policy object (`app/models/`): `Playability.new(puzzle, owner:)` — `#playable?`
+  (= exists && `complete?`, owner-agnostic) and `#status` (`:playable` / `:editable`
+  = incomplete-but-owned / `:missing` = unknown token or incomplete-to-a-stranger).
+  `PlayController#show` maps `status` → response (`:editable` redirects the owner to
+  the editor, `:missing` 404s) and drops the `find_by!`/rescue; `AttemptsController#create`
+  gates on `#playable?` (no owner branch — it just 404s non-playable) and attributes
+  the attempt to `current_user` when signed in, idempotently (ADR-0009). For a **non-owner** who
   has already finished a puzzle, `show` renders `play/_result` — the **reconstructed
   game-over board** (groups in solve order from `attempt.solved_colors`, win/loss
   stamp, cube + trophies) — instead of a fresh board (ADR-0012). The finished

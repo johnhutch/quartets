@@ -12,16 +12,14 @@ class PlayController < ApplicationController
   end
 
   def show
-    @puzzle = Puzzle.find_by!(share_token: params[:share_token])
+    @puzzle = Puzzle.find_by(share_token: params[:share_token])
 
-    # Playability gates on completeness, not visibility (ADR-0008): a finished
-    # puzzle plays for anyone with the link (published or just unlisted). An
-    # incomplete one can't be played — its owner is bounced to the editor to
-    # finish it; everyone else gets a 404 (it effectively doesn't exist yet).
-    unless @puzzle.complete?
-      return redirect_to(edit_puzzle_path(@puzzle)) if owns?(@puzzle)
-
-      return head :not_found
+    # The play gate (ADR-0008): a complete puzzle plays for anyone with the link
+    # (published or just unlisted); an incomplete one effectively doesn't exist —
+    # its owner is bounced to the editor, everyone else (and unknown tokens) 404.
+    case Playability.new(@puzzle, owner: @puzzle && owns?(@puzzle)).status
+    when :editable then return redirect_to(edit_puzzle_path(@puzzle))
+    when :missing  then return head(:not_found)
     end
 
     # One play per non-owner (ADR-0009, ADR-0012): once they've finished a puzzle
@@ -30,8 +28,6 @@ class PlayController < ApplicationController
     # are keyed by account; anonymous players by their player_token (best-effort —
     # clearing the cookie still lets a stranger replay, which is fine).
     @my_attempt = finished_attempt unless owns?(@puzzle)
-  rescue ActiveRecord::RecordNotFound
-    head :not_found
   end
 
   private
