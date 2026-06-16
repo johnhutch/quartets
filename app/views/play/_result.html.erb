@@ -1,7 +1,7 @@
 <%# Shown when a signed-in player revisits a puzzle they've already finished —
     one play per puzzle (ADR-0009). Their emoji cube + the revealed solution,
     since they can't play it again. Expects `puzzle` and `attempt` locals. %>
-<% cube = EmojiCube.new(attempt.guesses).to_s %>
+<% cube = EmojiCube.new(attempt.guess_log).to_s %>
 <div class="m-result">
   <p class="m-result__status">
     <%= attempt.solved? ? "You solved this one." : "You didn't crack this one." %>

@@ -404,8 +404,9 @@ with how hard you made it on yourself by the solve order (purple is hardest).
   zero value, to avoid colliding with the `Attempt.none` AR scope). Computed in a
   `before_create` from the guess log + zero-mistakes gate. Cumulative counts are a
   cheap `achievement >= n` (the `at_least(tier)` scope) — no denormalized counters.
-  This required the JS to start logging each guess's `correct` flag (the solve
-  order = the colors of the correct guesses).
+  The solve order = the colors of the correct guesses; correctness is **derived**
+  from the recorded colors (a guess is correct when its four tiles share one
+  color), owned by the `Guess` value object — no stored flag.
 - **Quips** live in `config/locales/en.yml` under `quartets.quips.{bucket}` (5
   buckets: `loss`, `mistakes`, `perfect`, `purple_first`, `reverse_rainbow`), each
   an array sampled at random per finished game. Each bucket needles you toward the
@@ -428,9 +429,9 @@ with how hard you made it on yourself by the solve order (purple is hardest).
 
 **Consequence.** Trophies are derived, not stored as counters — adding a tier or
 re-tuning the rules is a migration of the enum + a recompute, not a data backfill.
-The guess log is now load-bearing for trophies (each entry needs `correct`), on
-top of the cube/stats. **Deferred:** a **streak** stat on the dashboard waits on
-the daily-puzzle frontpage (no "today" without it).
+The guess log is load-bearing for trophies (solve order is read from each entry's
+colors via `Guess`), on top of the cube/stats. **Deferred:** a **streak** stat on
+the dashboard waits on the daily-puzzle frontpage (no "today" without it).
 
 ---
 

@@ -1,7 +1,6 @@
-# Turns an attempt's ordered guesses into the shareable 🟨🟩🟦🟪 grid — one row
-# per guess, each square the *true* color of the word picked in that slot. Pure
-# value object (no DB); the single source of truth for the cube, server-side and
-# in the JSON the game posts back.
+# Turns a play's ordered guesses into the shareable 🟨🟩🟦🟪 grid — one row per
+# guess, each square the *true* color of the word picked in that slot. Pure value
+# object (no DB); consumes Guesses (the jsonb shape lives in Guess, not here).
 class EmojiCube
   SQUARES = {
     "yellow" => "🟨",
@@ -13,22 +12,16 @@ class EmojiCube
   # Anything unrecognized degrades to a blank square instead of crashing a share.
   BLANK = "⬜"
 
+  # `guesses` is an Array<Guess> (e.g. `attempt.guess_log`).
   def initialize(guesses)
     @guesses = Array(guesses)
   end
 
   def rows
-    @guesses.map { |guess| row_for(guess) }
+    @guesses.map { |guess| guess.colors.map { |color| SQUARES.fetch(color, BLANK) }.join }
   end
 
   def to_s
     rows.join("\n")
-  end
-
-  private
-
-  def row_for(guess)
-    colors = guess["colors"] || guess[:colors] || []
-    colors.map { |color| SQUARES.fetch(color.to_s, BLANK) }.join
   end
 end

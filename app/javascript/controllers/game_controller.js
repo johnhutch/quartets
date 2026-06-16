@@ -30,7 +30,7 @@ export default class extends Controller {
     this.selected = []      // selected words (max 4)
     this.solvedColors = []  // colors already found
     this.mistakes = 0
-    this.guesses = []       // [{ words: [...], correct: bool }]
+    this.guesses = []       // [{ words: [...], colors: [...] }]
     this.over = false
 
     this.puzzleValue.groups.forEach((group) => {
@@ -65,10 +65,10 @@ export default class extends Controller {
 
     const colors = this.selected.map((word) => this.colorOf[word])
     const correct = colors.every((color) => color === colors[0])
-    // Log the picked words + the true color of each, plus whether the guess landed
-    // — the cube and common-mistakes read the colors; trophies (ADR-0011) read the
-    // solve order, i.e. the colors of the correct guesses.
-    this.guesses.push({ words: [...this.selected], colors, correct })
+    // Log the picked words + the true color of each. Correctness is derived from
+    // the colors server-side (the Guess value object), so we don't store it — the
+    // cube, common-mistakes, and trophies all read it back off the colors.
+    this.guesses.push({ words: [...this.selected], colors })
 
     if (correct) {
       this.lockGroup(colors[0])

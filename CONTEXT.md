@@ -86,14 +86,23 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   plays carry only a `player_token`; logged-in plays also attribute to the account,
   capped at one per puzzle by a partial unique index `(user_id, puzzle_id) WHERE
   user_id IS NOT NULL` (ADR-0009). Stats (emoji cube, common wrong guesses) derive
-  from `guesses` — no extra tables. Each guess entry now carries a **`correct`**
-  bool (was just `words`+`colors`) because trophies read the solve order off it.
+  from `guesses` — no extra tables. Each guess entry is `{words, colors}` (the true
+  color of each picked tile); **correctness is derived, not stored** — see `Guess`.
   Indexed on `player_token`. **Trophies (ADR-0011):** `achievement` is an ordered,
   nullable enum (`perfect:1, purple_first:2, reverse_rainbow:3`, nil = none),
   computed in a `before_create` (`earned_achievement`) — only a flawless win (all
   solved, zero mistakes) scores. `at_least(tier)` scope = cumulative `>= n` count;
   `earned_tiers`/`quip_bucket` drive the awards view. The public play loop records
   these (the Stimulus `game_controller.js` POSTs to `play_attempts_path`).
+- **Guess** (`app/models/`) — value object owning the guess-log shape (jsonb, so
+  string keys from JSON, symbol keys in tests; it's the one place that normalizes
+  both). `#colors`/`#words`, and the **derived** Connections rule: `#correct?` =
+  all picked tiles share one color (`colors.uniq.size == 1`), `#wrong?` = they span
+  groups, `#solved_color` = that shared color. Reached via **`Attempt#guess_log` →
+  `Array<Guess>`**. `EmojiCube` (colors→squares), `PuzzleStats#common_wrong_guesses`
+  (`#wrong?`/`#words`), and `Attempt#earned_achievement` (`#solved_color` → solve
+  order) all consume `Guess` — none poke at the raw hash. The producer
+  (`game_controller.js`) records only `{words, colors}`.
 - **PlayerStats** (`app/models/`) — value object for the "Your stuff" dashboard
   top block (ADR-0011): trophy counts (`at_least` per tier), played/solved/solve
   rate from an account's `attempts`, and a created count. Anonymous (`attempts:
