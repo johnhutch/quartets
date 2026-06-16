@@ -521,6 +521,10 @@
 .m-form {
   display: grid;
   gap: $space-md;
+  // Cap the authoring form at ~half the (wide, brutal) container and centre it.
+  // Auth forms already sit in a narrower column, so this is a no-op there.
+  max-width: $form-width;
+  margin-inline: auto;
 
   &__field {
     display: grid;
