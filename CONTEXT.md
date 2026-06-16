@@ -191,4 +191,11 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
 - **Grid items that must shrink need `minmax(0, 1fr)`, not `1fr`** — plain `1fr`
   has an implicit `min-width: auto` (min-content), so a long unbreakable word
   expands its column and blows the layout out (`.m-board`).
+- **Meta description is structural** — the layout always emits
+  `<meta name="description">` from `content_for(:description)` (falling back to
+  `ApplicationHelper::SITE_DESCRIPTION`), *outside* the `content_for(:meta)` branch.
+  A page sets its own SEO description by `content_for :description, ...`; `play#show`
+  uses `puzzle_meta_description(@puzzle)` (author blurb, else generated fallback)
+  and reuses it for the `og`/`twitter` tags. Don't put `name="description"` back
+  inside a `:meta` block.
 - Never edit `app/assets/builds/` by hand; source is `application.scss`.

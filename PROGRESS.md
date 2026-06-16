@@ -32,11 +32,29 @@ migration** (name + random-suffix play URLs) — see the TODOS reminder.
 The **discovery-authoring half shipped** (ADR-0010): a `specialized` flag
 (Classic by default), creatable autocomplete **tags** (polymorphic), and a 200-char
 **description** are now captured on the authoring form. The **discovery surfacing**
-half — browse filters, tag-chip pages, `og:description`, search — is **not built
-yet** (see TODOS).
+half — browse filters, tag-chip pages, on-page description teaser, search — is
+**not built yet** (see TODOS); the meta/`og`/`twitter:description` slice of it
+shipped this session.
 
 ## Shipped log (most recent first)
 
+- **Per-page meta descriptions (SEO).** Every page now emits
+  `<meta name="description">` — site default, or per-puzzle: the author's
+  `description` blurb when present, else a generated spoiler-free fallback
+  (`puzzle_meta_description` helper). One string feeds name/`og`/`twitter` so SERP
+  + social cards agree (replaced `play#show`'s hardcoded "Play this puzzle by X" OG
+  line). Description is **structural** — hoisted out of the `content_for(:meta)`
+  branch and driven by `content_for(:description)`, so coverage never depends on
+  per-page discipline. 4 request specs; Lighthouse SEO 91→100.
+- **WCAG 2.1 AA pass — Lighthouse 95→100 (ADR-0013).** Full audit, then fixed the
+  real gaps: muted text moved off the light-theme `$color-muted` onto
+  `$brutal-muted` + dropped the footer-disclaimer opacity (contrast); skip link +
+  `<main>` landmark; global `:focus-visible` ring; `aria-label` on the 16 answer
+  inputs; `role`+`aria-live` on flash; `prefers-reduced-motion` flattening
+  tilt/lift; named the two `<nav>`s. Standing bar tracked in
+  `docs/ACCESSIBILITY.md`; semantics pinned by `spec/system/accessibility_spec.rb`
+  (contrast/motion verified via Lighthouse, not RSpec). `/styleguide` swatches +
+  the emoji cube are documented exemptions.
 - **Home falls back to an unplayed puzzle.** With nothing featured, `home#show`
   serves a random *published* puzzle you haven't finished (by account, else
   `player_token`); cleared the whole board → a snarky empty state that sends you to
