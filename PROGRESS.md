@@ -37,6 +37,12 @@ yet** (see TODOS).
 
 ## Shipped log (most recent first)
 
+- **Board tiles wrap cleanly — no more orphan-letter breaks.** Long answers now
+  hyphenate at syllables instead of breaking anywhere: the fix was `<html lang="en">`
+  (without a `lang`, `hyphens: auto` silently does nothing and falls through to
+  `overflow-wrap: anywhere`). `.m-card` keeps a `clamp()` font + `hyphens: auto`;
+  `.m-board` uses `repeat(4, minmax(0, 1fr))` so a long unbreakable word can't blow
+  its column out. All CSS — a JS shrink-to-fit attempt was tried and reverted.
 - **Quartet specificity & discovery — authoring half (ADR-0010).** `Puzzle` gained
   `specialized` (bool, default false = "Classic") + `description` (≤200). New
   polymorphic **tags/taggings** (`Taggable` concern, `Tag.normalize` → hyphen-slugs,

@@ -136,4 +136,10 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
 - **Capybara `text:` sees CSS `text-transform`** — the brutal theme uppercases
   buttons/chips/status, so assert with a case-insensitive regex (`/saved/i`), not
   a literal `"Saved"`.
+- **`hyphens: auto` needs `<html lang>`** — without it the browser has no
+  hyphenation dictionary and silently falls through to `overflow-wrap: anywhere`
+  (the orphan-letter board-tile wraps). The layout sets `lang="en"`.
+- **Grid items that must shrink need `minmax(0, 1fr)`, not `1fr`** — plain `1fr`
+  has an implicit `min-width: auto` (min-content), so a long unbreakable word
+  expands its column and blows the layout out (`.m-board`).
 - Never edit `app/assets/builds/` by hand; source is `application.scss`.
