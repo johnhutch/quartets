@@ -1,0 +1,31 @@
+<%# "Your stuff" top block (ADR-0011). Signed in: the trophy case (three tiers +
+    cumulative counts) over a play-stat row. Anonymous: just a created count and a
+    nudge — trophies/stats are account-scoped (uncapped anon attempts would farm
+    them). Streak lands later, with the daily-puzzle frontpage. %>
+<section class="m-dash-stats">
+  <% if stats.signed_in? %>
+    <ul class="m-trophy-case">
+      <% PlayerStats::TIERS.each do |tier| %>
+        <li class="m-trophy-case__item">
+          <%= trophy(tier) %>
+          <span class="m-trophy-case__count"><%= stats.trophies[tier] %></span>
+          <span class="m-trophy-case__name"><%= t("quartets.trophies.#{tier}") %></span>
+        </li>
+      <% end %>
+    </ul>
+
+    <dl class="m-statbar">
+      <div class="m-statbar__cell"><dt>Played</dt><dd><%= stats.played %></dd></div>
+      <div class="m-statbar__cell"><dt>Solved</dt><dd><%= stats.solved %></dd></div>
+      <div class="m-statbar__cell"><dt>Solve rate</dt><dd><%= number_to_percentage(stats.solve_rate * 100, precision: 0) %></dd></div>
+      <div class="m-statbar__cell"><dt>Created</dt><dd><%= stats.created %></dd></div>
+    </dl>
+  <% else %>
+    <dl class="m-statbar">
+      <div class="m-statbar__cell"><dt>Created</dt><dd><%= stats.created %></dd></div>
+    </dl>
+    <p class="m-dash-stats__nudge">
+      <%= link_to "Sign up", new_user_registration_path %> to earn trophies and track your stats across devices.
+    </p>
+  <% end %>
+</section>
