@@ -37,6 +37,36 @@ yet** (see TODOS).
 
 ## Shipped log (most recent first)
 
+- **Play gate → `Playability` policy object** (architecture review candidate 3).
+  ADR-0008's "playable iff `complete?`" rule + the owner-redirect/404 trichotomy,
+  previously mirrored across `play#show` and `attempts#create`, now live in
+  `Playability.new(puzzle, owner:)` (`#playable?`, `#status` → `:playable` /
+  `:editable` / `:missing`). `show` maps status→response and dropped its
+  `find_by!`/rescue; `create` gates on `#playable?` (no owner branch).
+- **Finished-play result → `PlayResult`** (architecture review candidate 2). The
+  cube/share/achievement/total/awards-locals shaping, duplicated across
+  `attempts#create` (JSON) and `play/_result` (revisit HTML), collapsed into one
+  presenter `PlayResult.new(attempt, url:, viewer:)` (composes `EmojiCube` +
+  `ShareText`). Recording + ERB rendering stay in the controller/view.
+- **Finished-state on revisit, not redoable (ADR-0012).** Revisiting an
+  already-played puzzle reconstructs the game-over board — groups in *your* solve
+  order (`Attempt#solved_colors`), win/loss stamp, cube + trophies — instead of a
+  fresh board. Gating extended to **anonymous** players by `player_token` (amends
+  ADR-0009's "anon stays replayable"); owners stay ungated.
+- **Guess log → `Guess` value object** (architecture review candidate 1). The
+  `guesses` jsonb shape + key-normalization + the "correct?" rule, previously
+  re-implemented in `EmojiCube`/`PuzzleStats`/`Attempt`, now owned by one `Guess`
+  (`#colors`/`#words`/`#correct?`/`#wrong?`/`#solved_color`), reached via
+  `Attempt#guess_log`. Correctness is **derived** from colors, so the stored
+  `correct` flag was dropped from the producer + permit.
+- **Mobile hamburger nav + arrow fix.** Topbar collapses below `$bp-nav` to a
+  CSS-only `<details>` hamburger (Create yellow-tilted inside, hidden on the
+  authoring page; the page's redundant Create sticker hides on mobile). The `↗`
+  glyph is pinned to text presentation via U+FE0E (`ne_arrow` helper) so iOS
+  stops rendering it as an emoji block.
+- **Reverse-rainbow authoring order + stay-logged-in default.** New-puzzle form
+  blocks build purple→blue→green→yellow (`PuzzlesController::FORM_COLOR_ORDER`);
+  the login "Stay logged in" checkbox defaults checked.
 - **Trophies shipped (ADR-0011).** Flawless wins earn one of three nested tiers —
   perfect → purple-first → reverse-rainbow — counted cumulatively off a new ordered
   `achievement` enum on Attempt (computed in `before_create`; `at_least` scope for
@@ -45,8 +75,8 @@ yet** (see TODOS).
   attempts are uncapped/farmable). The "My quartets" nav/dashboard became **"Your
   stuff"** with a trophy case + Played · Solved · Solve rate · Created stat row
   (`PlayerStats`). Custom fillable `trophy(tier)` SVG (ink / purple / striped
-  gradient). Guesses now log a `correct` flag for the solve order. Streak stat is
-  deferred until the daily-puzzle frontpage.
+  gradient). Solve order drives the tier (later: derived from the guess colors via
+  `Guess`, see below). Streak stat is deferred until the daily-puzzle frontpage.
 - **Board tiles wrap cleanly — no more orphan-letter breaks.** Long answers now
   hyphenate at syllables instead of breaking anywhere: the fix was `<html lang="en">`
   (without a `lang`, `hyphens: auto` silently does nothing and falls through to

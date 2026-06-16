@@ -30,10 +30,11 @@ Planned work that has been scoped but not yet started. Read this at session star
 ### Follow-ups from the one-play-per-user work (ADR-0009)
 
 - **Gate the home page's featured board too.** `home#show` renders a replayable
-  board even if the signed-in user already finished that featured puzzle (a replay
-  won't duplicate the attempt, but it's inconsistent with `play#show`). Apply the
-  same `@my_attempt` → result-view treatment, or just send finished players to the
-  result.
+  board even if the player already finished that featured puzzle — now inconsistent
+  with `play#show`, which gates non-owners (signed-in *and* anonymous, ADR-0012).
+  Reuse the pieces that already exist: `PlayController#finished_attempt` (the lookup)
+  + the `play/_result` finished-board partial; render the result when an attempt
+  exists.
 - **Claim anonymous attempts on login.** Like the `creator_token` claim (ADR-0005),
   optionally reassign a player's cookie-attributed attempts to their account on
   sign-in so pre-login plays count toward the one-play cap + "✓ Played" badges.
@@ -97,6 +98,13 @@ yet. To build (data + form already exist):
 
 ### Quick wins (no decisions needed)
 
+- **Pin the live game-over stamp's arrow too.** `game_controller.js`
+  `renderEndStamp` still writes a raw `"Solved it ↗"` — iOS renders the emoji
+  block the `ne_arrow` helper (U+FE0E) fixed everywhere else. Append `︎` in
+  the JS string.
+- **Drop dead CSS from the revisit rework.** `.m-result__status` /
+  `.m-result__heading` are unused since `play/_result` became the reconstructed
+  board (it uses the `.m-game__*` + `.m-stamp` classes now). `/simplify` fodder.
 - **Richer share payload** — cube + title + direct link in the share sheet
   (verify what commit `b3acb2b` already covers first).
 - **Tune the auto-save debounce** — currently 1000ms
@@ -105,6 +113,16 @@ yet. To build (data + form already exist):
   headings) now says "quartet"; *prose* still says "puzzle" (dashboard/play empty
   states, claim CTA, privacy page, `og:description`). Sweep if full consistency is
   wanted — left alone on purpose since the ask was scoped to buttons/nav.
+
+### Architecture review — remaining candidate
+
+- **Candidate 4 — fold the anonymous-identity tokens** (`Speculative`). `Creator`
+  (`creator_token`) and `AnonymousPlayer` (`player_token`) repeat the same
+  signed-permanent-cookie `ensure_*`/`current_*` plumbing. A `SignedCookieIdentity`
+  parameterized by cookie name could own it (two tokens = two adapters). Flagged
+  speculative: tiny payoff, real over-abstraction risk on two ~6-line mixins with
+  different lifecycles (claim-on-auth lives only in `Creator`). Candidates 1–3 from
+  that review shipped this session.
 
 ### Ops
 
