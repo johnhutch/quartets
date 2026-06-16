@@ -338,6 +338,50 @@ dual identity (`player_token` always; `user_id` when logged in).
 
 ---
 
+## 0010 — Quartet specificity & discovery: `specialized` flag + tags + description (no subject categories)
+
+**Date:** 2026-06-15
+**Status:** accepted (authoring half built; the discovery *surfacing* half is deferred — see TODOS)
+
+**Context.** Goal: let authors make highly specific, non-general quartets (a Star
+Wars grid, a kids-knowledge grid) and let solvers find or avoid them. A `grill-me`
+pass worked the design. The early instinct — hard-coded subject categories + user
+tags — kept tangling, because the meaningful axis isn't *topic*, it's *knowledge
+fairness*: is this fair for a general NYT-style solver, or does it demand a
+specific domain/fandom? A subject taxonomy can't express that (a "Mythology"
+puzzle might be classic-fair Greek gods or deep-cut deities).
+
+**Decision.**
+
+- **`specialized` boolean** (default `false`). False = **"Classic"**: the
+  encouraged, general, NYT-grade quartet. True = needs a specific body of
+  knowledge — a fandom *or* a single domain (an all-sports grid). This is the
+  trusted, filterable axis; it **replaces the subject-category dropdown entirely**.
+- **Tags** — only when specialized. Freeform, **autocomplete against existing**,
+  **hard-normalized to hyphen-slugs** (`Tag.normalize`: downcase + strip →
+  `star-wars`). Stored as **polymorphic `tags` + `taggings` rows** (a `Taggable`
+  concern), *not* a jsonb array, so an admin can merge/rename to fix cold-start
+  divergence (admin tag-merge is in TODOS). Tags are optional even when specialized
+  (showing them helps build the corpus).
+- **`description`** — optional, ≤200 chars (`Puzzle::DESCRIPTION_LIMIT`, fits a
+  Bluesky post + the URL). Will feed `og`/`twitter:description` + future search;
+  never a publish gate.
+- **Difficulty is NOT authored** — derive it later from completion stats
+  (success/failure rates, maybe reputation-weighted). Out of scope here.
+- **Deferred — the "discovery surfacing" half:** `/play` "Classic-style only"
+  toggle (`?classic=1`), specialized puzzles' clickable tag chips → `/play?tag=…`,
+  `description` → `og`, full-text search (post-corpus), pretty `/t/:tag` hubs.
+
+**Consequence.** Authoring carries the metadata now (the form: a big "YES" toggle
+reveals a creatable tag combobox + the description field), but nothing is
+surfaced/filterable yet — the data sits unused until the deferred half lands. The
+`Taggable` concern means any future model gets tags via `include Taggable`. No
+subject taxonomy to curate. UI gotcha worth remembering: the toggle's reveal is
+driven by an **`is-on` class** (controller-managed), not `:has(:checked)` — `:has`
+doesn't reliably re-evaluate after a *programmatic* `.checked` change.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

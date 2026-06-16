@@ -38,12 +38,19 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   incomplete (unlisted & !complete?), unlisted (unlisted & complete?), published.
   **Naming:** user-facing chrome (nav, buttons, titles, headings) calls a Puzzle a
   **"quartet"**; the model, table, and routes stay `Puzzle`/`puzzles`.
+  **Discovery (ADR-0010):** `specialized` bool (false = "Classic", the general
+  default), optional `description` (≤200), and `tags` (only meaningful when
+  specialized). Surfacing/filtering is not built yet.
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
   yellow, purple` (enum). Authoring/form order is blue→green→yellow→purple
   (swellgarfo muscle memory), *not* NYT difficulty order.
 - **Attempt** — one play-through, keyed by a `player_token` cookie; also
   attributed to `user_id` when the player is logged in (ADR-0009). Logged-in
   players get **one attempt per puzzle** (partial unique index).
+- **Tag** — a normalized hyphen-slug (`star-wars`) attached to taggables through a
+  **polymorphic `taggings` join** (the `Taggable` concern). Canonical rows (not a
+  jsonb array) so an admin can merge/rename; authors add them via a creatable
+  autocomplete combobox. ADR-0010.
 - **share_token** — a puzzle's unguessable public slug; the public play URL is
   `/p/:share_token` (`play#show`).
 - **creator_token** — a signed, permanent cookie that owns a logged-out author's
@@ -62,7 +69,10 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   **playability gate** — it drives `play#show`/`attempts` access, the editor's
   "Save"→"Keep it unlisted (link only)" label, and the Publish gate. `status`
   (`unlisted`/`published`) only controls listing/indexing. `MAX_MISTAKES = 4`.
-  See ADR 0001 + 0005 + 0008.
+  Discovery metadata (ADR-0010): `specialized` (bool, default false), `description`
+  (validated ≤ `DESCRIPTION_LIMIT = 200`, optional), and `include Taggable` →
+  `has_many :tags, through: :taggings` with a `tag_names=`/`tag_names` accessor.
+  See ADR 0001 + 0005 + 0008 + 0010.
 - **Group** (`color` enum, `description`, `position`, `words`). `words` is a
   **jsonb** column (defaults to `[]`) — *not* a PG array, despite the PLAN
   sketch. `WORDS_PER_GROUP = 4`. `#filled_words` strips the blanks the form
@@ -75,6 +85,16 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   (ADR-0009). Stats (emoji cube, common wrong guesses) derive from `guesses` — no
   extra tables. Indexed on `player_token`. The public play loop records these (the
   Stimulus `game_controller.js` POSTs to `play_attempts_path`).
+- **Tag / Tagging / `Taggable`** (ADR-0010) — `Tag` (`name` unique). `Tag.normalize`
+  → hyphen-slug; `Tag.for_name` find-or-creates (rescues `RecordNotUnique` → re-find
+  for the concurrent-insert race). `Tagging` `belongs_to :taggable, polymorphic`
+  (`taggable_type`/`taggable_id`, composite unique index with `tag_id`). The
+  `Taggable` concern (`app/models/concerns/`) adds `has_many :taggings, as:`,
+  `tags` through, and the `tag_names=`/`tag_names` accessor (normalizes + replaces
+  the set). `Tag#puzzles` is scoped `source_type: "Puzzle"` for the future browse.
+- **TagsController** — `GET /tags?q=` (public) returns JSON tag names matching the
+  normalized query (`name LIKE %q%`, normalize strips LIKE metachars). Feeds the
+  authoring autocomplete.
 - **PuzzlesController** — **public, no `authenticate_user!`** (ADR-0005). Includes
   the `Creator` concern; every query is scoped to `owned_puzzles` — `current_user`
   if signed in, else the signed `creator_token` cookie (`ensure_creator_token`
@@ -106,4 +126,14 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   Chrome to dodge version drift.
 - **Auto-save endpoint contract** (201+`Location` / 204, no redirect) is what
   `autosave_controller.js` depends on — don't "normalize" it back to redirects.
+  Autosave fires on **`input` only** (not `change`, which fired on blur and
+  double-saved); JS-driven field changes (the tag combobox) must **dispatch an
+  `input` event** to be picked up.
+- **`:has(:checked)` doesn't re-evaluate after a *programmatic* `.checked` change**
+  — that's why the specialized toggle's reveal runs off a controller-managed
+  `is-on` class instead (ADR-0010). Reach for the class pattern, not `:has`, when
+  JS flips a checkbox.
+- **Capybara `text:` sees CSS `text-transform`** — the brutal theme uppercases
+  buttons/chips/status, so assert with a case-insensitive regex (`/saved/i`), not
+  a literal `"Saved"`.
 - Never edit `app/assets/builds/` by hand; source is `application.scss`.

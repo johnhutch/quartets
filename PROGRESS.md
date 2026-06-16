@@ -29,8 +29,25 @@ The **visibility model shipped** (ADR-0008): "draft" retired into *incomplete*
 anyone with the link) vs *published*. Still in flight separately: the **slug
 migration** (name + random-suffix play URLs) — see the TODOS reminder.
 
+The **discovery-authoring half shipped** (ADR-0010): a `specialized` flag
+(Classic by default), creatable autocomplete **tags** (polymorphic), and a 200-char
+**description** are now captured on the authoring form. The **discovery surfacing**
+half — browse filters, tag-chip pages, `og:description`, search — is **not built
+yet** (see TODOS).
+
 ## Shipped log (most recent first)
 
+- **Quartet specificity & discovery — authoring half (ADR-0010).** `Puzzle` gained
+  `specialized` (bool, default false = "Classic") + `description` (≤200). New
+  polymorphic **tags/taggings** (`Taggable` concern, `Tag.normalize` → hyphen-slugs,
+  race-safe `for_name`) + a `GET /tags` autocomplete endpoint. Authoring form: a
+  big chunky **"YES" toggle** (lifts/colorizes like a board tile) reveals a
+  **creatable tag combobox** (`tags_controller`) + a 200-char description with a
+  live counter (`charcount_controller`); a `specialized_controller` guards
+  un-toggling (confirm → slide chips up → collapse the box, driven by an `is-on`
+  class, not `:has`). Polish: form capped at `$form-width` (~half), autosave status
+  is a top bar (yellow→green, auto-hides 1.5s, black text for WCAG), autosave fires
+  on `input` only (not blur), tag box stacks under YES below `$bp-stack`. 195 green.
 - **UI says "quartets" + "Play More Quartets" nav button.** Swept the user-facing
   chrome — nav items, action buttons, back-links, page titles + `<h1>`s — from
   "puzzle" → "quartet" (the `Puzzle` model/table/routes are untouched; body/

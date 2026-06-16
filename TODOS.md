@@ -47,6 +47,21 @@ unadvertised — resolve by the suffix (so a title edit doesn't break shared lin
 and give unlisted puzzles a suffix like any other. Visibility is low-stakes by
 design — no access control.
 
+### Discovery surfacing — the deferred half of ADR-0010
+
+Authoring captures `specialized` + tags + `description`; none of it is surfaced
+yet. To build (data + form already exist):
+- **`/play` "Classic-style only" toggle** (`?classic=1` → `where(specialized: false)`,
+  default off/all). Specialized rows show their **clickable tag chips** → a
+  tag-filtered list at **`/play?tag=star-wars`** (`Tag#puzzles`). Classic rows stay
+  chip-less. Show page mirrors the chips.
+- **`description` → `og`/`twitter:description`** on `play#show` (fallback to the
+  current generic line); show it under the byline + as a browse teaser.
+- **Full-text search** over title + description (+ tags) — defer until there's a
+  corpus worth searching; then Postgres `tsvector`. Pretty `/t/:tag` hubs later.
+- **Difficulty from stats** (ADR-0010) — a future job deriving difficulty from
+  completion success/failure rates (maybe reputation-weighted); not authored.
+
 ### Bigger features (scoped, not started)
 
 - **Daily auto-featured puzzle** — pick ONE puzzle to feature on the front page
