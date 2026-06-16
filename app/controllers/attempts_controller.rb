@@ -24,7 +24,7 @@ class AttemptsController < ApplicationController
     # + cube + a direct link — so the just-finished game can show one and copy the
     # other. play_url uses the request host, so the share link follows whatever
     # domain we're served on.
-    cube = EmojiCube.new(attempt.guesses).to_s
+    cube = EmojiCube.new(attempt.guess_log).to_s
     share = ShareText.new(title: puzzle.title, cube:, url: play_url(puzzle.share_token)).to_s
     # The trophies + quip block (ADR-0011). A signed-in winner also gets a running
     # count of their top trophy; anonymous plays can't (uncapped, so it'd be farmed)
@@ -44,7 +44,7 @@ class AttemptsController < ApplicationController
     params.require(:attempt).permit(
       :solved,
       :mistakes_count,
-      guesses: [:correct, { words: [], colors: [] }]
+      guesses: [{ words: [], colors: [] }]
     )
   end
 end

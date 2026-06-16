@@ -29,14 +29,18 @@ class Attempt < ApplicationRecord
   # Attempts at the given tier or better (e.g. a reverse rainbow is also a perfect).
   scope :at_least, ->(tier) { where(achievement: achievements.fetch(tier.to_s)..) }
 
+  # The recorded guesses as Guess value objects (the raw jsonb stays on #guesses).
+  def guess_log
+    guesses.map { |raw| Guess.new(raw) }
+  end
+
   # The tier this attempt earns: only a flawless win (all four solved, no mistakes)
   # scores, and the tier is the solve order — purple is hardest, so reverse rainbow
   # is purple→blue→green→yellow.
   def earned_achievement
     return nil unless solved? && mistakes_count.to_i.zero?
 
-    order = guesses.select { |g| g["correct"] || g[:correct] }
-                   .map { |g| (g["colors"] || g[:colors]).to_a.first }
+    order = guess_log.select(&:correct?).map(&:solved_color)
     return :reverse_rainbow if order == %w[purple blue green yellow]
     return :purple_first if order.first == "purple"
 

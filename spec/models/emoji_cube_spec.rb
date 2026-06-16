@@ -1,10 +1,11 @@
 require "rails_helper"
 
-# The shareable artifact: an attempt's ordered guesses → the 🟨🟩🟦🟪 grid.
-# Pure logic, so it gets tight coverage. Input is the `guesses` jsonb shape:
-# an array of { "words" => [...], "colors" => [...] }, one entry per guess.
+# The shareable artifact: a play's ordered guesses → the 🟨🟩🟦🟪 grid. Pure
+# logic, so it gets tight coverage. Consumes Guesses (key/shape handling is the
+# Guess value object's job — see guess_spec); these helpers wrap the raw rows.
 RSpec.describe EmojiCube do
-  def cube(guesses) = described_class.new(guesses).to_s
+  def wrap(guesses) = Array(guesses).map { |raw| Guess.new(raw) }
+  def cube(guesses) = described_class.new(wrap(guesses)).to_s
 
   it "maps each category color to its square" do
     guesses = [{ "colors" => %w[yellow green blue purple] }]
@@ -42,6 +43,6 @@ RSpec.describe EmojiCube do
 
   it "exposes rows as an array for rendering" do
     guesses = [{ "colors" => %w[blue blue blue blue] }, { "colors" => %w[green green green green] }]
-    expect(described_class.new(guesses).rows).to eq(["🟦🟦🟦🟦", "🟩🟩🟩🟩"])
+    expect(described_class.new(wrap(guesses)).rows).to eq(["🟦🟦🟦🟦", "🟩🟩🟩🟩"])
   end
 end

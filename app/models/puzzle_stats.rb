@@ -39,11 +39,10 @@ class PuzzleStats
     tally = Hash.new(0)
 
     @attempts.each do |attempt|
-      Array(attempt.guesses).each do |guess|
-        colors = guess["colors"] || guess[:colors] || []
-        next if colors.uniq.size <= 1 # all one color = a correct group
+      attempt.guess_log.each do |guess|
+        next unless guess.wrong? # a correct group isn't a "wrong guess"
 
-        words = (guess["words"] || guess[:words] || []).sort
+        words = guess.words.sort
         tally[words] += 1 unless words.empty?
       end
     end
