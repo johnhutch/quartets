@@ -134,7 +134,17 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   `play_path(…, published: 1)`) and `unpublish` (PATCH member → back to `unlisted`)
   flip status; `create`/`update` are autosave-aware and a manual save redirects to
   `/puzzles` (see ADR 0001). `resources :puzzles` defines a `show` route but there's
-  no `show` action/view — the public board is `play#show`.
+  no `show` action/view — the public board is `play#show`. Autosave's first `create`
+  returns 201 JSON (`patch_url`, `publish_url`, `group_ids`) so the form flips to
+  PATCH and **reveals + wires its Publish button without a reload** (a new puzzle has
+  no id at render, so Publish starts `hidden`/unwired); once `complete?`, Publish is
+  the loud CTA and Save reads "Keep it unlisted (link only)" (ADR-0008).
+- **HomeController** — the public front door (`GET /`, includes `AnonymousPlayer`).
+  Serves a random **featured** published puzzle; with none featured, falls back to a
+  random published puzzle the visitor hasn't finished (`random_unplayed_puzzle`,
+  excluding `completed_puzzle_ids` — by account, else `player_token`). Cleared the
+  whole board (`@cleared_them_all`) → an empty state nudging them to make one. The
+  featured board itself is **not** result-gated yet (TODOS).
 - **Auth concerns** (`app/controllers/concerns/`) — `Creator` (cookie ownership +
   `owned_puzzles` + the `owns?` view helper), `ClaimsPuzzles` (site-wide
   `before_action`: on the first authenticated request, reassigns the cookie's
