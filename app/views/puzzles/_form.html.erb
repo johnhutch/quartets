@@ -116,7 +116,7 @@
         <%= tag.button type: :submit, formaction: publish_puzzle_path(puzzle),
               class: "m-btn m-btn--go#{' is-disabled' unless puzzle.complete?}",
               data: { autosave_target: "publish", action: "autosave#guardPublish" } do %>
-          <%= icon(:eye) %><span>Publish to the site</span>
+          <%= icon(:eye) %><span>Publish</span>
         <% end %>
         <span class="m-tooltip__bubble" role="tooltip">This puzzle is incomplete! Finish it before publishing.</span>
       </span>
