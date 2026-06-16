@@ -46,6 +46,7 @@ $font-xl:   1.75rem;
 $radius:        6px;
 $grid-gap:      $space-sm;
 $content-width: 640px; // game board is happiest narrow + mobile-first
+$form-width:    28rem;  // ~half the brutal container — authoring forms read better narrow
 $ease-spring:   cubic-bezier(0.34, 1.7, 0.5, 1); // springy overshoot (tile lift, YES toggle)
 
 // --- Brutalist theme (dark) ---------------------------------------------
