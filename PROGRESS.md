@@ -1,7 +1,7 @@
 # Progress
 
-**Last updated:** 2026-06-16
-**Active branch:** main
+**Last updated:** 2026-06-17
+**Active branch:** develop (feature branches per task; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
 
@@ -36,8 +36,26 @@ half — browse filters, tag-chip pages, on-page description teaser, search — 
 **not built yet** (see TODOS); the meta/`og`/`twitter:description` slice of it
 shipped this session.
 
+**Analytics is scoped, not built** — a full privacy-first plan (streams A traffic
+/ B product funnels / C error tracking + bot/crawler measurement) lives in the
+TODOS Analytics section; B and C are queued after the superuser/admin work. The
+**AI-bot stance shipped** this session as a hand-owned `public/robots.txt` (allow
+search/citation crawlers, block training crawlers) backed by Cloudflare's "Block
+AI bots" rule. **Next target: eliminating Cumulative Layout Shift (CLS)** — on its
+own feature branch off `develop`.
+
 ## Shipped log (most recent first)
 
+- **AI-bot policy + analytics plan.** Hand-owned `public/robots.txt` (single source
+  of truth — Cloudflare's managed robots.txt to be set to "Disable"): allow AI
+  search/citation crawlers (`OAI-SearchBot`, `PerplexityBot`, …), block AI training
+  crawlers (`GPTBot`, `CCBot`, …) + a `Content-Signal: search=yes, ai-train=no`;
+  Cloudflare "Block AI bots" rule is the enforcement layer. Footer brags about it.
+  The full privacy-first **analytics plan** (A/B/C + bot measurement) was grilled
+  and written into TODOS — designed, not built.
+- **`bin/dev` stopped spewing rdoc warnings.** Swapped the foreman check from
+  `gem list foreman` (which loads RubyGems plugins → two installed rdoc versions
+  double-init → warning wall) to a plain `command -v foreman` PATH lookup.
 - **Per-page meta descriptions (SEO).** Every page now emits
   `<meta name="description">` — site default, or per-puzzle: the author's
   `description` blurb when present, else a generated spoiler-free fallback
