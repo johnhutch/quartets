@@ -107,12 +107,6 @@ yet. To build (data + form already exist):
 - **Drop dead CSS from the revisit rework.** `.m-result__status` /
   `.m-result__heading` are unused since `play/_result` became the reconstructed
   board (it uses the `.m-game__*` + `.m-stamp` classes now). `/simplify` fodder.
-- **Silence the `bin/dev` rdoc warning spew.** `bin/dev`'s `gem list foreman`
-  check loads rdoc twice (two installed versions — Ruby-bundled 7.0.3 + user
-  7.2.0) → an "already initialized constant RDoc::*" wall on every boot. Swap the
-  check to `command -v foreman` (never touches RubyGems). *(Applied + verified
-  this session, then lost — not in the tree; re-apply.)* Or `gem uninstall rdoc -v
-  7.2.0` to silence it for all `gem` commands.
 - **Richer share payload** — cube + title + direct link in the share sheet
   (verify what commit `b3acb2b` already covers first).
 - **Tune the auto-save debounce** — currently 1000ms
