@@ -1,1 +1,53 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# robots.txt for Quartets — https://playquartets.com
+# Docs: https://www.robotstxt.org/robotstxt.html
+#
+# Single source of truth. Cloudflare's *managed* robots.txt is set to "Disable"
+# so this file is served as-is (no edge prepend/override). The Cloudflare
+# "Block AI bots" WAF rule stays on as the *enforcement* layer for crawlers that
+# ignore this file.
+#
+# Stance: let AI *search / citation* crawlers in (they help people discover and
+# get pointed to us), keep AI *training* crawlers out (don't scrape/train on our
+# puzzles). Note: blocking GPTBot but allowing OAI-SearchBot keeps ChatGPT able
+# to cite us while refusing it our content for training — these are now separate
+# user-agents.
+
+# --- Content usage signal (machine-readable preference) -----------------------
+# search=yes  -> fine to index us for search / answer engines
+# ai-train=no -> do not use our content to train AI models
+User-agent: *
+Content-Signal: search=yes, ai-train=no
+Allow: /
+
+# --- AI search / citation crawlers: ALLOW -------------------------------------
+# Real-time + index crawlers that surface and link back to us.
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+Allow: /
+
+# --- AI training / bulk-scrape crawlers: DISALLOW -----------------------------
+# Bulk content collection for model training, no attribution. The Cloudflare
+# "Block AI bots" rule enforces this against the ones that ignore robots.txt.
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: CCBot
+User-agent: Bytespider
+User-agent: meta-externalagent
+User-agent: Amazonbot
+User-agent: PetalBot
+Disallow: /
+
+# --- AI training opt-out *tokens* (not crawlers) ------------------------------
+# Refuse model training while keeping normal search indexing intact.
+# Google-Extended: Disallow has zero effect on Google Search ranking.
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Disallow: /
+
+# Everyone else — Googlebot, Bingbot (which power AI Overviews / Copilot),
+# regular crawlers, humans — falls under the "User-agent: *" Allow above.
