@@ -14,9 +14,13 @@
         }.to_json
       } do %>
   <div class="m-game__solved" data-game-target="solved"></div>
-  <div class="m-board" data-game-target="board"></div>
 
-  <p class="m-game__status" data-game-target="status" aria-live="polite"></p>
+  <%# The status message overlays the board (centered) rather than taking its own
+      row, so a wrong-guess toast / win stamp doesn't reserve vertical space. %>
+  <div class="m-board-wrap">
+    <div class="m-board" data-game-target="board"></div>
+    <p class="m-game__status" data-game-target="status" aria-live="polite"></p>
+  </div>
   <p class="m-game__mistakes" data-game-target="mistakes" aria-live="polite"></p>
 
   <div class="m-game__controls">
