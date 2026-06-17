@@ -299,18 +299,32 @@ export default class extends Controller {
       `Mistakes remaining: ${"●".repeat(left)}${"○".repeat(this.mistakes)}`
   }
 
+  // A transient wrong-guess message: a toast that floats over the board, then
+  // fades on its own. The text also rides aria-live for screen readers.
   setStatus(text) {
-    if (this.hasStatusTarget) this.statusTarget.textContent = text
+    if (!this.hasStatusTarget) return
+    clearTimeout(this.statusTimer)
+    this.statusTarget.innerHTML = ""
+    const toast = document.createElement("span")
+    toast.className = "m-game__toast"
+    toast.textContent = text
+    this.statusTarget.appendChild(toast)
+    this.statusTarget.classList.add("is-visible")
+    this.statusTimer = setTimeout(() => {
+      this.statusTarget.classList.remove("is-visible")
+    }, 1400)
   }
 
   // Slap a big tilted stamp on the board at game over — the payoff moment.
   renderEndStamp(won) {
     if (!this.hasStatusTarget) return
-    this.statusTarget.textContent = ""
+    clearTimeout(this.statusTimer) // cancel any pending toast fade
+    this.statusTarget.innerHTML = ""
     const stamp = document.createElement("span")
     stamp.className = won ? "m-stamp m-stamp--win" : "m-stamp m-stamp--lose"
     stamp.textContent = won ? "Solved it ↗" : "Out of guesses"
     this.statusTarget.appendChild(stamp)
+    this.statusTarget.classList.add("is-visible") // persists — no auto-dismiss
   }
 
   shuffleCards() {

@@ -219,8 +219,17 @@ body.theme-brutal {
 .theme-brutal .m-game__status,
 .theme-brutal .m-game__mistakes { font-family: $font-display; }
 
-// Give the end-of-game stamp room to tilt without crowding the mistakes line.
-.theme-brutal .m-game__status:has(.m-stamp) { margin: $space-md 0 $space-lg; }
+// Wrong-guess toast: a chunky uppercase pill that floats over the board, dark on
+// the light tiles so it reads at a glance before it fades.
+.theme-brutal .m-game__toast {
+  background: $brutal-paper;
+  color: $brutal-ink;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.3);
+}
 
 // --- Style guide scaffolding ------------------------------------------------
 .theme-brutal .m-swatches {

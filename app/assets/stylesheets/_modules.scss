@@ -19,6 +19,10 @@
   min-height: calc(#{$card-min-h} * 4 + #{$grid-gap} * 3);
 }
 
+// Positioning context for the status overlay (see .m-game__status), so a
+// transient toast / win stamp centers over the board without reserving a row.
+.m-board-wrap { position: relative; }
+
 // --- Word tile ----------------------------------------------------------
 .m-card {
   display: flex;
@@ -228,12 +232,30 @@
     letter-spacing: 0.05em;
   }
 
+  // Centered overlay on the board (no reserved row). Holds a transient
+  // wrong-guess toast (auto-dismissed) or the persistent win/lose stamp.
   &__status {
+    position: absolute;
+    inset: 0;
     margin: 0;
-    min-height: $font-lg * 1.4; // reserve the line so the board doesn't jump
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+
+    &.is-visible { opacity: 1; }
+  }
+
+  // The little message pill — sized to its content, not the board.
+  &__toast {
+    padding: $space-xs $space-md;
     font-size: $font-lg;
     font-weight: 700;
     text-align: center;
+    background: $color-card-sel;
+    color: $color-paper;
+    border-radius: $radius;
   }
 
   &__mistakes {
@@ -572,7 +594,7 @@
 }
 
 // Show-page title sits tight to its byline.
-.m-play-title { margin-bottom: $space-xs; }
+.m-play-title { margin-bottom: 0; line-height: 1.05; } // tight to its byline
 
 // Centered "share this puzzle" CTA beneath the board controls.
 .m-game__share-cta {
