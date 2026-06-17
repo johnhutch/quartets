@@ -45,6 +45,8 @@ $font-xl:   1.75rem;
 // --- Misc ---------------------------------------------------------------
 $radius:        6px;
 $grid-gap:      $space-sm;
+$card-min-h:    4.5rem; // board tile floor; .m-board reserves 4 rows of this so
+                        // JS-injected tiles don't reflow the page (CLS)
 $content-width: 640px; // game board is happiest narrow + mobile-first
 $form-width:    28rem;  // ~half the brutal container — authoring forms read better narrow
 $bp-stack:      30rem;  // below this, side-by-side controls stack vertically (phones)
