@@ -49,6 +49,11 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+    <%# Preload the display font (both weights) so it's ready before first paint —
+        kills the font-swap reflow (CLS) on the wordmark + headings. %>
+    <link rel="preload" href="<%= asset_path("space-grotesk-700.woff2") %>" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<%= asset_path("space-grotesk-500.woff2") %>" as="font" type="font/woff2" crossorigin>
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
