@@ -96,6 +96,18 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
   end
 
   # Picks the four words then submits.
+  it "clears every selection when Deselect all is clicked (cascade)" do
+    visit play_path(puzzle.share_token)
+
+    %w[cat dog owl].each { |word| click_button word }
+    expect(page).to have_css(".m-card.is-selected", count: 3)
+
+    click_button "Deselect all"
+
+    # The tiles settle ~0.2s apart; Capybara waits out the stagger for the end state.
+    expect(page).to have_no_css(".m-card.is-selected")
+  end
+
   def solve(words)
     words.each { |word| click_button word }
     click_button "Submit"

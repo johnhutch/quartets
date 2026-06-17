@@ -48,16 +48,54 @@ export default class extends Controller {
 
   // --- player actions ---------------------------------------------------
 
+  // Slide every tile to its new cell instead of popping. We reuse the live tile
+  // elements (no innerHTML rebuild) and FLIP-animate: record where each tile is,
+  // re-append them in the shuffled order so the CSS grid reflows them, then play
+  // each from its old position to its new one. `composite: "add"` layers the
+  // slide on top of a selected tile's lift transform so selections survive.
   shuffle() {
     if (this.over) return
+
+    const tiles = [...this.boardTarget.querySelectorAll(".m-card")]
+    const first = new Map(tiles.map((el) => [el, el.getBoundingClientRect()]))
+    const byWord = new Map(tiles.map((el) => [el.dataset.word, el]))
+
     this.shuffleCards()
-    this.render()
+    this.cards.forEach((card) => this.boardTarget.appendChild(byWord.get(card.word)))
+
+    if (this.reducedMotion) return
+    tiles.forEach((el) => {
+      const a = first.get(el)
+      const b = el.getBoundingClientRect()
+      const dx = a.left - b.left
+      const dy = a.top - b.top
+      if (!dx && !dy) return
+      el.animate(
+        [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
+        { duration: 320, easing: "cubic-bezier(0.34, 1.2, 0.5, 1)", composite: "add" }
+      )
+    })
   }
 
+  // Settle each selected tile with the same un-click animation, cascaded 0.2s
+  // apart (left-to-right by DOM order). State clears immediately; the staggered
+  // class removal is purely visual. Reduced motion → all at once, no stagger.
   deselect() {
     if (this.over) return
+
+    const tiles = [...this.boardTarget.querySelectorAll(".m-card.is-selected")]
     this.selected = []
-    this.render()
+    if (this.hasSubmitTarget) this.submitTarget.disabled = true
+
+    const step = this.reducedMotion ? 0 : 200
+    tiles.forEach((tile, i) => {
+      setTimeout(() => {
+        // Skip if the player re-selected this tile mid-cascade.
+        if (this.selected.includes(tile.dataset.word)) return
+        tile.classList.remove("is-selected")
+        tile.removeAttribute("aria-pressed")
+      }, i * step)
+    })
   }
 
   submit() {
@@ -227,6 +265,7 @@ export default class extends Controller {
       tile.type = "button"
       tile.className = "m-card"
       tile.textContent = card.word
+      tile.dataset.word = card.word // lets shuffle() map words → live elements
       tile.disabled = this.over
       // Each tile leans a little differently (−3°…+3°) when it lifts.
       tile.style.setProperty("--tilt", `${(Math.random() * 6 - 3).toFixed(1)}deg`)
@@ -279,5 +318,11 @@ export default class extends Controller {
       const j = Math.floor(Math.random() * (i + 1));
       [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]]
     }
+  }
+
+  // Honor the OS "reduce motion" preference — deselect/shuffle skip the
+  // stagger + slide and just snap to the result.
+  get reducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
   }
 }
