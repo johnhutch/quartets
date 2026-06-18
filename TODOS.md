@@ -185,6 +185,10 @@ user dashboard** ship (a couple items out); A tool-pick still open.
   `letter_opener`; production reads `SMTP_ADDRESS`/`SMTP_PORT`/`SMTP_USERNAME`/
   `SMTP_PASSWORD`/`MAILER_SENDER`/`APP_HOST` from the NAS `.env`. Fill at first
   deploy (ADR-0005).
+- **Finish the robots.txt cache fix.** `ShortLivedLoosePublicFiles` is on `develop`
+  → merge to `main` (deploy), then **purge Cloudflare's cached `/robots.txt`** once
+  to clear the year-pinned stale copy. Verify with
+  `curl https://playquartets.com/robots.txt`.
 
 ### Hosting (exploratory — NO decision to move has been made)
 

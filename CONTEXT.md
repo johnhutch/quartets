@@ -202,3 +202,9 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   and reuses it for the `og`/`twitter` tags. Don't put `name="description"` back
   inside a `:meta` block.
 - Never edit `app/assets/builds/` by hand; source is `application.scss`.
+- **`public/` caching is split** (production): `public_file_server.headers` gives
+  everything a 1-year cache (correct for digest-stamped `/assets/`, which are
+  immutable), but the `ShortLivedLoosePublicFiles` middleware (`production.rb`)
+  downgrades the **loose mutable files** — `robots.txt`, favicon, `share.png` — to
+  1 hour. Don't re-pin those for a year: a CDN/browser will serve a stale
+  `robots.txt` for a year (the bug that hid the AI-bot robots.txt at the edge).

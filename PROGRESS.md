@@ -48,6 +48,17 @@ analytics build) and the deferred **discovery surfacing**.
 
 ## Shipped log (most recent first)
 
+- **Short-cache mutable `public/` files (CDN fix).** `public_file_server.headers`
+  pins everything in `public/` for a year — right for digest-stamped `/assets/`,
+  wrong for loose files like `robots.txt`/favicon, which got stranded **stale at
+  Cloudflare for a year** (that's why the new robots.txt didn't show live). New
+  `ShortLivedLoosePublicFiles` middleware (`production.rb`) downgrades just those
+  paths to a 1-hour cache; hashed assets keep their immutable year. **Pending: this
+  is on `develop` — needs to reach `main` (deploy) + a one-time Cloudflare purge of
+  `/robots.txt` to clear the already-pinned copy.**
+- **Homepage footer-button trim** — removed a couple of unnecessary homepage footer
+  buttons. (Heads-up: a **full homepage rework** is imminent per the author, so
+  don't over-polish the current one.)
 - **Play-window polish pass.** Title→byline tightened; the wrong-guess message is
   now a floating auto-dismiss **toast** over the header (no reserved row); the
   win/lose **stamp** flows under the solved rows (game-over no longer leaves a tall
