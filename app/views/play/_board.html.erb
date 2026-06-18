@@ -13,15 +13,22 @@
           }
         }.to_json
       } do %>
+  <%# Wrong-guess feedback floats over the title/byline area (positioned absolute,
+      above the board) so it never reserves a row. %>
+  <span class="m-game__toast" data-game-target="toast" aria-live="polite"></span>
+
   <div class="m-game__solved" data-game-target="solved"></div>
 
-  <%# The status message overlays the board (centered) rather than taking its own
-      row, so a wrong-guess toast / win stamp doesn't reserve vertical space. %>
+  <%# The win/lose stamp overlays the board (centered) — no reserved row. %>
   <div class="m-board-wrap">
     <div class="m-board" data-game-target="board"></div>
     <p class="m-game__status" data-game-target="status" aria-live="polite"></p>
   </div>
-  <p class="m-game__mistakes" data-game-target="mistakes" aria-live="polite"></p>
+
+  <p class="m-game__mistakes">
+    <span class="m-game__mistakes-label">Mistakes remaining</span>
+    <span class="m-game__mistakes-boxes" data-game-target="mistakes" aria-live="polite"></span>
+  </p>
 
   <div class="m-game__controls">
     <button type="button" class="m-btn" data-action="game#shuffle">Shuffle</button>
@@ -29,14 +36,4 @@
     <button type="button" class="m-btn m-btn--primary"
             data-game-target="submit" data-action="game#submit" disabled>Submit</button>
   </div>
-
-  <% if puzzle.published? %>
-    <div class="m-game__share-cta">
-      <%= tag.button type: "button", class: "m-btn m-btn--share",
-            data: { controller: "clipboard", clipboard_text_value: play_url(puzzle.share_token),
-                    action: "clipboard#copy" } do %>
-        <%= icon(:share) %><span data-clipboard-target="label">Share this quartet</span>
-      <% end %>
-    </div>
-  <% end %>
 <% end %>

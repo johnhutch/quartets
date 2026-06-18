@@ -1,5 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
+// The four category colors, in fixed order — drives the mistake boxes (one each).
+const GAME_COLORS = ["blue", "green", "yellow", "purple"]
+
 // The Connections game loop, self-contained — this is the engine we chose to
 // build rather than embed (ADR-0003). It reads the puzzle (four groups, each a
 // color + category + four words) as a JSON value, shuffles all sixteen tiles,
@@ -16,7 +19,7 @@ import { Controller } from "@hotwired/stimulus"
 // duplicate words across groups (true for NYT-style puzzles). Revisit with a
 // per-tile id if that ever stops holding.
 export default class extends Controller {
-  static targets = ["board", "solved", "status", "mistakes", "submit"]
+  static targets = ["board", "solved", "status", "toast", "mistakes", "submit"]
   static values = {
     puzzle: Object,
     maxMistakes: { type: Number, default: 4 },
@@ -87,7 +90,7 @@ export default class extends Controller {
     this.selected = []
     if (this.hasSubmitTarget) this.submitTarget.disabled = true
 
-    const step = this.reducedMotion ? 0 : 200
+    const step = this.reducedMotion ? 0 : 50
     tiles.forEach((tile, i) => {
       setTimeout(() => {
         // Skip if the player re-selected this tile mid-cascade.
@@ -158,14 +161,42 @@ export default class extends Controller {
     colors.forEach((color) => { counts[color] = (counts[color] || 0) + 1 })
     const oneAway = Object.values(counts).some((n) => n === 3)
 
-    this.selected = []
-
     if (this.mistakes >= this.maxMistakesValue) {
+      this.selected = []
       this.finish(false)
-    } else {
-      this.setStatus(oneAway ? "One away…" : "Not quite — try again")
-      this.render()
+      return
     }
+
+    this.setStatus(oneAway ? "One away…" : "Not quite — try again")
+    this.rejectSelection() // wiggle the picked tiles, then settle them back down
+  }
+
+  // Wrong guess: the picked tiles do a quick wiggle (−3°↔3°), pause, then play
+  // the deselect "push down" settle. State clears now; the visuals catch up.
+  rejectSelection() {
+    const tiles = [...this.boardTarget.querySelectorAll(".m-card.is-selected")]
+    this.selected = []
+    if (this.hasSubmitTarget) this.submitTarget.disabled = true
+
+    tiles.forEach((tile) => {
+      const settle = () => {
+        tile.classList.remove("is-selected")
+        tile.removeAttribute("aria-pressed")
+      }
+      if (this.reducedMotion) { settle(); return }
+      // composite:"add" layers the wiggle on top of the tile's lift transform.
+      const wiggle = tile.animate(
+        [
+          { transform: "rotate(-3deg)" },
+          { transform: "rotate(3deg)" },
+          { transform: "rotate(-3deg)" },
+          { transform: "rotate(3deg)" },
+          { transform: "rotate(0deg)" }
+        ],
+        { duration: 280, easing: "ease-in-out", composite: "add" }
+      )
+      wiggle.onfinish = () => setTimeout(settle, 100) // pause, then push down
+    })
   }
 
   finish(won) {
@@ -292,26 +323,30 @@ export default class extends Controller {
     this.solvedTarget.appendChild(row)
   }
 
+  // Four boxes, one per category color; a mistake puts an ✕ in the next box.
   renderMistakes() {
     if (!this.hasMistakesTarget) return
-    const left = this.maxMistakesValue - this.mistakes
-    this.mistakesTarget.textContent =
-      `Mistakes remaining: ${"●".repeat(left)}${"○".repeat(this.mistakes)}`
+    this.mistakesTarget.innerHTML = ""
+    GAME_COLORS.forEach((color, i) => {
+      const box = document.createElement("span")
+      box.className = `m-mistake m-mistake--${color}`
+      if (i < this.mistakes) {
+        box.classList.add("is-used")
+        box.textContent = "✕"
+      }
+      this.mistakesTarget.appendChild(box)
+    })
   }
 
-  // A transient wrong-guess message: a toast that floats over the board, then
-  // fades on its own. The text also rides aria-live for screen readers.
+  // A transient wrong-guess message: a toast that floats over the title/byline
+  // area (.m-game__toast), then fades on its own. Also rides aria-live for SR.
   setStatus(text) {
-    if (!this.hasStatusTarget) return
+    if (!this.hasToastTarget) return
     clearTimeout(this.statusTimer)
-    this.statusTarget.innerHTML = ""
-    const toast = document.createElement("span")
-    toast.className = "m-game__toast"
-    toast.textContent = text
-    this.statusTarget.appendChild(toast)
-    this.statusTarget.classList.add("is-visible")
+    this.toastTarget.textContent = text
+    this.toastTarget.classList.add("is-visible")
     this.statusTimer = setTimeout(() => {
-      this.statusTarget.classList.remove("is-visible")
+      this.toastTarget.classList.remove("is-visible")
     }, 1400)
   }
 
