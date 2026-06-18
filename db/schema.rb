@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_15_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_18_120100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "attempts", force: :cascade do |t|
     t.integer "achievement"
     t.datetime "created_at", null: false
+    t.integer "duration_ms"
     t.jsonb "guesses"
     t.integer "mistakes_count"
     t.string "player_token"
@@ -28,6 +29,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_150000) do
     t.index ["puzzle_id"], name: "index_attempts_on_puzzle_id"
     t.index ["user_id", "achievement"], name: "index_attempts_on_user_id_and_achievement"
     t.index ["user_id", "puzzle_id"], name: "index_attempts_on_user_and_puzzle", unique: true, where: "(user_id IS NOT NULL)"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "event_type", null: false
+    t.datetime "occurred_at", null: false
+    t.string "player_token", null: false
+    t.bigint "puzzle_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["occurred_at"], name: "index_events_on_occurred_at"
+    t.index ["player_token"], name: "index_events_on_player_token"
+    t.index ["puzzle_id"], name: "index_events_on_puzzle_id"
+    t.index ["user_id"], name: "index_events_on_user_id"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -232,6 +247,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_15_150000) do
 
   add_foreign_key "attempts", "puzzles"
   add_foreign_key "attempts", "users"
+  add_foreign_key "events", "puzzles"
+  add_foreign_key "events", "users"
   add_foreign_key "groups", "puzzles"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

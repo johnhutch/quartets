@@ -20,7 +20,8 @@ export default class extends Controller {
   static values = {
     puzzle: Object,
     maxMistakes: { type: Number, default: 4 },
-    recordUrl: String
+    recordUrl: String,
+    eventsUrl: String
   }
 
   connect() {
@@ -30,8 +31,9 @@ export default class extends Controller {
     this.selected = []      // selected words (max 4)
     this.solvedColors = []  // colors already found
     this.mistakes = 0
-    this.guesses = []       // [{ words: [...], colors: [...] }]
+    this.guesses = []       // [{ words: [...], colors: [...], t }]
     this.over = false
+    this.startTime = null   // set on the first tile tap; the clock for timing
 
     this.puzzleValue.groups.forEach((group) => {
       this.groups[group.color] = { description: group.description, words: group.words }
@@ -103,10 +105,11 @@ export default class extends Controller {
 
     const colors = this.selected.map((word) => this.colorOf[word])
     const correct = colors.every((color) => color === colors[0])
-    // Log the picked words + the true color of each. Correctness is derived from
-    // the colors server-side (the Guess value object), so we don't store it — the
-    // cube, common-mistakes, and trophies all read it back off the colors.
-    this.guesses.push({ words: [...this.selected], colors })
+    // Log the picked words + the true color of each, plus `t` (ms since the clock
+    // started) for per-guess timing. Correctness is derived from the colors
+    // server-side (the Guess value object), so we don't store it — the cube,
+    // common-mistakes, and trophies all read it back off the colors.
+    this.guesses.push({ words: [...this.selected], colors, t: this.elapsedMs() })
 
     if (correct) {
       this.lockGroup(colors[0])
@@ -121,6 +124,7 @@ export default class extends Controller {
   // actually animates — a rebuilt element would pop in already-selected.
   toggle(word, tile) {
     if (this.over) return
+    this.markStarted() // first tap starts the clock + beacons game_started
     const at = this.selected.indexOf(word)
     if (at >= 0) {
       this.selected.splice(at, 1)
@@ -187,21 +191,58 @@ export default class extends Controller {
     this.record(won)
   }
 
+  // --- timing + funnel beacon -------------------------------------------
+
+  // Start the clock on the first interaction and fire the game_started beacon
+  // once. "Started" means the player actually began (first tile tap) — distinct
+  // from merely opening the page — so a started-but-unfinished game is an abandon.
+  markStarted() {
+    if (this.startTime !== null) return
+    this.startTime = performance.now()
+    this.recordStart()
+  }
+
+  // ms since the clock started; null if it never did (no interaction yet).
+  elapsedMs() {
+    return this.startTime === null ? null : Math.round(performance.now() - this.startTime)
+  }
+
+  get csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content
+  }
+
+  // Best-effort game_started beacon — a missed start never affects the game.
+  // Marks the element `data-started` so a test can wait on the round-trip.
+  async recordStart() {
+    if (!this.hasEventsUrlValue || this.eventsUrlValue === "") return
+
+    try {
+      await fetch(this.eventsUrlValue, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken },
+        credentials: "same-origin"
+      })
+      this.element.dataset.started = "true"
+    } catch {
+      // Funnel stats are nice-to-have; a failed beacon shouldn't break the game.
+    }
+  }
+
   // Persist the finished play for stats (best-effort — never block the game on
   // it). Marks the element `data-recorded` so a test can wait on the round-trip.
   async record(won) {
     if (!this.hasRecordUrlValue || this.recordUrlValue === "") return
 
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
     try {
       const response = await fetch(this.recordUrlValue, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken },
         credentials: "same-origin",
         body: JSON.stringify({
           attempt: {
             solved: won,
             mistakes_count: this.mistakes,
+            duration_ms: this.elapsedMs(),
             guesses: this.guesses
           }
         })
