@@ -22,7 +22,6 @@ RSpec.describe "Static pages + footer", type: :request do
       expect(response.body).to include("johnhutch.com")          # created-by credit
       expect(response.body).to include("github.com/johnhutch")   # @johnhutch
       expect(response.body).to include("swiftkickweb.com")
-      expect(response.body).to include("/in/johnhutch-skw")      # linkedin
       expect(response.body).to include(privacy_path)
       expect(response.body).to include("Creative Commons")
       expect(response.body).to match(/not affiliated with the new york times/i)

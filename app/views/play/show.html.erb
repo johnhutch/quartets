@@ -53,6 +53,6 @@
   <% end %>
 
   <% unless owns?(@puzzle) %>
-    <p class="m-play-back"><%= link_to "← More quartets", play_index_path %></p>
+    <p class="m-play-back"><%= link_to "Play the Archive #{ne_arrow}", play_index_path, class: "m-sticker m-play-archive" %></p>
   <% end %>
 </div>

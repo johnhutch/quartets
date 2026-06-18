@@ -1,5 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 
+// The four category colors, in fixed order — drives the mistake boxes (one each).
+const GAME_COLORS = ["blue", "green", "yellow", "purple"]
+
+// Per-tile font scale (the CSS --card-fit). ~9 uppercase chars fit a tile at full
+// size (with the tile's tight side padding), so anything longer shrinks
+// proportionally — floored so it stays legible. Keyed off the longest word (the
+// part that can't wrap), not the whole string.
+const cardFit = (text) => {
+  const longest = Math.max(...text.split(/\s+/).map((w) => w.length))
+  return Math.max(0.5, Math.min(1, 9 / longest)).toFixed(2)
+}
+
 // The Connections game loop, self-contained — this is the engine we chose to
 // build rather than embed (ADR-0003). It reads the puzzle (four groups, each a
 // color + category + four words) as a JSON value, shuffles all sixteen tiles,
@@ -16,7 +28,7 @@ import { Controller } from "@hotwired/stimulus"
 // duplicate words across groups (true for NYT-style puzzles). Revisit with a
 // per-tile id if that ever stops holding.
 export default class extends Controller {
-  static targets = ["board", "solved", "status", "mistakes", "submit"]
+  static targets = ["board", "solved", "status", "toast", "mistakes", "submit"]
   static values = {
     puzzle: Object,
     maxMistakes: { type: Number, default: 4 },
@@ -87,7 +99,7 @@ export default class extends Controller {
     this.selected = []
     if (this.hasSubmitTarget) this.submitTarget.disabled = true
 
-    const step = this.reducedMotion ? 0 : 200
+    const step = this.reducedMotion ? 0 : 50
     tiles.forEach((tile, i) => {
       setTimeout(() => {
         // Skip if the player re-selected this tile mid-cascade.
@@ -158,14 +170,42 @@ export default class extends Controller {
     colors.forEach((color) => { counts[color] = (counts[color] || 0) + 1 })
     const oneAway = Object.values(counts).some((n) => n === 3)
 
-    this.selected = []
-
     if (this.mistakes >= this.maxMistakesValue) {
+      this.selected = []
       this.finish(false)
-    } else {
-      this.setStatus(oneAway ? "One away…" : "Not quite — try again")
-      this.render()
+      return
     }
+
+    this.setStatus(oneAway ? "One away…" : "Not quite — try again")
+    this.rejectSelection() // wiggle the picked tiles, then settle them back down
+  }
+
+  // Wrong guess: the picked tiles do a quick wiggle (−3°↔3°), pause, then play
+  // the deselect "push down" settle. State clears now; the visuals catch up.
+  rejectSelection() {
+    const tiles = [...this.boardTarget.querySelectorAll(".m-card.is-selected")]
+    this.selected = []
+    if (this.hasSubmitTarget) this.submitTarget.disabled = true
+
+    tiles.forEach((tile) => {
+      const settle = () => {
+        tile.classList.remove("is-selected")
+        tile.removeAttribute("aria-pressed")
+      }
+      if (this.reducedMotion) { settle(); return }
+      // composite:"add" layers the wiggle on top of the tile's lift transform.
+      const wiggle = tile.animate(
+        [
+          { transform: "rotate(-3deg)" },
+          { transform: "rotate(3deg)" },
+          { transform: "rotate(-3deg)" },
+          { transform: "rotate(3deg)" },
+          { transform: "rotate(0deg)" }
+        ],
+        { duration: 280, easing: "ease-in-out", composite: "add" }
+      )
+      wiggle.onfinish = () => setTimeout(settle, 100) // pause, then push down
+    })
   }
 
   finish(won) {
@@ -267,6 +307,10 @@ export default class extends Controller {
       tile.textContent = card.word
       tile.dataset.word = card.word // lets shuffle() map words → live elements
       tile.disabled = this.over
+      // Shrink the font for tiles whose longest word won't fit at full size, so a
+      // long unbreakable name wraps cleanly (or fits on one line) instead of
+      // snapping off an orphan letter.
+      tile.style.setProperty("--card-fit", cardFit(card.word))
       // Each tile leans a little differently (−3°…+3°) when it lifts.
       tile.style.setProperty("--tilt", `${(Math.random() * 6 - 3).toFixed(1)}deg`)
       if (this.selected.includes(card.word)) {
@@ -292,25 +336,43 @@ export default class extends Controller {
     this.solvedTarget.appendChild(row)
   }
 
+  // Four boxes, one per category color; a mistake puts an ✕ in the next box.
   renderMistakes() {
     if (!this.hasMistakesTarget) return
-    const left = this.maxMistakesValue - this.mistakes
-    this.mistakesTarget.textContent =
-      `Mistakes remaining: ${"●".repeat(left)}${"○".repeat(this.mistakes)}`
+    this.mistakesTarget.innerHTML = ""
+    GAME_COLORS.forEach((color, i) => {
+      const box = document.createElement("span")
+      box.className = `m-mistake m-mistake--${color}`
+      if (i < this.mistakes) {
+        box.classList.add("is-used")
+        box.textContent = "✕"
+      }
+      this.mistakesTarget.appendChild(box)
+    })
   }
 
+  // A transient wrong-guess message: a toast that floats over the title/byline
+  // area (.m-game__toast), then fades on its own. Also rides aria-live for SR.
   setStatus(text) {
-    if (this.hasStatusTarget) this.statusTarget.textContent = text
+    if (!this.hasToastTarget) return
+    clearTimeout(this.statusTimer)
+    this.toastTarget.textContent = text
+    this.toastTarget.classList.add("is-visible")
+    this.statusTimer = setTimeout(() => {
+      this.toastTarget.classList.remove("is-visible")
+    }, 1400)
   }
 
   // Slap a big tilted stamp on the board at game over — the payoff moment.
   renderEndStamp(won) {
     if (!this.hasStatusTarget) return
-    this.statusTarget.textContent = ""
+    clearTimeout(this.statusTimer) // cancel any pending toast fade
+    this.statusTarget.innerHTML = ""
     const stamp = document.createElement("span")
     stamp.className = won ? "m-stamp m-stamp--win" : "m-stamp m-stamp--lose"
     stamp.textContent = won ? "Solved it ↗" : "Out of guesses"
     this.statusTarget.appendChild(stamp)
+    this.statusTarget.classList.add("is-visible") // persists — no auto-dismiss
   }
 
   shuffleCards() {
