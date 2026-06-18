@@ -302,6 +302,15 @@
   // post-game share/cube stays.
   &.is-over &__controls { display: none; }
 
+  // At game over the board empties out, so drop its reserved 4-row height and
+  // let the win/lose stamp flow right under the solved rows instead of floating
+  // in a tall empty gap (the stamp lives in __status, normally a board overlay).
+  &.is-over .m-board { min-height: 0; }
+  &.is-over &__status {
+    position: static;
+    place-items: center;
+  }
+
   // Post-game share: the emoji cube + a copy button.
   &__share {
     display: grid;
