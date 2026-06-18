@@ -98,6 +98,42 @@ yet. To build (data + form already exist):
   out). Decide the CSV shape (one row per puzzle with the 4 groups flattened, or
   one row per group).
 
+### Stats — completion analytics
+
+The recorded **guess log** (`attempts.guesses`) already reconstructs almost every
+completion stat retroactively (see the deep dive in the 2026-06-18 session). The
+few signals that are *irreversibly lost* if not captured at play time are now being
+recorded (below); the rest is read-side display work, buildable whenever.
+
+**Capture — shipped 2026-06-18 (recording only, nothing displayed yet):**
+- **Per-guess timing + total duration.** Each guess in the `guesses` jsonb carries
+  `t` (ms since the clock started, which starts on the first tile tap); the attempt
+  carries `duration_ms`. `Guess#elapsed_ms` reads it back; both are nil-safe for
+  pre-timing plays. Game controller measures it; `attempts#create` permits it.
+- **`game_started` / abandons.** New `Event` model (`event_type` enum, `game_started`
+  only for now) + `events#create` beacon, fired on the first tile tap (`/p/:token/
+  events`). Same gate + anonymous `player_token` as attempts. *Abandoned* plays are
+  **derived** later — a `game_started` with no finishing `Attempt`, joined on
+  player_token + puzzle, time-windowed — so there's nothing extra to record.
+
+**Display — TODO (future, no frontend yet):**
+- **Surface the timing + funnel stats.** Player-facing: solve duration, time-to-
+  first-group, personal-best/speed percentile vs other solvers of the same puzzle.
+  Creator/admin-facing: a `started → finished` funnel and **abandon rate** per
+  puzzle (join `Event.game_started` to `Attempt`, ~30-min window). New value objects
+  alongside `PuzzleStats`/`PlayerStats`; the funnel piece overlaps the Analytics-B
+  `FunnelStats` + superuser dashboard, so build it there when that lands. Likely
+  also fold a duration row into `/puzzles/:id/stats` and the dashboard block.
+
+**Capture — still not built (additive, build if/when the stat is wanted):**
+- **Shuffle / deselect counts** *(cheap, low value)*. The game controller tracks
+  both and discards them — recording counts enables "solved without shuffling"
+  flavor trophies. Fold into the attempt next time the payload is touched.
+- **`published_at` on puzzles** *(medium-low)*. `status` changes aren't timestamped
+  (only `created_at`/`updated_at`), so we can't reconstruct *when* a puzzle went
+  public → author-timeline stats (publishing streaks, time-to-first-play) are
+  lossy. Add a timestamp if author-timeline stats reach the roadmap.
+
 ### Quick wins (no decisions needed)
 
 - **Pin the live game-over stamp's arrow too.** `game_controller.js`
