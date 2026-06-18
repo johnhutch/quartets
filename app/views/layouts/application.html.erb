@@ -71,7 +71,7 @@
       <%# Desktop nav: inline, unchanged. Hidden below $bp-nav, where the hamburger
           below takes over (see _base.scss). %>
       <nav class="l-topbar__inline" aria-label="Primary">
-        <%= link_to "Play More #{ne_arrow}", play_index_path, class: "l-topbar__btn" %>
+        <%= link_to "Archive #{ne_arrow}", play_index_path, class: "l-topbar__btn" %>
         <span class="l-topbar__auth">
           <% if user_signed_in? %>
             <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
