@@ -1,5 +1,24 @@
 require "active_support/core_ext/integer/time"
 
+# Loose files in public/ (robots.txt, favicon, the social share image…) inherit
+# the far-future asset cache below — but unlike digest-stamped assets they aren't
+# content-hashed, so an edit gets pinned at the CDN/browser for a year (this is
+# what stranded a stale robots.txt at Cloudflare). Downgrade just those paths to a
+# short cache so changes propagate; the hashed /assets/ keep their immutable year.
+class ShortLivedLoosePublicFiles
+  PATHS = %w[
+    /robots.txt /favicon.ico /icon.svg /icon.png /apple-touch-icon.png /share.png
+  ].freeze
+
+  def initialize(app) = @app = app
+
+  def call(env)
+    status, headers, body = @app.call(env)
+    headers["cache-control"] = "public, max-age=3600" if PATHS.include?(env["PATH_INFO"])
+    [status, headers, body]
+  end
+end
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -17,6 +36,8 @@ Rails.application.configure do
 
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
+  # …but short-cache the non-hashed loose public/ files (robots.txt, favicon, …).
+  config.middleware.insert_before ActionDispatch::Static, ShortLivedLoosePublicFiles if config.public_file_server.enabled
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"

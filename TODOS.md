@@ -186,6 +186,32 @@ user dashboard** ship (a couple items out); A tool-pick still open.
   `SMTP_PASSWORD`/`MAILER_SENDER`/`APP_HOST` from the NAS `.env`. Fill at first
   deploy (ADR-0005).
 
+### Hosting (exploratory — NO decision to move has been made)
+
+The self-hosted NAS (Synology DS918+, Celeron, behind a Cloudflare tunnel) is the
+**slow origin** that drives the PageSpeed swings: a Cloudflare cache **miss** falls
+through to a slow always-awake box → spiky TTFB. Notes from the hosting grill, kept
+for reference *only*:
+
+- **Heroku: skip.** As of Feb 2026 Salesforce moved it to "sustaining engineering"
+  (no new features, enterprise sales ended) — managed decline, ~4–5yr wind-down, no
+  EOL date. Not worth building on.
+- **Best fit if we ever move: Render (paid Starter, ~$7 web + ~$6 Postgres).**
+  Closest Heroku-like DX, managed Postgres, deploys our Dockerfile. **Avoid the free
+  tier** — it sleeps after ~15 min idle → ~30–60s cold start on wake, which for a
+  low-traffic site is *worse* than the always-awake NAS. Alternatives: **Fly.io**
+  (cheaper, but self-managed Postgres), **Railway** (best DX, containerized DB).
+  Any always-on tier kills the slow-origin problem; keep Cloudflare in front.
+- **Migration is mostly deletion + config — no app-logic changes.** Already
+  portable: Dockerfile, Puma binds `ENV["PORT"]`, `DATABASE_URL`,
+  `SOLID_QUEUE_IN_PUMA=true` (single web service, one Postgres for app+Solid),
+  `assume_ssl`. *Adjust:* run plain `./bin/rails server` (Thruster binds 80, not
+  Render's `$PORT`) or align Thruster's port; add the `*.onrender.com` host to
+  `config.hosts`; `RAILS_SERVE_STATIC_FILES=true`; Cloudflare SSL mode → **Full
+  (strict)** to avoid a redirect loop; move `.env` → Render secrets. *Remove:*
+  `Caddyfile`, `docker-compose.yml`, `.github/workflows/deploy.yml` (Watchtower/GHCR
+  — Render builds on push). *Add:* a `render.yaml`; new ADR superseding ADR-0006/0007.
+
 ---
 
 ## Suggested order
