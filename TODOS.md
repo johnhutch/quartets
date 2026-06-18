@@ -107,6 +107,10 @@ yet. To build (data + form already exist):
 - **Drop dead CSS from the revisit rework.** `.m-result__status` /
   `.m-result__heading` are unused since `play/_result` became the reconstructed
   board (it uses the `.m-game__*` + `.m-stamp` classes now). `/simplify` fodder.
+- **Move UI copy into `en.yml` site-wide** (own-branch job — user's call). Specs
+  that assert hard-coded copy are brittle: the footer spec broke this session when
+  a link was removed. The pattern: copy → `en.yml`, view + spec both reference the
+  i18n key, so a wording/link change is a locale edit, not a test edit.
 - **Richer share payload** — cube + title + direct link in the share sheet
   (verify what commit `b3acb2b` already covers first).
 - **Tune the auto-save debounce** — currently 1000ms

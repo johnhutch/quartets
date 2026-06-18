@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-06-17
+**Last updated:** 2026-06-18
 **Active branch:** develop (feature branches per task; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
@@ -39,12 +39,34 @@ shipped this session.
 **Analytics is scoped, not built** — a full privacy-first plan (streams A traffic
 / B product funnels / C error tracking + bot/crawler measurement) lives in the
 TODOS Analytics section; B and C are queued after the superuser/admin work. The
-**AI-bot stance shipped** this session as a hand-owned `public/robots.txt` (allow
+**AI-bot stance shipped** as a hand-owned `public/robots.txt` (allow
 search/citation crawlers, block training crawlers) backed by Cloudflare's "Block
-AI bots" rule. **Next target: eliminating Cumulative Layout Shift (CLS)** — on its
-own feature branch off `develop`.
+AI bots" rule. **CLS is now eliminated** and the **play window got a full polish
+pass** (animations, floating toast, color mistake-boxes, per-tile font-fit — see
+shipped log). The next big threads: the **superuser/admin dashboard** (gates the
+analytics build) and the deferred **discovery surfacing**.
 
 ## Shipped log (most recent first)
+
+- **Play-window polish pass.** Title→byline tightened; the wrong-guess message is
+  now a floating auto-dismiss **toast** over the header (no reserved row); the
+  win/lose **stamp** flows under the solved rows (game-over no longer leaves a tall
+  empty board — `.m-game.is-over` collapses `.m-board` min-height + un-absolutes
+  `__status`). **Mistakes remaining** is white caps + four white boxes that take a
+  color-coded ✕ per wrong guess. Controls clamp to one row (`nowrap` + clamped
+  font). Dropped the "Share this quartet" button. "More quartets" → a tilted blue
+  **Archive** CTA (+ nav "Play More" → "Archive"). **Long tile words shrink to
+  fit** via a per-tile `--card-fit` scale (game_controller `cardFit`, keyed off the
+  longest word) instead of breaking mid-word.
+- **Shuffle + deselect animations.** Shuffle now **FLIP-slides** tiles to their new
+  cells (reuses the live elements, WAAPI `composite:"add"` so a lifted selection
+  survives) instead of popping. Deselect-all **cascades** (~0.05s stagger), reusing
+  the un-click settle; a wrong guess **wiggles** the picked tiles then settles them
+  down. All honor `prefers-reduced-motion`.
+- **Cumulative Layout Shift eliminated.** Reserved the board's 4-row height up
+  front (`.m-board` min-height) so JS-injected tiles don't reflow the page, and
+  **preloaded the Space Grotesk woff2** (both weights) to kill the font-swap
+  reflow. Mobile CLS: game 0.33→0.01, home 0.17→0.00 (verified via Lighthouse).
 
 - **AI-bot policy + analytics plan.** Hand-owned `public/robots.txt` (single source
   of truth — Cloudflare's managed robots.txt to be set to "Disable"): allow AI

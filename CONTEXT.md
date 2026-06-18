@@ -185,9 +185,12 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
 - **Capybara `text:` sees CSS `text-transform`** — the brutal theme uppercases
   buttons/chips/status, so assert with a case-insensitive regex (`/saved/i`), not
   a literal `"Saved"`.
-- **`hyphens: auto` needs `<html lang>`** — without it the browser has no
-  hyphenation dictionary and silently falls through to `overflow-wrap: anywhere`
-  (the orphan-letter board-tile wraps). The layout sets `lang="en"`.
+- **Board tiles fit long words by shrinking, not hyphenating** — `game_controller`
+  sets a per-tile `--card-fit` scale (`cardFit`, keyed off the longest word) and
+  `.m-card` font is `calc(clamp(...) * var(--card-fit, 1))`, so a name that has no
+  hyphenation dictionary entry shrinks to fit instead of snapping an orphan letter.
+  `hyphens: auto` + `overflow-wrap: anywhere` (which need `<html lang>`, set in the
+  layout) remain only as the last-resort fallback.
 - **Grid items that must shrink need `minmax(0, 1fr)`, not `1fr`** — plain `1fr`
   has an implicit `min-width: auto` (min-content), so a long unbreakable word
   expands its column and blows the layout out (`.m-board`).
