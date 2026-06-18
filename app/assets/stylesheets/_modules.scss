@@ -19,17 +19,25 @@
   min-height: calc(#{$card-min-h} * 4 + #{$grid-gap} * 3);
 }
 
+// Positioning context for the status overlay (see .m-game__status), so a
+// transient toast / win stamp centers over the board without reserving a row.
+.m-board-wrap { position: relative; }
+
 // --- Word tile ----------------------------------------------------------
 .m-card {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: $card-min-h;
-  padding: $space-xs;
+  // Tight horizontal padding so long words get nearly the full tile width (close
+  // to the edge, not flush) before --card-fit has to shrink them.
+  padding: $space-xs 0.125rem;
   text-align: center;
   font-weight: 700;
   // Fluid within a floor/ceiling so answers scale with the board, not the tile.
-  font-size: clamp(0.62rem, 3vw, $font-sm);
+  // game_controller sets --card-fit (≤1) per tile so a long word (e.g. a name
+  // that can't hyphenate) shrinks to fit instead of breaking mid-word.
+  font-size: calc(clamp(0.62rem, 3vw, #{$font-base}) * var(--card-fit, 1));
   line-height: 1.1;
   text-transform: uppercase;
   // Whole words stay whole; a too-long one breaks at a hyphenation point (needs
@@ -206,6 +214,7 @@
 
 // --- Play screen --------------------------------------------------------
 .m-game {
+  position: relative; // anchor for the floating toast (.m-game__toast)
   display: grid;
   gap: $space-md;
 
@@ -228,31 +237,79 @@
     letter-spacing: 0.05em;
   }
 
+  // Centered overlay on the board (no reserved row). Holds a transient
+  // wrong-guess toast (auto-dismissed) or the persistent win/lose stamp.
   &__status {
+    position: absolute;
+    inset: 0;
     margin: 0;
-    min-height: $font-lg * 1.4; // reserve the line so the board doesn't jump
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+
+    &.is-visible { opacity: 1; }
+  }
+
+  // Wrong-guess feedback — a pill that floats above the board, over the
+  // title/byline area. Auto-sized to its text; invisible until shown.
+  &__toast {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    z-index: 2;
+    margin-bottom: $space-sm; // lift it up into the byline zone
+    padding: $space-xs $space-md;
     font-size: $font-lg;
     font-weight: 700;
+    white-space: nowrap;
     text-align: center;
+    background: $color-card-sel;
+    color: $color-paper;
+    border-radius: $radius;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+
+    &.is-visible { opacity: 1; }
   }
 
   &__mistakes {
     margin: 0;
-    text-align: center;
-    color: $color-muted;
-    letter-spacing: 0.15em;
-  }
-
-  &__controls {
     display: flex;
-    flex-wrap: wrap; // wrap instead of overflowing on a narrow phone
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
     gap: $space-sm;
+  }
+
+  &__mistakes-boxes {
+    display: inline-flex;
+    gap: $space-xs;
+  }
+
+  // All three controls stay on one row; the buttons shrink to fit (see brutal).
+  &__controls {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: $space-xs;
   }
 
   // Game over: the play controls have nothing left to do — hide them. The
   // post-game share/cube stays.
   &.is-over &__controls { display: none; }
+
+  // At game over the board empties out, so drop its reserved 4-row height and
+  // let the win/lose stamp flow right under the solved rows instead of floating
+  // in a tall empty gap (the stamp lives in __status, normally a board overlay).
+  &.is-over .m-board { min-height: 0; }
+  &.is-over &__status {
+    position: static;
+    place-items: center;
+  }
 
   // Post-game share: the emoji cube + a copy button.
   &__share {
@@ -572,18 +629,31 @@
 }
 
 // Show-page title sits tight to its byline.
-.m-play-title { margin-bottom: $space-xs; }
+.m-play-title { margin-bottom: 0; line-height: 1.05; }
+// Drop the gap under the title when a byline follows, so it reads as one unit.
+.m-play-title:has(+ .m-byline) { margin-bottom: 0rem; }
+.m-byline { margin-top: 0; }
 
-// Centered "share this puzzle" CTA beneath the board controls.
-.m-game__share-cta {
-  display: flex;
-  justify-content: center;
-  margin-top: $space-lg;
+// Mistake tracker: four white boxes; a wrong guess drops a color-coded ✕ into
+// the next one (the ✕ uses one of the four category colors, box stays white).
+.m-mistake {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border: 2px solid $color-paper; // white box
+  font-weight: 700;
+  line-height: 1;
+
+  &--blue   { color: $color-blue; }   // ← the ✕ color
+  &--green  { color: $color-green; }
+  &--yellow { color: $color-yellow; }
+  &--purple { color: $color-purple; }
 }
 
 // The "back / more puzzles" link under the board needs room so it doesn't crowd
 // the game controls above it.
-.m-play-back { margin-top: $space-xl; }
+.m-play-back { margin-top: $space-xl; text-align: center; }
 
 // Form submit row: centered, content-width buttons (Save draft + Publish) with
 // breathing room between them.

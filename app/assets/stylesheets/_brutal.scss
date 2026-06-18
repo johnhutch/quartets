@@ -219,8 +219,40 @@ body.theme-brutal {
 .theme-brutal .m-game__status,
 .theme-brutal .m-game__mistakes { font-family: $font-display; }
 
-// Give the end-of-game stamp room to tilt without crowding the mistakes line.
-.theme-brutal .m-game__status:has(.m-stamp) { margin: $space-md 0 $space-lg; }
+// Mistakes label reads white + caps; the boxes carry the color, the ✕s the accent.
+.theme-brutal .m-game__mistakes-label {
+  color: $brutal-ink;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+// "Archive" CTA under the board — the tilted sticker in blue (distinct from the
+// yellow "Create" sticker), so it reads as the go-find-more button.
+.theme-brutal .m-play-archive {
+  background: $color-blue;
+  box-shadow: $brutal-shadow $brutal-shadow 0 $color-green;
+}
+
+// Wrong-guess toast: a chunky uppercase pill that floats over the title/byline,
+// dark so it reads at a glance before it fades.
+.theme-brutal .m-game__toast {
+  background: $brutal-paper;
+  color: $brutal-ink;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  border: $brutal-border solid $brutal-ink;
+  border-radius: 0;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.3);
+}
+
+// Keep Shuffle / Deselect all / Submit on one row at any phone width: clamp the
+// type + side padding down so they shrink to fit, and never let a label wrap.
+.theme-brutal .m-game__controls .m-btn {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: clamp(0.72rem, 3.2vw, $font-sm);
+}
 
 // --- Style guide scaffolding ------------------------------------------------
 .theme-brutal .m-swatches {
