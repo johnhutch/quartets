@@ -29,11 +29,15 @@
   align-items: center;
   justify-content: center;
   min-height: $card-min-h;
-  padding: $space-xs;
+  // Tight horizontal padding so long words get nearly the full tile width (close
+  // to the edge, not flush) before --card-fit has to shrink them.
+  padding: $space-xs 0.125rem;
   text-align: center;
   font-weight: 700;
   // Fluid within a floor/ceiling so answers scale with the board, not the tile.
-  font-size: clamp(0.62rem, 3vw, $font-base);
+  // game_controller sets --card-fit (≤1) per tile so a long word (e.g. a name
+  // that can't hyphenate) shrinks to fit instead of breaking mid-word.
+  font-size: calc(clamp(0.62rem, 3vw, #{$font-base}) * var(--card-fit, 1));
   line-height: 1.1;
   text-transform: uppercase;
   // Whole words stay whole; a too-long one breaks at a hyphenation point (needs
