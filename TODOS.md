@@ -97,6 +97,17 @@ yet. To build (data + form already exist):
   `/puzzles/:id/export` JSON route still works underneath — no need to rip it
   out). Decide the CSV shape (one row per puzzle with the 4 groups flattened, or
   one row per group).
+- **Toggleable theme skins** (logged-in users) — full plan in
+  [`docs/THEMES.md`](docs/THEMES.md). **Own branch, after `homepage-rework`
+  merges.** Two opt-in skins on top of the `brutal` default: **`8bit`** (arcade/
+  pixel) and **`broadsheet`** ("The No Times" parody newspaper — lean into the NYT
+  needling, keep the disclaimer). Key calls: refactor the brutalist theme to CSS
+  custom-property tokens *first* (so each skin is a thin override, not a 3× duplicate),
+  `users.theme` column + settings picker, self-host the per-theme fonts. ADA: keep
+  the AA default, engineer both skins to AA (broadsheet is easy; 8-bit is the lift),
+  gate un-fixable CRT/scanline effects behind `prefers-reduced-motion` /
+  `prefers-contrast` / `forced-colors` — a warning label is **not** a compliance
+  substitute. 8-bit comps exist for every screen; broadsheet only has a homepage comp.
 
 ### Stats — completion analytics
 
