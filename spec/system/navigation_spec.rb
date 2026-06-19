@@ -3,9 +3,10 @@ require "rails_helper"
 # The topbar collapses to a CSS-only <details> hamburger on phones (the system
 # suite runs at a 390px viewport). No JS of our own — just native <details> —
 # but it only truly hides/reveals in a real browser, so this is a system spec.
+# The homepage fronts its own nav (no topbar), so these exercise the archive page.
 RSpec.describe "Mobile navigation", type: :system, js: true do
   it "keeps the nav behind a hamburger until tapped, with Create inside" do
-    visit root_path
+    visit play_index_path
 
     expect(page).to have_css("summary.l-nav__toggle") # the hamburger button
 
@@ -19,7 +20,7 @@ RSpec.describe "Mobile navigation", type: :system, js: true do
   end
 
   it "opens the create form straight from the hamburger" do
-    visit root_path
+    visit play_index_path
     find("summary.l-nav__toggle").click
     within(".l-nav") { click_link "Create" }
 
@@ -37,7 +38,7 @@ RSpec.describe "Mobile navigation", type: :system, js: true do
   end
 
   it "hides the page's redundant Create sticker on mobile (the hamburger has it)" do
-    visit root_path
+    visit play_index_path
 
     expect(page).to have_no_css(".m-create-sticker", visible: true)
   end

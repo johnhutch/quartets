@@ -52,6 +52,12 @@ module ApplicationHelper
     controller_name == "puzzles" && action_name.in?(%w[new edit])
   end
 
+  # The homepage is a launchpad with its own fronted nav — the global topbar is
+  # suppressed there (see the layout). Sub-pages keep the topbar.
+  def home_page?
+    controller_name == "home"
+  end
+
   def icon(name)
     paths = ICON_PATHS.fetch(name.to_sym).split(" M").map.with_index do |d, i|
       d = "M#{d}" unless i.zero?
