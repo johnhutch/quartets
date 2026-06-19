@@ -29,12 +29,9 @@ Planned work that has been scoped but not yet started. Read this at session star
 
 ### Follow-ups from the one-play-per-user work (ADR-0009)
 
-- **Gate the home page's featured board too.** `home#show` renders a replayable
-  board even if the player already finished that featured puzzle — now inconsistent
-  with `play#show`, which gates non-owners (signed-in *and* anonymous, ADR-0012).
-  Reuse the pieces that already exist: `PlayController#finished_attempt` (the lookup)
-  + the `play/_result` finished-board partial; render the result when an attempt
-  exists.
+- ~~Gate the home page's featured board too.~~ **Moot** — the homepage rework
+  (2026-06-19) made `home#show` a launchpad with no board at all, so there's
+  nothing to gate.
 - **Claim anonymous attempts on login.** Like the `creator_token` claim (ADR-0005),
   optionally reassign a player's cookie-attributed attempts to their account on
   sign-in so pre-login plays count toward the one-play cap + "✓ Played" badges.
@@ -75,8 +72,12 @@ yet. To build (data + form already exist):
   2. the never-featured puzzle with the most views;
   3. a never-featured puzzle with a **positive upvote score**;
   4. the puzzle with the **oldest `last_featured` date**.
-  Replaces today's `RANDOM()` featured pick in `HomeController`. (Depends on the
-  upvote/downvote feature for step 3, and a views counter for step 2.)
+  (Depends on the upvote/downvote feature for step 3, and a views counter for step
+  2.) **Note:** post-homepage-rework (2026-06-19) there's no single featured board
+  on home anymore — it's a launchpad with a `RANDOM()` strip of ≤5 published puzzles
+  (`HomeController::STRIP_SIZE`). A daily-featured puzzle now needs a *new* home slot
+  decided (e.g. a pinned "Today's quartet" band above the strip), not a drop-in
+  replacement.
   **Unblocks:** the **dashboard streak stat** (deferred from ADR-0011) — there's no
   "today"/consecutive-days notion to count until a daily puzzle exists. When this
   lands, add a Streak cell next to Played · Solved · Solve rate · Created in the
@@ -146,7 +147,9 @@ recorded (below); the rest is read-side display work, buildable whenever.
 - **Move UI copy into `en.yml` site-wide** (own-branch job — user's call). Specs
   that assert hard-coded copy are brittle: the footer spec broke this session when
   a link was removed. The pattern: copy → `en.yml`, view + spec both reference the
-  i18n key, so a wording/link change is a locale edit, not a test edit.
+  i18n key, so a wording/link change is a locale edit, not a test edit. The
+  **homepage is now fully i18n'd** (`home.*`, incl. the manifesto columns + win-board
+  filler as structured arrays) — use it as the template for the rest.
 - **Richer share payload** — cube + title + direct link in the share sheet
   (verify what commit `b3acb2b` already covers first).
 - **Tune the auto-save debounce** — currently 1000ms

@@ -140,11 +140,13 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   no id at render, so Publish starts `hidden`/unwired); once `complete?`, Publish is
   the loud CTA and Save reads "Keep it unlisted (link only)" (ADR-0008).
 - **HomeController** — the public front door (`GET /`, includes `AnonymousPlayer`).
-  Serves a random **featured** published puzzle; with none featured, falls back to a
-  random published puzzle the visitor hasn't finished (`random_unplayed_puzzle`,
-  excluding `completed_puzzle_ids` — by account, else `player_token`). Cleared the
-  whole board (`@cleared_them_all`) → an empty state nudging them to make one. The
-  featured board itself is **not** result-gated yet (TODOS).
+  A **launchpad, not a play surface** (ADR-0014): `@puzzles` is a random strip of
+  ≤`STRIP_SIZE` (5) **published** puzzles (`Puzzle.published.order(RANDOM()).limit`).
+  No board, no featured/unplayed logic, no embedded game. Still mints the
+  `player_token` cookie via `AnonymousPlayer`. The layout suppresses the global
+  topbar + footer on home only via the `home_page?` helper — home fronts its own
+  nav (the Create/Play fork, `aria-label="Primary"`) and footer-as-section. All
+  homepage copy is in `en.yml` under `home.*`.
 - **Auth concerns** (`app/controllers/concerns/`) — `Creator` (cookie ownership +
   `owned_puzzles` + the `owns?` view helper), `ClaimsPuzzles` (site-wide
   `before_action`: on the first authenticated request, reassigns the cookie's
