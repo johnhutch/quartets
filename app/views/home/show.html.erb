@@ -1,36 +1,144 @@
-<% content_for :title, "Quartets" %>
+<% content_for :title, t("home.page_title") %>
 
-<div class="l-container">
-  <header class="m-hero-brutal">
-    <div class="m-hero-brutal__top">
-      <%= link_to "Create #{ne_arrow}", new_puzzle_path, class: "m-sticker m-create-sticker" %>
-    </div>
+<%# Launchpad: full-bleed bands, not boxes-on-black. No .l-container — each band's
+    background runs edge to edge; content is inset (never flush) except things that
+    bleed on purpose (the wordmark, the fork titles). Copy lives in en.yml. %>
+<div class="l-home">
+  <div class="l-home-auth">
+    <% if user_signed_in? %>
+      <%= link_to "Your stuff", puzzles_path %>
+      <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-home-auth__out" %>
+    <% else %>
+      <%= link_to "Log in", new_user_session_path %>
+    <% end %>
+  </div>
+
+  <%# HERO — dark band; the wordmark bleeds off the edge on purpose. %>
+  <section class="m-band m-band--hero">
     <div class="m-nameplate-stack">
-      <h1 class="m-wordmark"><%= multicolor("Quartets") %></h1>
-      <span class="m-nameplate" aria-hidden="true">NoTimes</span>
+      <h1 class="m-wordmark"><%= multicolor(t("home.wordmark")) %></h1>
+      <span class="m-nameplate" aria-hidden="true"><%= t("home.nameplate") %></span>
     </div>
-    <p class="m-lede">16 words. 4 hidden groups.
-    Find the threads before you run out of guesses.</p>
-  </header>
+    <p class="m-lede"><%= t("home.lede_html") %></p>
+  </section>
 
-  <% if @puzzle %>
-    <p class="m-hero__nowplaying">Today's pick: <strong><%= @puzzle.title %></strong></p>
+  <%# THE FORK — one full-width band split into two colors, edge to edge. The
+      homepage's primary nav (carries the landmark the topbar usually would). The
+      titles are sized to fill their half and bleed past the top/left, clipped. %>
+  <nav class="m-fork" aria-label="Primary">
+    <section class="m-fork__half m-fork__half--create">
+      <h2 class="m-fork__title"><%= t("home.create.title") %></h2>
+      <div class="m-fork__inner">
+        <p class="m-fork__line"><%= t("home.create.line") %></p>
+        <%= link_to "#{t('home.create.cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-fork__cta" %>
+        <% unless user_signed_in? %>
+          <p class="m-fork__aside"><%= t("home.create.aside_html", signup: link_to(t("home.create.signup"), new_user_registration_path)) %></p>
+        <% end %>
+      </div>
+    </section>
+    <section class="m-fork__half m-fork__half--play">
+      <h2 class="m-fork__title"><%= t("home.play.title") %></h2>
+      <div class="m-fork__inner">
+        <p class="m-fork__line"><%= t("home.play.line") %></p>
+        <%= link_to "#{t('home.play.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-fork__cta" %>
+      </div>
+    </section>
+  </nav>
 
-    <%= render "play/board", puzzle: @puzzle %>
-
-  <% elsif @cleared_them_all %>
-    <div class="m-empty">
-      <p class="m-home__cleared">You've done them all.</p>
-      <p>Go touch grass, loser.</o>
-      <p>Or, y'know, go <%= link_to "make a new one #{ne_arrow}", new_puzzle_path, class: "m-stamp" %></p>
-    </div>
-  <% else %>
-    <div class="m-empty">
-      <p>No puzzles yet — the board's empty for now.</p>
-      <p><%= link_to "Browse all", play_index_path %> · <%= link_to "Sign in", new_user_session_path %> to create one.</p>
-    </div>
+  <%# JUMP IN — dark band, multicolor head, real puzzles as a big title list. %>
+  <% if @puzzles.any? %>
+    <section class="m-band m-band--strip">
+      <h2 class="m-band__head"><%= multicolor(t("home.strip.head")) %></h2>
+      <ul class="m-titles">
+        <% @puzzles.each do |puzzle| %>
+          <li>
+            <%= link_to play_path(puzzle.share_token), class: "m-titles__row" do %>
+              <span class="m-titles__name"><%= puzzle.title %></span>
+              <% if puzzle.author_name.present? %><span class="m-titles__by"><%= t("home.strip.by", author: puzzle.author_name) %></span><% end %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+      <%= link_to "#{t('home.strip.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-band__cta" %>
+    </section>
   <% end %>
-  
-  <p class="m-play-back"><%= link_to "Play the Archive #{ne_arrow}", play_index_path, class: "m-sticker m-play-archive" %></p>
 
+  <%# WHY PLAY HERE — the pitch, not a tutorial. A one-line nod to the rules, then
+      what this site actually gives you, with a solved board + trophy + cube as the
+      graphic so the copy never outweighs it. %>
+  <section class="m-band m-band--why">
+    <div class="m-why">
+      <div class="m-why__pitch">
+        <h2 class="m-band__head"><%= multicolor(t("home.why.head")) %></h2>
+        <p class="m-why__rules"><%= t("home.why.rules") %></p>
+        <ul class="m-why__list">
+          <% t("home.why.features").each do |f| %>
+            <li class="m-why__feature">
+              <span class="m-why__lead"><%= f[:lead] %></span>
+              <span class="m-why__note"><%= f[:note] %></span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+
+      <div class="m-why__show" aria-hidden="true">
+        <div class="m-winboard">
+          <% t("home.why.board").each_with_index do |row, i| %>
+            <% color = %w[purple blue green yellow][i] %>
+            <div class="m-winrow m-winrow--<%= color %>">
+              <span class="m-winrow__cat"><%= row[:cat] %></span>
+              <span class="m-winrow__words"><%= row[:words] %></span>
+            </div>
+          <% end %>
+        </div>
+        <div class="m-why__trophy"><%= trophy(:reverse_rainbow) %></div>
+        <div class="m-why__cube">🟪🟪🟪🟪
+🟦🟦🟦🟦
+🟩🟩🟩🟩
+🟨🟨🟨🟨</div>
+      </div>
+    </div>
+  </section>
+
+  <%# Footer-as-section (replaces the global footer on home): the manifesto in
+      stark columns, a creator line, and one quiet legal row. %>
+  <footer class="m-band m-band--about m-foot">
+    <h2 class="m-band__head"><%= multicolor(t("home.about.head")) %></h2>
+
+    <div class="m-manifesto">
+      <% t("home.about.columns").each do |col| %>
+        <div class="m-manifesto__col">
+          <h3 class="m-manifesto__head"><%= col[:head] %></h3>
+          <p class="m-manifesto__body"><%= col[:body] %></p>
+          <% if col[:bullets].present? %>
+            <ul class="m-manifesto__list">
+              <% col[:bullets].each do |b| %>
+                <li class="m-manifesto__item">
+                  <% if b[:href].present? %>
+                    <%= link_to "#{b[:label]} #{ne_arrow}", b[:href], class: "m-manifesto__label", target: "_blank", rel: "noopener" %>
+                  <% else %>
+                    <span class="m-manifesto__label"><%= b[:label] %></span>
+                  <% end %>
+                  <span class="m-manifesto__note"><%= b[:note] %></span>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <p class="m-foot__by">
+      <%= t("home.about.built_by") %>
+      <%= link_to multicolor("Hutch"), "https://johnhutch.com", target: "_blank", rel: "noopener" %>
+      + <%= link_to multicolor("SwiftKick Web"), "https://swiftkickweb.com", target: "_blank", rel: "noopener" %>.
+      <%= t("home.about.hire") %>
+      <%= link_to "#{t('home.about.cta')} #{ne_arrow}", "https://www.linkedin.com/in/johnhutch-skw/", target: "_blank", rel: "noopener", class: "m-sticker m-foot__cta" %>
+    </p>
+
+    <p class="m-foot__legal">
+      <%= link_to t("home.about.privacy"), privacy_path %> &middot;
+      <%= t("home.about.disclaimer") %>
+    </p>
+  </footer>
 </div>

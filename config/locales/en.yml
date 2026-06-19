@@ -30,6 +30,87 @@
 en:
   hello: "Hello world"
 
+  # Homepage launchpad copy. All visible homepage text lives here so it can be
+  # reworded without touching the view.
+  home:
+    page_title: "Quartets"
+    nameplate: "NoTimes"
+    wordmark: "Quartets"
+    lede_html: "16 words, 4 hidden groups, 4 mistakes. <strong>And anyone can make one.</strong>"
+    create:
+      title: "Create"
+      line: "Make your own. No signup, no nonsense."
+      cta: "Make a Quartet"
+      aside_html: "Want stats &amp; a trophy case? %{signup} whenever."
+      signup: "Sign up"
+    play:
+      title: "Play"
+      line: "Crack someone else's. Four mistakes, no mercy."
+      cta: "Browse the archive"
+    strip:
+      head: "Jump in"
+      by: "by %{author}"
+      cta: "The whole archive"
+    why:
+      head: "Why play here"
+      rules: "16 words. 4 hidden groups. 4 mistakes. You know the drill."
+      features:
+        - lead: "Free."
+          note: "Every puzzle, every tool, forever. No paywall, no catch, no \"pro\" tier."
+        - lead: "Build your own."
+          note: "Make a Quartet in two minutes. No signup, no approval, no limit."
+        - lead: "Real stats."
+          note: "Solve rate, mistakes per game, the wrong guesses everyone falls for."
+        - lead: "Earn trophies."
+          note: "Go flawless. Go purple-first. Chase the dreaded reverse rainbow."
+        - lead: "Leaderboards."
+          note: "Coming soon — so start padding your record now."
+      board:
+        - cat: "NBA teams"
+          words: "HEAT · JAZZ · NETS · SUNS"
+        - cat: "___ dressing"
+          words: "RANCH · BLUE · CAESAR · ITALIAN"
+        - cat: "Trees"
+          words: "MAPLE · OAK · PINE · BIRCH"
+        - cat: "Kitchen tools"
+          words: "WHISK · GRATER · LADLE · TONGS"
+    about:
+      head: "Why it's like this"
+      columns:
+        - head: "The web got enclosed"
+          body: "Every free thing turned into a funnel. Every game, an ad delivered to your face. Every puzzle, a pretext to harvest your attention and sell it back to you."
+          bullets: []
+        - head: "We're not playing that"
+          body: "You came to play — so play. Nothing here is a data grab wearing a feature costume."
+          bullets:
+            - label: "No ads"
+              note: "Nothing flashing, nothing chasing your cursor, nothing auto-playing at you."
+            - label: "No tracking"
+              note: "No pixels, no fingerprinting, no \"anonymous\" analytics that aren't."
+            - label: "Free forever"
+              note: "No paywall, no premium tier, no bait-and-switch down the road."
+        - head: "Your puzzles stay yours"
+          body: "You make it, you keep it. We're a place to put your work, not a landlord taking a cut of it."
+          bullets:
+            - label: "Never sold"
+              note: "Your data isn't the product. There is no product."
+            - label: "No AI training"
+              note: "Scraper bots that train on your words get a 403. Go make your own."
+        - head: "This used to be normal"
+          body: "Someone made a good thing and put it online because it was good. That was the whole deal. Funny enough, it still works."
+          bullets:
+            - label: "Open source"
+              note: "The whole thing's on GitHub. Read it, fork it, host your own."
+              href: "https://github.com/johnhutch/quartets"
+            - label: "CC BY 4.0"
+              note: "Take the puzzles, remix them, just credit us. By commies, for commies."
+              href: "https://creativecommons.org/licenses/by/4.0/"
+      built_by: "Built by"
+      hire: "Hire people who build for the love of it?"
+      cta: "Let's talk"
+      privacy: "Privacy"
+      disclaimer: "Not affiliated with The New York Times or any of its subsidiaries."
+
   # Snarky game-over quips (ADR-0011). One is picked at random per finished game.
   # Each bucket needles you toward the next rung — except reverse_rainbow, which has
   # nothing above it to diminish. Append freely; the game just samples the array.
