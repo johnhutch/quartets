@@ -10,7 +10,10 @@ context="$(
   git log --oneline -5 2>/dev/null || echo "(not a git repo)"
   echo ""
   echo "=== PROGRESS.md (current state) ==="
-  cat PROGRESS.md 2>/dev/null || echo "(no PROGRESS.md)"
+  # Inject Current focus + Known not-done, but skip the ever-growing Shipped log
+  # block — cat-ing the whole file blew past the hook's inline cap, so only a
+  # preview reached the model. Read the shipped log on demand instead.
+  awk '/^## Shipped log/{s=1} /^## Known not-done/{s=0} !s' PROGRESS.md 2>/dev/null || echo "(no PROGRESS.md)"
 )"
 
 # Seed the idle-reminder stamp so the first gap is measured from session start.

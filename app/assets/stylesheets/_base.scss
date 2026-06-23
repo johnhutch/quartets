@@ -99,6 +99,24 @@ button {
     white-space: nowrap;
     vertical-align: middle;
   }
+
+  // Archive filter ("Hide my quartets") hoisted into the bar. Small + quiet so it
+  // doesn't crowd the wordmark; checkbox + caps label ride one line.
+  &__filter {
+    margin: 0;
+
+    &-label {
+      display: inline-flex;
+      align-items: center;
+      gap: $space-xs;
+      font-size: $font-sm;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] { cursor: pointer; }
+  }
 }
 
 // Mobile hamburger (CSS-only <details>). Hidden on desktop; the inline nav above

@@ -3,6 +3,7 @@
 # the game posts here on game over and ignores the response.
 class AttemptsController < ApplicationController
   include AnonymousPlayer
+  include Creator # for owns? — authors don't score on their own puzzles
 
   def create
     # The same play gate as play#show (ADR-0008): any complete puzzle records,
@@ -10,6 +11,16 @@ class AttemptsController < ApplicationController
     # place (Playability) — the recorder doesn't need the owner/editor branch.
     puzzle = Puzzle.find_by(share_token: params[:share_token])
     return head :not_found unless Playability.new(puzzle).playable?
+
+    # No trophies or stats for playing your own puzzle: authors test-play freely,
+    # but those runs leave no Attempt. Build the result in memory so they still
+    # see their cube/share, then return without recording or awarding.
+    if owns?(puzzle)
+      attempt = puzzle.attempts.new(attempt_params)
+      result = PlayResult.new(attempt, url: play_url(puzzle.share_token), viewer: nil)
+      return render json: { cube: result.cube, share: result.share, achievement: nil, awards: nil },
+                    status: :created
+    end
 
     # One recorded play per logged-in user (ADR-0009): a repeat POST just returns
     # their existing result instead of stacking duplicate attempts. Anonymous

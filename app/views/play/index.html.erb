@@ -1,5 +1,21 @@
 <% content_for :title, "Play" %>
 
+<%# Archive filter, hoisted into the topbar (next to "Play More" on desktop, next
+    to the wordmark on mobile). Only shown to a viewer who owns a published puzzle
+    — everyone else has nothing to hide. Hidden+checkbox so an unchecked box still
+    submits mine=show; on by default. %>
+<% if @owns_published %>
+  <% content_for :topbar_extra do %>
+    <%= form_with url: play_index_path, method: :get, class: "l-topbar__filter", data: { controller: "autosubmit" } do %>
+      <%= hidden_field_tag :mine, "show" %>
+      <label class="l-topbar__filter-label">
+        <%= check_box_tag :mine, "hide", @hide_mine, data: { action: "change->autosubmit#submit" } %>
+        Hide my quartets
+      </label>
+    <% end %>
+  <% end %>
+<% end %>
+
 <div class="l-container">
   <header class="m-play-head">
     <h1><%= multicolor("Play") %></h1>

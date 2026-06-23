@@ -6,7 +6,17 @@ class PlayController < ApplicationController
   include Creator # for owns? — the owner gets a share prompt on their own puzzle
 
   def index
-    @puzzles = Puzzle.published.order(created_at: :desc)
+    # "Hide my quartets" is on by default — the archive is for discovering other
+    # people's work. Only offered to a viewer who actually owns something here;
+    # for everyone else there's nothing to hide and no toggle.
+    mine = owned_puzzle_ids & Puzzle.published.ids
+    @owns_published = mine.any?
+    @hide_mine = @owns_published && params[:mine] != "show"
+
+    scope = Puzzle.published.order(created_at: :desc)
+    scope = scope.where.not(id: mine) if @hide_mine
+    @puzzles = scope
+
     # Which of these the signed-in player has already finished, for the badge.
     @completed_ids = user_signed_in? ? current_user.attempts.distinct.pluck(:puzzle_id).to_set : Set.new
   end

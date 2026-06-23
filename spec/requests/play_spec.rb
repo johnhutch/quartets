@@ -31,6 +31,51 @@ RSpec.describe "Play (public)", type: :request do
       expect(response.body).to include("Not yet")
       expect(text.scan(/Played/).size).to eq(1) # only the finished one is badged
     end
+
+    # "Hide my quartets" — on by default, so the archive shows other people's work
+    # first; the author's own puzzles can be toggled back in.
+    context "hide my quartets" do
+      it "hides the viewer's own published puzzles by default (signed-in)" do
+        user = create(:user)
+        sign_in user
+        create(:published_puzzle, user: user, title: "My own")
+        create(:published_puzzle, title: "Someone elses")
+
+        get play_index_path
+
+        expect(response.body).not_to include("My own")
+        expect(response.body).to include("Someone elses")
+      end
+
+      it "shows them when the toggle is off (?mine=show)" do
+        user = create(:user)
+        sign_in user
+        create(:published_puzzle, user: user, title: "My own")
+
+        get play_index_path(mine: "show")
+
+        expect(response.body).to include("My own")
+      end
+
+      it "offers the toggle only to a viewer who owns a published puzzle" do
+        get play_index_path # anonymous, owns nothing
+        expect(response.body).not_to include("Hide my quartets")
+
+        user = create(:user)
+        sign_in user
+        create(:published_puzzle, user: user)
+        get play_index_path
+        expect(response.body).to include("Hide my quartets")
+      end
+
+      it "doesn't hide other people's puzzles from an anonymous browser" do
+        create(:published_puzzle, title: "Public one") # owned by a factory user
+
+        get play_index_path
+
+        expect(response.body).to include("Public one")
+      end
+    end
   end
 
   describe "GET /p/:share_token (show)" do

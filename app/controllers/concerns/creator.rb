@@ -29,6 +29,19 @@ module Creator
     end
   end
 
+  # The ids of puzzles this requester owns, safe to call without a token. Unlike
+  # owned_puzzles, this never falls back to `creator_token: nil` (which would
+  # match every account-owned puzzle) — a tokenless visitor simply owns nothing.
+  def owned_puzzle_ids
+    if user_signed_in?
+      current_user.puzzle_ids
+    elsif current_creator_token.present?
+      Puzzle.where(creator_token: current_creator_token).ids
+    else
+      []
+    end
+  end
+
   # Does the current requester own this puzzle? Lets public surfaces (e.g. the
   # play page) show owner-only affordances like the share prompt.
   def owns?(puzzle)

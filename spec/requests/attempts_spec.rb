@@ -191,5 +191,40 @@ RSpec.describe "Attempts", type: :request do
         expect(response).to have_http_status(:created)
       end
     end
+
+    # You don't earn trophies or move the stats on your own puzzles — an author
+    # test-plays their board freely, but those runs leave no trace.
+    context "when the author plays their own puzzle" do
+      it "records nothing and returns no awards (signed-in owner)" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle, user: user)
+
+        expect {
+          post play_attempts_path(puzzle.share_token),
+               params: { attempt: flawless_win(%w[purple blue green yellow]) }, as: :json
+        }.not_to change(Attempt, :count)
+
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body["awards"]).to be_nil
+        expect(response.parsed_body["achievement"]).to be_nil
+        expect(response.parsed_body["cube"]).to be_present # they still see their result
+      end
+
+      it "records nothing for the anonymous owner (creator_token cookie)" do
+        # Mint my creator_token cookie by authoring anonymously, then own a
+        # complete puzzle under that same token.
+        post puzzles_path, params: { puzzle: { title: "mine" } }
+        token = Puzzle.last.creator_token
+        puzzle = create(:published_puzzle, user: nil, creator_token: token)
+
+        expect {
+          post play_attempts_path(puzzle.share_token),
+               params: { attempt: { solved: true, mistakes_count: 0 } }, as: :json
+        }.not_to change(Attempt, :count)
+
+        expect(response.parsed_body["awards"]).to be_nil
+      end
+    end
   end
 end
