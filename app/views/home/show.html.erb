@@ -13,37 +13,39 @@
     <% end %>
   </div>
 
-  <%# HERO — dark band; the wordmark bleeds off the edge on purpose. %>
-  <section class="m-band m-band--hero">
-    <div class="m-nameplate-stack">
-      <h1 class="m-wordmark"><%= multicolor(t("home.wordmark")) %></h1>
-      <span class="m-nameplate" aria-hidden="true"><%= t("home.nameplate") %></span>
-    </div>
-    <p class="m-lede"><%= t("home.lede_html") %></p>
-  </section>
+  <%# HERO — one split band: brand on the dark left, the Create/Play fork stacked
+      as two color panels on the right (the homepage's primary nav — carries the
+      landmark the topbar usually would). Below $bp-hero it stacks and the fork
+      titles go back to the giant bleeding treatment. %>
+  <div class="m-hero">
+    <section class="m-hero__brand">
+      <div class="m-nameplate-stack">
+        <h1 class="m-wordmark"><%= multicolor(t("home.wordmark")) %></h1>
+        <span class="m-nameplate" aria-hidden="true"><%= t("home.nameplate") %></span>
+      </div>
+      <p class="m-lede"><%= t("home.lede_html") %></p>
+    </section>
 
-  <%# THE FORK — one full-width band split into two colors, edge to edge. The
-      homepage's primary nav (carries the landmark the topbar usually would). The
-      titles are sized to fill their half and bleed past the top/left, clipped. %>
-  <nav class="m-fork" aria-label="Primary">
-    <section class="m-fork__half m-fork__half--create">
-      <h2 class="m-fork__title"><%= t("home.create.title") %></h2>
-      <div class="m-fork__inner">
-        <p class="m-fork__line"><%= t("home.create.line") %></p>
-        <%= link_to "#{t('home.create.cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-fork__cta" %>
-        <% unless user_signed_in? %>
-          <p class="m-fork__aside"><%= t("home.create.aside_html", signup: link_to(t("home.create.signup"), new_user_registration_path)) %></p>
-        <% end %>
-      </div>
-    </section>
-    <section class="m-fork__half m-fork__half--play">
-      <h2 class="m-fork__title"><%= t("home.play.title") %></h2>
-      <div class="m-fork__inner">
-        <p class="m-fork__line"><%= t("home.play.line") %></p>
-        <%= link_to "#{t('home.play.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-fork__cta" %>
-      </div>
-    </section>
-  </nav>
+    <nav class="m-fork" aria-label="Primary">
+      <section class="m-fork__half m-fork__half--create">
+        <h2 class="m-fork__title"><%= t("home.create.title") %></h2>
+        <div class="m-fork__inner">
+          <p class="m-fork__line"><%= t("home.create.line") %></p>
+          <%= link_to "#{t('home.create.cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-fork__cta" %>
+          <% unless user_signed_in? %>
+            <p class="m-fork__aside"><%= t("home.create.aside_html", signup: link_to(t("home.create.signup"), new_user_registration_path)) %></p>
+          <% end %>
+        </div>
+      </section>
+      <section class="m-fork__half m-fork__half--play">
+        <h2 class="m-fork__title"><%= t("home.play.title") %></h2>
+        <div class="m-fork__inner">
+          <p class="m-fork__line"><%= t("home.play.line") %></p>
+          <%= link_to "#{t('home.play.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-fork__cta" %>
+        </div>
+      </section>
+    </nav>
+  </div>
 
   <%# JUMP IN — dark band, multicolor head, real puzzles as a big title list. %>
   <% if @puzzles.any? %>
@@ -64,13 +66,12 @@
   <% end %>
 
   <%# WHY PLAY HERE — the pitch, not a tutorial. A one-line nod to the rules, then
-      what this site actually gives you, with a solved board + trophy + cube as the
-      graphic so the copy never outweighs it. %>
+      what this site actually gives you, with a solved board as the graphic so the
+      copy never outweighs it. %>
   <section class="m-band m-band--why">
     <div class="m-why">
       <div class="m-why__pitch">
         <h2 class="m-band__head"><%= multicolor(t("home.why.head")) %></h2>
-        <p class="m-why__rules"><%= t("home.why.rules") %></p>
         <ul class="m-why__list">
           <% t("home.why.features").each do |f| %>
             <li class="m-why__feature">
@@ -91,11 +92,6 @@
             </div>
           <% end %>
         </div>
-        <div class="m-why__trophy"><%= trophy(:reverse_rainbow) %></div>
-        <div class="m-why__cube">🟪🟪🟪🟪
-🟦🟦🟦🟦
-🟩🟩🟩🟩
-🟨🟨🟨🟨</div>
       </div>
     </div>
   </section>
@@ -108,8 +104,12 @@
     <div class="m-manifesto">
       <% t("home.about.columns").each do |col| %>
         <div class="m-manifesto__col">
-          <h3 class="m-manifesto__head"><%= col[:head] %></h3>
-          <p class="m-manifesto__body"><%= col[:body] %></p>
+          <% if col[:head].present? %>
+            <h3 class="m-manifesto__head"><%= col[:head] %></h3>
+          <% end %>
+          <% if col[:body].present? %>
+            <p class="m-manifesto__body"><%= col[:body] %></p>
+          <% end %>
           <% if col[:bullets].present? %>
             <ul class="m-manifesto__list">
               <% col[:bullets].each do |b| %>
@@ -119,7 +119,9 @@
                   <% else %>
                     <span class="m-manifesto__label"><%= b[:label] %></span>
                   <% end %>
-                  <span class="m-manifesto__note"><%= b[:note] %></span>
+                  <% if b[:note].present? %>
+                    <span class="m-manifesto__note"><%= b[:note] %></span>
+                  <% end %>
                 </li>
               <% end %>
             </ul>
@@ -127,14 +129,6 @@
         </div>
       <% end %>
     </div>
-
-    <p class="m-foot__by">
-      <%= t("home.about.built_by") %>
-      <%= link_to multicolor("Hutch"), "https://johnhutch.com", target: "_blank", rel: "noopener" %>
-      + <%= link_to multicolor("SwiftKick Web"), "https://swiftkickweb.com", target: "_blank", rel: "noopener" %>.
-      <%= t("home.about.hire") %>
-      <%= link_to "#{t('home.about.cta')} #{ne_arrow}", "https://www.linkedin.com/in/johnhutch-skw/", target: "_blank", rel: "noopener", class: "m-sticker m-foot__cta" %>
-    </p>
 
     <p class="m-foot__legal">
       <%= link_to t("home.about.privacy"), privacy_path %> &middot;
