@@ -393,11 +393,8 @@ body.theme-brutal {
 // Secondary / "muted" copy bumped to a WCAG-AA grey on the near-black page.
 .theme-brutal {
   .m-auth__lede,
-  .m-home-foot,
   .m-empty,
   .m-form__note,
-  .m-hero__pitch,
-  .m-hero__nowplaying,
   .m-game__mistakes,
   .m-pagination__at { color: $brutal-muted; }
 }
@@ -408,18 +405,6 @@ body.theme-brutal {
   align-items: flex-start;
   justify-content: space-between; // title left, sticker right
   gap: $space-md;
-}
-
-// The create sticker floats over the top-right of the hero instead of taking
-// its own row — keeps it on the same horizontal plane as the wordmark rather
-// than shoving QUARTETS down.
-.theme-brutal .m-hero-brutal { position: relative; }
-
-.theme-brutal .m-hero-brutal__top {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 3;
 }
 
 .theme-brutal .m-play-head h1 { margin-bottom: $space-md; } // pull back interior-heading spacing
@@ -772,14 +757,24 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   font-weight: 700;
   text-transform: uppercase;
   font-size: $font-sm;
-  a { color: $brutal-muted; text-decoration: none; }
-  a:hover { color: $color-yellow; }
+  // Desktop the chip floats over the create panel (yellow) → ink-on-color;
+  // once the hero stacks it's back over the dark brand → muted-on-dark.
+  a { color: rgba(#000, 0.72); text-decoration: none; }
+  a:hover { color: #000; }
   &__out { display: contents; }
   &__out button {
     background: none; border: 0; padding: 0; cursor: pointer;
-    font: inherit; color: $brutal-muted; text-transform: uppercase;
+    font: inherit; color: rgba(#000, 0.72); text-transform: uppercase;
   }
-  &__out button:hover { color: $color-yellow; }
+  &__out button:hover { color: #000; }
+}
+@media (max-width: $bp-hero) {
+  .theme-brutal .l-home-auth {
+    a { color: $brutal-muted; }
+    a:hover { color: $color-yellow; }
+    &__out button { color: $brutal-muted; }
+    &__out button:hover { color: $color-yellow; }
+  }
 }
 
 // Generic band: full-width background, content inset by the gutter, headers loud.
@@ -801,50 +796,66 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   &__cta  { margin-top: $space-lg; }
 }
 
-// HERO band — dark; the wordmark bleeds off the left on purpose.
-.theme-brutal .m-band--hero {
-  padding-top: $space-xl;
-  padding-bottom: $space-lg;
-  overflow: hidden;
-  // The nameplate-stack restores the NoTimes overlap (see .m-nameplate-stack).
-  // 19vw keeps QUARTETS filling-not-overflowing on phones; it still bleeds wide.
-  .m-wordmark { max-width: none; font-size: clamp(3.25rem, 19vw, 11rem); margin: 0 0 $space-md -0.07em; }
-  .m-lede { max-width: 26ch; font-size: $font-lg; font-weight: 700; strong { color: $color-yellow; } }
-}
-
-// THE FORK — full-width band split into two solid color halves, edge to edge.
-.theme-brutal .m-fork {
+// HERO — one split band: brand on the dark left (~57%), the Create/Play fork
+// stacked as two solid-color panels on the right. Below $bp-hero the split
+// stacks and the fork titles go back to the giant bleeding treatment.
+.theme-brutal .m-hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-top: $brutal-border solid $brutal-ink;
+  grid-template-columns: 1.3fr 1fr;
   border-bottom: $brutal-border solid $brutal-ink;
 }
-.theme-brutal .m-fork__half {
-  // No padding on the half itself: the title bleeds to the top/left edge and is
-  // clipped by overflow:hidden. The text block (.m-fork__inner) carries the inset.
-  overflow: hidden;
-  container-type: inline-size; // title font-size scales to the half's width (cqw)
-  color: #000;
-  &--create { background: $color-yellow; }
-  &--play   { background: $color-blue; border-left: $brutal-border solid $brutal-ink; }
+.theme-brutal .m-hero__brand {
+  container-type: inline-size; // wordmark font-size tracks the brand column (cqw)
+  overflow: hidden;            // the wordmark still noses past the left edge
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  padding: clamp(#{$space-lg}, 6vw, 4rem) $home-pad;
+
+  // The nameplate-stack restores the NoTimes overlap (see .m-nameplate-stack).
+  .m-wordmark {
+    max-width: none;
+    font-size: clamp(3.25rem, 19vw, 11rem); // fallback: no container-query units
+    font-size: 19.5cqw;                     // QUARTETS fills the brand column
+    margin: 0 0 $space-md -0.07em;
+  }
+  // 40ch fits the whole rules sentence on one line; the yellow kicker gets its own.
+  .m-lede { max-width: 40ch; font-size: $font-lg; font-weight: 700; strong { color: $color-yellow; } }
 }
-// The text block under the bleeding title gets the normal band inset.
+
+// THE FORK — the hero's right column: Create over Play, equal panels.
+.theme-brutal .m-fork {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  border-left: $brutal-border solid $brutal-ink;
+}
+.theme-brutal .m-fork__half {
+  container-type: inline-size; // title font-size scales to the panel's width (cqw)
+  overflow: hidden;
+  color: #000;
+  display: grid;
+  align-content: center;
+  padding: clamp(#{$space-lg}, 4vw, 3rem) $home-pad;
+  &--create { background: $color-yellow; }
+  &--play   { background: $color-blue; border-top: $brutal-border solid $brutal-ink; }
+}
 .theme-brutal .m-fork__inner {
   max-width: 32rem;
-  padding: 0 $home-pad clamp(#{$space-lg}, 8vw, 4.5rem);
 }
-// Giant header sized in cqw so it fills its half. Negative margins push it past the
-// top/left edges; the half clips it — ~top 15% and ~left 10% shaved off. text-stroke
-// fattens it past the 700 weight we ship (no heavier Space Grotesk file).
+// Giant but contained on desktop — fills most of the panel's width without the
+// old cut-off crop (that read wrong there); below $bp-hero it fills-and-bleeds
+// again. text-stroke fattens it past the 700 weight we ship (no heavier Space
+// Grotesk file).
 .theme-brutal .m-fork__title {
-  margin: -0.1em 0 $space-md -0.06em; // -0.06em shaves ~10% off the leftmost letter
+  margin: 0 0 $space-sm;
   font-family: $font-display;
   font-weight: 700;
   text-transform: uppercase;
-  line-height: 0.7;
-  letter-spacing: -0.05em;
+  line-height: 0.75;
+  letter-spacing: -0.04em;
   white-space: nowrap;
-  font-size: 28cqw; // CREATE and PLAY share one size; CREATE just fills more of the box
+  font-size: clamp(2.25rem, 6vw, 4.75rem); // fallback: no container-query units
+  font-size: 23cqw;                        // CREATE runs ~panel-wide; PLAY hangs looser
   -webkit-text-stroke: 0.012em currentColor;
 }
 .theme-brutal .m-fork__line  { margin: 0; font-weight: 700; font-size: $font-lg; }
@@ -853,18 +864,33 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 .theme-brutal .m-fork__half--create .m-fork__cta { background: $color-blue;   box-shadow: $brutal-shadow $brutal-shadow 0 $color-purple; }
 .theme-brutal .m-fork__half--play   .m-fork__cta { background: $color-yellow; box-shadow: $brutal-shadow $brutal-shadow 0 $color-purple; }
 
-@media (max-width: $bp-stack) {
-  .theme-brutal .m-fork { grid-template-columns: 1fr; }
-  .theme-brutal .m-fork__half--create { order: -1; }
-  .theme-brutal .m-fork__half--play { border-left: 0; border-top: $brutal-border solid $brutal-ink; }
+@media (max-width: $bp-hero) {
+  .theme-brutal .m-hero { grid-template-columns: 1fr; }
+  .theme-brutal .m-fork { border-left: 0; }
+  .theme-brutal .m-fork__half {
+    // Back to the full-width treatment: no padding on the half — the title bleeds
+    // to the top/left edge and is clipped; .m-fork__inner carries the inset.
+    display: block;
+    padding: 0;
+    &--create { border-top: $brutal-border solid $brutal-ink; }
+  }
+  // Giant header sized in cqw so it fills its half. Negative margins push it past
+  // the top/left edges; the half clips it — ~top 15% and ~left 10% shaved off.
+  .theme-brutal .m-fork__title {
+    margin: -0.1em 0 $space-md -0.06em; // -0.06em shaves ~10% off the leftmost letter
+    line-height: 0.7;
+    letter-spacing: -0.05em;
+    font-size: 28cqw; // CREATE and PLAY share one size; CREATE just fills more
+  }
+  .theme-brutal .m-fork__inner { padding: 0 $home-pad clamp(#{$space-lg}, 8vw, 4.5rem); }
 }
 
 // JUMP IN — dark band; real puzzles as a big oversized title list (no cards).
+// Width-capped by the band's default child max-width; the bg stays full-bleed.
 .theme-brutal .m-titles {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-width: none;
   border-top: 2px solid rgba($brutal-ink, 0.25);
 }
 .theme-brutal .m-titles__row {
@@ -890,8 +916,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 
 // WHY PLAY HERE — dark band, multicolor head. One line on the rules, then the real
 // pitch, balanced by a heavy graphic: a solved board (the colorful payoff) tilted
-// and bleeding off the right edge, with the reverse-rainbow trophy and an emoji
-// cube as overlapping stickers.
+// and bleeding off the right edge.
 .theme-brutal .m-band--why { overflow: hidden; } // clip the bleeding board
 .theme-brutal .m-why {
   max-width: none;
@@ -956,39 +981,10 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
     font-size: $font-sm; letter-spacing: 0.03em;
   }
 }
-.theme-brutal .m-why__trophy {
-  position: absolute;
-  top: -$space-md;
-  right: 7%;
-  display: grid; place-items: center;
-  background: $brutal-ink;
-  border: $brutal-border solid #000;
-  padding: $space-sm;
-  transform: rotate(7deg);
-  box-shadow: $brutal-shadow $brutal-shadow 0 $color-purple;
-  .m-trophy { width: 3.6rem; height: 3.6rem; }
-}
-.theme-brutal .m-why__cube {
-  position: absolute;
-  bottom: -$space-lg;
-  left: -$space-xl;
-  background: #000;
-  color: #fff;
-  border: $brutal-border solid $brutal-ink;
-  padding: $space-xs $space-sm;
-  transform: rotate(-6deg);
-  white-space: pre;
-  font-size: 0.7rem;
-  line-height: 1.05;
-  letter-spacing: 0.08em;
-  box-shadow: $brutal-shadow $brutal-shadow 0 $color-yellow;
-}
-
 @media (max-width: $bp-stack) {
   .theme-brutal .m-why { grid-template-columns: 1fr; }
   .theme-brutal .m-why__show { margin-top: $space-xl; justify-self: stretch; }
   .theme-brutal .m-winboard { margin-right: 0; }
-  .theme-brutal .m-why__trophy { right: 3%; }
 }
 
 // WHY IT'S LIKE THIS — dark band, multicolor head. The manifesto: stark, small
@@ -1067,7 +1063,6 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
     font-weight: 700;
     line-height: 1.3;
   }
-  &__cta { display: inline-block; transform: rotate(2deg); margin-left: $space-xs; }
 
   &__legal {
     margin-top: $space-xl;

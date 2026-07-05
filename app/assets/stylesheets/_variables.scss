@@ -51,6 +51,7 @@ $content-width: 640px; // game board is happiest narrow + mobile-first
 $form-width:    28rem;  // ~half the brutal container — authoring forms read better narrow
 $bp-stack:      30rem;  // below this, side-by-side controls stack vertically (phones)
 $bp-nav:        40rem;  // below this, the topbar nav collapses to a hamburger
+$bp-hero:       48rem;  // below this, the homepage hero's brand/fork split stacks
 $ease-spring:   cubic-bezier(0.34, 1.7, 0.5, 1); // springy overshoot (tile lift, YES toggle)
 
 // --- Brutalist theme (dark) ---------------------------------------------
