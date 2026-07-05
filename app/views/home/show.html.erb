@@ -119,7 +119,10 @@
                   <% else %>
                     <span class="m-manifesto__label"><%= b[:label] %></span>
                   <% end %>
-                  <% if b[:note].present? %>
+                  <%# note_html allows inline links (trusted copy from en.yml, never user input) %>
+                  <% if b[:note_html].present? %>
+                    <span class="m-manifesto__note"><%= b[:note_html].html_safe %></span>
+                  <% elsif b[:note].present? %>
                     <span class="m-manifesto__note"><%= b[:note] %></span>
                   <% end %>
                 </li>
