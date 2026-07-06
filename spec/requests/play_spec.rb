@@ -94,6 +94,31 @@ RSpec.describe "Play (public)", type: :request do
       expect(response.body).to include(publish_puzzle_path(unlisted))    # publish CTA
     end
 
+    # Owners never play their own puzzles — no self-earned trophies or stats.
+    # Their own board renders revealed: every group in its solved state.
+    it "shows the owner their own puzzle revealed instead of playable" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:published_puzzle, user: user)
+
+      get play_path(puzzle.share_token)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include('data-controller="game"')
+      expect(response.body.scan(/m-game__group"/).size).to eq(4) # the 4 revealed rows
+      # Still shareable from here — the whole point of visiting your own puzzle.
+      expect(response.body).to include('data-action="share#share"')
+      expect(response.body).to include(play_url(puzzle.share_token))
+    end
+
+    it "keeps the board playable for a non-owner" do
+      puzzle = create(:published_puzzle)
+
+      get play_path(puzzle.share_token)
+
+      expect(response.body).to include('data-controller="game"')
+    end
+
     it "celebrates a just-published puzzle (?published=1)" do
       user = create(:user)
       sign_in user
@@ -183,15 +208,18 @@ RSpec.describe "Play (public)", type: :request do
         expect(response.body).to include('data-controller="game"')
       end
 
-      it "never gates an author out of their own puzzle" do
+      it "shows an author their own puzzle revealed, prior attempts or not" do
         user = create(:user)
         sign_in user
         puzzle = create(:published_puzzle, user: user)
-        create(:attempt, puzzle: puzzle, user: user, solved: true)
+        create(:attempt, puzzle: puzzle, user: user, solved: true) # from before the owner gate
 
         get play_path(puzzle.share_token)
 
-        expect(response.body).to include('data-controller="game"')
+        # The owner view wins: revealed board, no game, no attempt reconstruction.
+        expect(response.body).to include('data-owner-view="true"')
+        expect(response.body).not_to include('data-controller="game"')
+        expect(response.body).not_to include('data-played="true"')
       end
     end
 
