@@ -13,39 +13,35 @@
     <% end %>
   </div>
 
-  <%# HERO — one split band: brand on the dark left, the Create/Play fork stacked
-      as two color panels on the right (the homepage's primary nav — carries the
-      landmark the topbar usually would). Below $bp-hero it stacks and the fork
-      titles go back to the giant bleeding treatment. %>
-  <div class="m-hero">
-    <section class="m-hero__brand">
-      <div class="m-nameplate-stack">
-        <h1 class="m-wordmark"><%= multicolor(t("home.wordmark")) %></h1>
-        <span class="m-nameplate" aria-hidden="true"><%= t("home.nameplate") %></span>
-      </div>
-      <p class="m-lede"><%= t("home.lede_html") %></p>
-    </section>
+  <%# HERO — one dark masthead band: the NoTimes/QUARTETS nameplate, the rules
+      lede, one pitch line, and the primary nav (a sticker-weight Create CTA +
+      a quiet archive link — Play itself is the Jump In band one scroll down,
+      so it doesn't get a billboard here). The 2×2 color cluster is the brand's
+      Q-quadrants, purely decorative. %>
+  <section class="m-hero">
+    <div class="m-hero__quads" aria-hidden="true">
+      <span class="m-hero__quad m-hero__quad--yellow"></span>
+      <span class="m-hero__quad m-hero__quad--green"></span>
+      <span class="m-hero__quad m-hero__quad--blue"></span>
+      <span class="m-hero__quad m-hero__quad--purple"></span>
+    </div>
 
-    <nav class="m-fork" aria-label="Primary">
-      <section class="m-fork__half m-fork__half--create">
-        <h2 class="m-fork__title"><%= t("home.create.title") %></h2>
-        <div class="m-fork__inner">
-          <p class="m-fork__line"><%= t("home.create.line") %></p>
-          <%= link_to "#{t('home.create.cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-fork__cta" %>
-          <% unless user_signed_in? %>
-            <p class="m-fork__aside"><%= t("home.create.aside_html", signup: link_to(t("home.create.signup"), new_user_registration_path)) %></p>
-          <% end %>
-        </div>
-      </section>
-      <section class="m-fork__half m-fork__half--play">
-        <h2 class="m-fork__title"><%= t("home.play.title") %></h2>
-        <div class="m-fork__inner">
-          <p class="m-fork__line"><%= t("home.play.line") %></p>
-          <%= link_to "#{t('home.play.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-fork__cta" %>
-        </div>
-      </section>
+    <div class="m-nameplate-stack">
+      <h1 class="m-wordmark"><%= multicolor(t("home.wordmark")) %></h1>
+      <span class="m-nameplate" aria-hidden="true"><%= t("home.nameplate") %></span>
+    </div>
+    <p class="m-lede"><%= t("home.lede_html") %></p>
+    <p class="m-hero__pitch"><%= t("home.hero.pitch") %></p>
+
+    <nav class="m-hero__nav" aria-label="Primary">
+      <%= link_to "#{t('home.hero.create_cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-hero__cta" %>
+      <%= link_to "#{t('home.hero.browse_cta')} #{ne_arrow}", play_index_path, class: "m-hero__browse" %>
     </nav>
-  </div>
+
+    <% unless user_signed_in? %>
+      <p class="m-hero__aside"><%= t("home.hero.aside_html", signup: link_to(t("home.hero.signup"), new_user_registration_path)) %></p>
+    <% end %>
+  </section>
 
   <%# JUMP IN — dark band, multicolor head, real puzzles as a big title list. %>
   <% if @puzzles.any? %>
