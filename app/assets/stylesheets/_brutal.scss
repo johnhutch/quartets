@@ -759,7 +759,9 @@ body.theme-brutal {
 // $home-pad: the inset gutter — content never goes flush to the band edge.
 $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 
-// Auth: a small ink chip floating top-right (the killed topbar's lone survivor).
+// Auth: floating top-right (the killed topbar's lone survivor). The buttons are
+// the same .l-topbar__btn outline chrome the subpage topbar uses — the wrapper
+// just positions them and supplies the display face they inherit.
 .theme-brutal .l-home-auth {
   position: absolute;
   top: $space-md;
@@ -767,19 +769,13 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: $space-md;
+  gap: $space-sm;
   font-family: $font-display;
   font-weight: 700;
-  text-transform: uppercase;
-  font-size: $font-sm;
-  a { color: $brutal-muted; text-decoration: none; }
-  a:hover { color: $color-yellow; }
-  &__out { display: contents; }
-  &__out button {
-    background: none; border: 0; padding: 0; cursor: pointer;
-    font: inherit; color: $brutal-muted; text-transform: uppercase;
-  }
-  &__out button:hover { color: $color-yellow; }
+  font-size: $font-lg; // .l-topbar__btn sizes itself down from this, like the topbar
+  // button_to wraps the logout in a form — collapse it so the button sits in
+  // the flex row exactly like the anchors (same trick as .l-topbar__inline).
+  form { margin: 0; display: contents; }
 }
 
 // Generic band: full-width background, content inset by the gutter, headers loud.

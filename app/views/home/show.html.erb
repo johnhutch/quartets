@@ -4,12 +4,14 @@
     background runs edge to edge; content is inset (never flush) except things that
     bleed on purpose (the wordmark, the fork titles). Copy lives in en.yml. %>
 <div class="l-home">
+  <%# Same outline buttons as the subpage topbar's auth group, same order. %>
   <div class="l-home-auth">
     <% if user_signed_in? %>
-      <%= link_to "Your stuff", puzzles_path %>
-      <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-home-auth__out" %>
+      <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
+      <%= link_to "Your stuff", puzzles_path, class: "l-topbar__btn" %>
     <% else %>
-      <%= link_to "Log in", new_user_session_path %>
+      <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
+      <%= link_to "Sign up", new_user_registration_path, class: "l-topbar__btn" %>
     <% end %>
   </div>
 
