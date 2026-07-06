@@ -17,17 +17,19 @@ class PlayController < ApplicationController
     # The play gate (ADR-0008): a complete puzzle plays for anyone with the link
     # (published or just unlisted); an incomplete one effectively doesn't exist —
     # its owner is bounced to the editor, everyone else (and unknown tokens) 404.
+    # The owner of a complete puzzle doesn't play it (they know the answers —
+    # no self-earned trophies or stats): they see the board revealed.
     case Playability.new(@puzzle, owner: @puzzle && owns?(@puzzle)).status
     when :editable then return redirect_to(edit_puzzle_path(@puzzle))
     when :missing  then return head(:not_found)
+    when :owned    then @owned_view = true and return
     end
 
-    # One play per non-owner (ADR-0009, ADR-0012): once they've finished a puzzle
-    # that isn't their own, show the reconstructed finished board instead of a
-    # fresh one. Owners are never gated (they replay to test). Logged-in players
-    # are keyed by account; anonymous players by their player_token (best-effort —
-    # clearing the cookie still lets a stranger replay, which is fine).
-    @my_attempt = finished_attempt unless owns?(@puzzle)
+    # One play per player (ADR-0009, ADR-0012): once they've finished a puzzle,
+    # show the reconstructed finished board instead of a fresh one. Logged-in
+    # players are keyed by account; anonymous players by their player_token
+    # (best-effort — clearing the cookie still lets a stranger replay, fine).
+    @my_attempt = finished_attempt
   end
 
   private

@@ -46,7 +46,9 @@
     <p class="m-byline">by <%= @puzzle.author_name %></p>
   <% end %>
 
-  <% if @my_attempt %>
+  <% if @owned_view %>
+    <%= render "play/revealed", puzzle: @puzzle %>
+  <% elsif @my_attempt %>
     <%= render "play/result", puzzle: @puzzle, attempt: @my_attempt %>
   <% else %>
     <%= render "play/board", puzzle: @puzzle %>

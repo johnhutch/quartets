@@ -3,13 +3,15 @@
 # the game posts here on game over and ignores the response.
 class AttemptsController < ApplicationController
   include AnonymousPlayer
+  include Creator # owns? — owners can't record plays on their own puzzles
 
   def create
     # The same play gate as play#show (ADR-0008): any complete puzzle records,
-    # listed or not; incomplete or unknown → 404 (nothing to play). One rule, one
-    # place (Playability) — the recorder doesn't need the owner/editor branch.
+    # listed or not; incomplete or unknown → 404 (nothing to play). Owners get
+    # the same 404 — you don't play your own, so nothing to record. One rule,
+    # one place (Playability).
     puzzle = Puzzle.find_by(share_token: params[:share_token])
-    return head :not_found unless Playability.new(puzzle).playable?
+    return head :not_found unless Playability.new(puzzle, owner: puzzle && owns?(puzzle)).playable?
 
     # One recorded play per logged-in user (ADR-0009): a repeat POST just returns
     # their existing result instead of stacking duplicate attempts. Anonymous

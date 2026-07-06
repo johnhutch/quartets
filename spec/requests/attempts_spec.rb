@@ -31,6 +31,22 @@ RSpec.describe "Attempts", type: :request do
       expect(attempt.guesses.first["colors"]).to eq(%w[blue blue blue blue])
     end
 
+    # Owners never play their own puzzles (Playability) — a POST from the owner
+    # records nothing, so their trophies and stats can't be self-padded.
+    it "refuses to record the owner playing their own puzzle" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:published_puzzle, user: user)
+
+      expect {
+        post play_attempts_path(puzzle.share_token), params: {
+          attempt: { solved: true, mistakes_count: 0 }
+        }, as: :json
+      }.not_to change(Attempt, :count)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
     it "returns the emoji cube for the just-finished play" do
       puzzle = create(:published_puzzle)
 

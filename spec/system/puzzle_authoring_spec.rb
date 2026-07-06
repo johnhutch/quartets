@@ -84,7 +84,10 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     expect(page).to have_content(/phone-authored.*is published!/i)
     expect(page).to have_content(/share it with your friends and enemies/i)
     expect(page).to have_css(".m-publish-prompt--done button[data-action='share#share']")
-    expect(page).to have_css(".m-card", count: 16)
+    # The author sees their own board revealed, not playable — owners don't play
+    # their own puzzles (no self-earned trophies or stats).
+    expect(page).to have_css(".m-game__group", count: 4)
+    expect(page).to have_no_css("[data-controller='game']")
   end
 
   # Fills one color block: its four answers plus the category.
