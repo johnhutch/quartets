@@ -39,6 +39,19 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(long_w).to be_within(2).of(short_w)
   end
 
+  it "keeps the remaining tiles the same height after a group is solved" do
+    visit play_path(puzzle.share_token)
+
+    before_h = find(".m-card", text: /\Acat\z/i).evaluate_script("this.offsetHeight")
+    solve(answers[:green])
+    expect(page).to have_css(".m-card", count: 12)
+
+    # The board's CLS min-height reservation must shrink with the grid — otherwise
+    # the leftover space stretches the remaining rows and the tiles grow.
+    after_h = find(".m-card", text: /\Acat\z/i).evaluate_script("this.offsetHeight")
+    expect(after_h).to be_within(2).of(before_h)
+  end
+
   it "reveals every group and declares a win" do
     visit play_path(puzzle.share_token)
 
