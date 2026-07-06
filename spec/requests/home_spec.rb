@@ -75,16 +75,20 @@ RSpec.describe "Home", type: :request do
     it "suppresses the global topbar but keeps a Primary nav landmark" do
       get root_path
 
-      expect(response.body).not_to include("l-topbar")         # the global nav is killed here
+      # The global nav bar is killed here (the auth chip may still borrow its
+      # .l-topbar__btn button chrome — that's chrome, not the bar).
+      expect(response.body).not_to include('<header class="l-topbar">')
       expect(response.body).to include('aria-label="Primary"') # the fork carries the landmark
     end
 
     context "the floating auth chip" do
-      it "offers a log-in link when logged out" do
+      it "offers log-in and sign-up buttons when logged out, styled like the subpage topbar" do
         get root_path
 
         expect(response.body).to include("Log in")
         expect(response.body).to include(new_user_session_path)
+        expect(response.body).to include(new_user_registration_path)
+        expect(response.body.scan("l-topbar__btn").size).to be >= 2 # the shared button chrome
       end
 
       it "links to your stuff when signed in" do
