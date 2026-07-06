@@ -885,11 +885,20 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   .theme-brutal .m-fork__inner { padding: 0 $home-pad clamp(#{$space-lg}, 8vw, 4.5rem); }
 }
 
-// JUMP IN — dark band; real puzzles as a big oversized title list (no cards).
-// Width-capped by the band's default child max-width; the bg stays full-bleed.
+// JUMP IN — real puzzles as a big oversized title list (no cards). Content is
+// width-capped and centered; the band itself lifts off the page with a faint
+// charcoal + hairline-pinstripe background (full-bleed, cassette-label quiet).
+.theme-brutal .m-band--strip {
+  text-align: center; // centers the head + CTA sticker; the flex rows ignore it
+  background:
+    repeating-linear-gradient(-45deg, rgba($brutal-ink, 0.04) 0 2px, transparent 2px 14px)
+    #131313;
+
+  > * { margin-inline: auto; }
+}
 .theme-brutal .m-titles {
   list-style: none;
-  margin: 0;
+  margin: 0 auto; // the band caps this at 62rem; auto keeps the block centered
   padding: 0;
   border-top: 2px solid rgba($brutal-ink, 0.25);
 }
