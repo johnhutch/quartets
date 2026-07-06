@@ -341,6 +341,8 @@ export default class extends Controller {
 
   render() {
     this.boardTarget.innerHTML = ""
+    // Shrink the board's reserved min-height along with the grid (see .m-board).
+    this.boardTarget.style.setProperty("--rows", Math.max(1, Math.ceil(this.cards.length / 4)))
     this.cards.forEach((card) => {
       const tile = document.createElement("button")
       tile.type = "button"

@@ -13,10 +13,14 @@
   // (game_controller.js) actually has something to shrink against.
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: $grid-gap;
-  // Reserve the 4-row height up front. The board ships empty in the HTML and
+  // Reserve the row height up front. The board ships empty in the HTML and
   // game_controller.js injects the 16 tiles on connect — without this the board
   // pops from 0 to full height and shoves everything below it down (CLS).
-  min-height: calc(#{$card-min-h} * 4 + #{$grid-gap} * 3);
+  // --rows tracks the live tile count (game_controller render()): as groups
+  // solve and leave the grid, the reservation shrinks with them — otherwise the
+  // leftover min-height stretches the remaining rows and the tiles grow.
+  --rows: 4;
+  min-height: calc(#{$card-min-h} * var(--rows) + #{$grid-gap} * (var(--rows) - 1));
 }
 
 // Positioning context for the status overlay (see .m-game__status), so a
