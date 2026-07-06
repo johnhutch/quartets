@@ -524,17 +524,66 @@ body.theme-brutal {
 // Category fieldsets: keep the bright group color, frame it brutally, and tab
 // the legend as a black chip so it reads on any of the four fills.
 .theme-brutal .m-group {
+  position: relative; // anchors the color-swap menu under the legend
   border: $brutal-border solid $brutal-ink;
   border-radius: 0;
   box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.25);
   color: #000;
 
   legend {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
     background: $brutal-ink;
     color: $brutal-paper;
     padding: $space-xs $space-sm;
     border: $brutal-border solid $brutal-ink;
   }
+}
+
+// The pencil in the legend chip — opens the color-swap menu.
+.theme-brutal .m-group__recolor {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 2px; // a little extra tap area beyond the glyph
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  .m-icon { width: 1em; height: 1em; }
+  &:hover { color: $color-purple; }
+}
+
+// The color menu: a hard dropdown of the four fills, current one dimmed.
+// The explicit display would beat the UA [hidden] rule (same trap as
+// .m-tooltip) — restate it.
+.theme-brutal .m-group__colors[hidden] { display: none; }
+.theme-brutal .m-group__colors {
+  position: absolute;
+  top: $space-md;
+  left: $space-md;
+  z-index: 20;
+  display: grid;
+  gap: 4px;
+  padding: $space-xs;
+  background: $brutal-paper;
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: 6px 6px 0 rgba(#000, 0.45);
+}
+.theme-brutal .m-group__color {
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: $font-sm;
+  text-transform: uppercase;
+  text-align: left;
+  padding: $space-xs $space-md;
+  border: 2px solid #000;
+  color: #000;
+  cursor: pointer;
+  @each $name, $color in $category-colors { &--#{$name} { background: $color; } }
+  &:hover:not(:disabled) { filter: brightness(1.08); }
+  &:disabled { opacity: 0.35; cursor: default; }
 }
 
 // --- Draft badge on the dashboard -------------------------------------------

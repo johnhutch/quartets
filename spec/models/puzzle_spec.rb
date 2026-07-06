@@ -99,6 +99,35 @@ RSpec.describe Puzzle, type: :model do
       expect(puzzle).not_to be_valid
       expect(puzzle.errors[:groups]).to be_present
     end
+
+    # Sixteen answers means sixteen *different* answers — the game keys tiles by
+    # word text, so a repeat would be unplayable (and it's just a broken puzzle).
+    describe "duplicate answers" do
+      it "rejects a published puzzle that repeats a word across groups" do
+        puzzle = build(:published_puzzle)
+        puzzle.groups.last.words = puzzle.groups.first.words.first(1) + %w[x y z]
+        expect(puzzle).not_to be_valid
+        expect(puzzle.errors[:groups].join).to match(/same answer/i)
+      end
+
+      it "rejects a repeat within one group" do
+        puzzle = build(:published_puzzle)
+        puzzle.groups.first.words = %w[twin twin odd end]
+        expect(puzzle).not_to be_valid
+      end
+
+      it "catches case-and-whitespace disguises" do
+        puzzle = build(:published_puzzle)
+        puzzle.groups.last.words = ["  #{puzzle.groups.first.words.first.upcase} ", "x", "y", "z"]
+        expect(puzzle).not_to be_valid
+      end
+
+      it "leaves drafts alone — dupes are fine while still typing" do
+        puzzle = build(:puzzle, status: :unlisted)
+        puzzle.groups << build(:group, puzzle: puzzle, color: :blue, words: %w[twin twin])
+        expect(puzzle).to be_valid
+      end
+    end
   end
 
   describe "#complete?" do

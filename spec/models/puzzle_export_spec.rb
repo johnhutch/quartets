@@ -14,7 +14,7 @@ RSpec.describe PuzzleExport do
 
     first = hash["groups"].first
     expect(first.keys).to contain_exactly("color", "description", "words")
-    expect(first["words"]).to eq(%w[alpha bravo charlie delta])
+    expect(first["words"]).to eq(%w[cat dog owl fox]) # the factory's blue group
     expect(first["description"]).to be_present
   end
 

@@ -41,6 +41,7 @@ class Puzzle < ApplicationRecord
 
   validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
+  validate :no_duplicate_answers, if: :published?
 
   # Fully filled out and ready to publish: a title, all four groups, and every
   # group has its four words + a category. Drives the "Save draft"→"Finish"
@@ -62,5 +63,14 @@ class Puzzle < ApplicationRecord
     unless colors.uniq.sort == Group.colors.keys.sort
       errors.add(:groups, "must use all four distinct colors")
     end
+  end
+
+  # Sixteen answers means sixteen *different* answers. The game keys tiles by
+  # their word text (see game_controller), so a repeat — across groups or within
+  # one — is unplayable. Case/whitespace don't make words different.
+  def no_duplicate_answers
+    words = groups.reject(&:marked_for_destruction?).flat_map(&:filled_words).map(&:downcase)
+    dupes = words.tally.select { |_, count| count > 1 }.keys
+    errors.add(:groups, "use the same answer more than once: #{dupes.join(', ')}") if dupes.any?
   end
 end

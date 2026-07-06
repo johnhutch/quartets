@@ -75,13 +75,35 @@
     </div>
   </fieldset>
 
-  <%# Groups in swellgarfo order (blue → green → yellow → purple), and within
-      each block: answers first, then the category — matching the form muscle
-      memory the user already has. %>
-  <%= f.fields_for :groups do |gf| %>
-    <fieldset class="m-group m-group--<%= gf.object.color %>">
-      <legend><%= gf.object.color.to_s.titleize %></legend>
-      <%= gf.hidden_field :color %>
+  <%# Groups easiest → hardest (yellow → green → blue → purple) regardless of
+      stored position, so a color swap reorders on the next load. Within each
+      block: answers first, then the category — matching the form muscle memory
+      the user already has. %>
+  <% ordered_groups = puzzle.groups.sort_by { |g| PuzzlesController::FORM_COLOR_ORDER.index(g.color.to_s) || 4 } %>
+  <%= f.fields_for :groups, ordered_groups do |gf| %>
+    <fieldset class="m-group m-group--<%= gf.object.color %>"
+              data-controller="colorswap"
+              data-colorswap-color-value="<%= gf.object.color %>"
+              data-action="click@window->colorswap#closeOnOutside">
+      <legend>
+        <span data-colorswap-target="name"><%= gf.object.color.to_s.titleize %></span>
+        <%# Swap this block's color with another's — the two boxes recolor in
+            place; the difficulty order reasserts itself on the next load. %>
+        <button type="button" class="m-group__recolor" data-action="colorswap#toggle"
+                data-colorswap-target="toggle"
+                aria-label="Change color" aria-haspopup="menu" aria-expanded="false">
+          <%= icon(:edit) %>
+        </button>
+      </legend>
+      <div class="m-group__colors" data-colorswap-target="menu" role="menu" hidden>
+        <% PuzzlesController::FORM_COLOR_ORDER.each do |color| %>
+          <button type="button" role="menuitem" class="m-group__color m-group__color--<%= color %>"
+                  data-action="colorswap#choose" data-colorswap-color-param="<%= color %>">
+            <%= color.titleize %>
+          </button>
+        <% end %>
+      </div>
+      <%= gf.hidden_field :color, data: { colorswap_target: "field" } %>
       <%= gf.hidden_field :position %>
 
       <div class="m-form__field">
@@ -92,7 +114,8 @@
           <%= text_field_tag "#{gf.object_name}[words][]",
                 Array(gf.object.words)[i],
                 placeholder: "Word #{i + 1}",
-                "aria-label": "#{gf.object.color.to_s.titleize} answer #{i + 1}" %>
+                "aria-label": "#{gf.object.color.to_s.titleize} answer #{i + 1}",
+                data: { colorswap_target: "answer" } %>
         <% end %>
       </div>
 

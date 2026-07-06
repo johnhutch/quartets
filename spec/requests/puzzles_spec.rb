@@ -60,12 +60,35 @@ RSpec.describe "Puzzles", type: :request do
       mine = Puzzle.last
       mine.update!(status: :unlisted)
       %i[blue green yellow purple].each_with_index do |color, i|
-        mine.groups.create!(color: color, description: color.to_s, words: %w[a b c d], position: i)
+        # Distinct words per group — a repeat would (rightly) block the publish.
+        words = (1..4).map { |n| "#{color}#{n}" }
+        mine.groups.create!(color: color, description: color.to_s, words: words, position: i)
       end
 
       patch publish_puzzle_path(mine)
 
       expect(mine.reload).to be_published
+    end
+  end
+
+  describe "authoring form block order (easiest → hardest)" do
+    it "renders a new form yellow, green, blue, purple" do
+      get new_puzzle_path
+
+      positions = %w[yellow green blue purple].map { |c| response.body.index("m-group--#{c}") }
+      expect(positions).to all(be_present)
+      expect(positions).to eq(positions.sort)
+    end
+
+    it "orders an existing puzzle's edit form by color, not stored position" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:puzzle, :complete, user: user) # factory positions: blue,green,yellow,purple
+
+      get edit_puzzle_path(puzzle)
+
+      positions = %w[yellow green blue purple].map { |c| response.body.index("m-group--#{c}") }
+      expect(positions).to eq(positions.sort)
     end
   end
 

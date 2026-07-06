@@ -72,6 +72,11 @@
       background: $color;
     }
   }
+
+  // Fat-finger insurance: more air between the stacked answer inputs, and a
+  // clear break before the Category field so taps land where they aim.
+  .m-form__field { gap: $space-sm; }
+  .m-form__field + .m-form__field { margin-top: $space-md; }
 }
 
 // --- Emoji result cube (🟨🟩🟦🟪) — shareable bragging grid ------------
@@ -702,6 +707,14 @@
   &__field {
     display: grid;
     gap: $space-xs;
+  }
+
+  // Roomy tap targets + readable text. ≥16px also stops iOS zooming the page
+  // every time an input takes focus.
+  input:not([type="checkbox"]),
+  textarea {
+    font-size: $font-lg;
+    padding: $space-sm;
   }
 
   // Explains the autosave up front so the (rare) Save button feels optional.
