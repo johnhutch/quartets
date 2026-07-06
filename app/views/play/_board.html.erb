@@ -7,6 +7,7 @@
         controller: "game",
         game_max_mistakes_value: Puzzle::MAX_MISTAKES,
         game_record_url_value: play_attempts_path(puzzle.share_token),
+        game_events_url_value: play_events_path(puzzle.share_token),
         game_puzzle_value: {
           groups: puzzle.groups.map { |g|
             { color: g.color, description: g.description, words: g.filled_words }

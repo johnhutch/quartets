@@ -15,8 +15,10 @@ RSpec.describe "Static pages + footer", type: :request do
   end
 
   describe "the site footer" do
-    it "rides along site-wide with credit, socials, license, privacy, and the NYT disclaimer" do
-      get root_path
+    # The homepage fronts its own footer-as-section; every other page gets the
+    # global one. The archive is a representative sub-page.
+    it "rides along sub-pages with credit, socials, license, privacy, and the NYT disclaimer" do
+      get play_index_path
 
       expect(response.body).to include("l-footer")
       expect(response.body).to include("johnhutch.com")          # created-by credit

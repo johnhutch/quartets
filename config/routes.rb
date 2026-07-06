@@ -21,6 +21,9 @@ Rails.application.routes.draw do
   get "/p/:share_token", to: "play#show", as: :play
   # The game posts a finished play here for stats (anonymous, cookie-attributed).
   post "/p/:share_token/attempts", to: "attempts#create", as: :play_attempts
+  # And beacons game_started here on the first tile tap, so we can tell a started-
+  # but-abandoned game from one that was only ever opened.
+  post "/p/:share_token/events", to: "events#create", as: :play_events
 
   # Public homepage — a random featured puzzle, no login. The admin dashboard
   # lives at /puzzles.

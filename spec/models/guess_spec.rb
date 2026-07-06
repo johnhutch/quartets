@@ -24,6 +24,20 @@ RSpec.describe Guess do
     end
   end
 
+  describe "#elapsed_ms — per-guess timing" do
+    it "reads the ms-since-start the game records (string key)" do
+      expect(Guess.new("colors" => %w[blue blue blue blue], "t" => 4200).elapsed_ms).to eq(4200)
+    end
+
+    it "coerces a stringy value to an integer" do
+      expect(Guess.new(colors: %w[blue blue blue blue], t: "4200").elapsed_ms).to eq(4200)
+    end
+
+    it "is nil on plays recorded before timing shipped" do
+      expect(Guess.new(colors: %w[blue blue blue blue]).elapsed_ms).to be_nil
+    end
+  end
+
   describe "correctness — derived from colors (the Connections rule)" do
     it "is correct when all four tiles share one color" do
       expect(Guess.new(colors: %w[purple purple purple purple])).to be_correct

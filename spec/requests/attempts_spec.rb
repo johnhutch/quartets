@@ -48,6 +48,38 @@ RSpec.describe "Attempts", type: :request do
       expect(response.parsed_body["cube"]).to eq("🟦🟦🟦🟦\n🟦🟦🟦🟩")
     end
 
+    it "records the play timing — total duration and per-guess t" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token), params: {
+        attempt: {
+          solved: true,
+          mistakes_count: 0,
+          duration_ms: 18_500,
+          guesses: [{ words: %w[a b c d], colors: %w[blue blue blue blue], t: 4200 }]
+        }
+      }, as: :json
+
+      attempt = Attempt.last
+      expect(attempt.duration_ms).to eq(18_500)
+      expect(attempt.guesses.first["t"]).to eq(4200)
+      expect(attempt.guess_log.first.elapsed_ms).to eq(4200)
+    end
+
+    it "still records a play with no timing (older client, untimed)" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token), params: {
+        attempt: { solved: true, mistakes_count: 0,
+                   guesses: [{ words: %w[a b c d], colors: %w[blue blue blue blue] }] }
+      }, as: :json
+
+      attempt = Attempt.last
+      expect(response).to have_http_status(:created)
+      expect(attempt.duration_ms).to be_nil
+      expect(attempt.guess_log.first.elapsed_ms).to be_nil
+    end
+
     it "returns a full share block — title, cube, and a direct link to the puzzle" do
       puzzle = create(:published_puzzle, title: "Capital Cities")
 

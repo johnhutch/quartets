@@ -8,9 +8,17 @@ class Guess
   def initialize(raw)
     @colors = Array(raw["colors"] || raw[:colors]).map(&:to_s)
     @words  = Array(raw["words"] || raw[:words]).map(&:to_s)
+    # ms since the game clock started, when present. Absent (nil) on plays
+    # recorded before timing shipped.
+    @t = (raw["t"] || raw[:t])&.to_i
   end
 
   attr_reader :colors, :words
+
+  # When this guess was submitted, in ms since the clock started (nil if untimed).
+  def elapsed_ms
+    @t
+  end
 
   def correct?
     colors.any? && colors.uniq.size == 1
