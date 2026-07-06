@@ -48,6 +48,9 @@ $grid-gap:      $space-sm;
 $card-min-h:    4.5rem; // board tile floor; .m-board reserves 4 rows of this so
                         // JS-injected tiles don't reflow the page (CLS)
 $content-width: 640px; // game board is happiest narrow + mobile-first
+$brutal-container: 900px; // brutal pages' .l-container cap (wordmark needs the room)
+$brutal-column: 868px;    // the text column inside it ($brutal-container − 2×$space-md
+                          // padding) — the homepage bands center their content on this
 $form-width:    28rem;  // ~half the brutal container — authoring forms read better narrow
 $bp-stack:      30rem;  // below this, side-by-side controls stack vertically (phones)
 $bp-nav:        40rem;  // below this, the topbar nav collapses to a hamburger

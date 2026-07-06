@@ -38,7 +38,7 @@ body.theme-brutal {
 
   // Give the brutalist pages a wider canvas so the oversized wordmark has room
   // to be big and bleed, instead of wrapping inside the narrow play column.
-  .l-container { max-width: 900px; }
+  .l-container { max-width: $brutal-container; }
 
   // Multicolor ribbon spans (wordmark + display headings). Light category
   // colors read cleanly on the near-black page.
@@ -302,7 +302,7 @@ body.theme-brutal {
 
 // --- Flash messages (live in <body>, above .l-container) --------------------
 .theme-brutal .flash {
-  max-width: 900px;
+  max-width: $brutal-container;
   margin: $space-md auto;
   padding: $space-sm $space-md;
   font-family: $font-display;
@@ -778,11 +778,13 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   form { margin: 0; display: contents; }
 }
 
-// Generic band: full-width background, content inset by the gutter, headers loud.
+// Generic band: full-width background, content on the same centered column the
+// subpages' .l-container gives their text ($brutal-column) — the padding grows
+// past the gutter on wide screens so children align to the column without
+// per-child max-widths (and ch-capped paragraphs keep their left edge).
 .theme-brutal .m-band {
-  padding: clamp(#{$space-lg}, 9vw, 5rem) $home-pad;
-
-  > * { max-width: 62rem; } // keep lines readable on wide screens; bg stays full
+  padding-block: clamp(#{$space-lg}, 9vw, 5rem);
+  padding-inline: max(#{$home-pad}, calc((100% - #{$brutal-column}) / 2));
 
   &__head {
     font-family: $font-display;
@@ -804,10 +806,13 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 .theme-brutal .m-hero {
   position: relative;
   overflow: hidden;
-  padding: clamp(#{$space-xl}, 8vw, 5rem) $home-pad clamp(#{$space-lg}, 6vw, 3.5rem);
+  padding-block: clamp(#{$space-xl}, 8vw, 5rem) clamp(#{$space-lg}, 6vw, 3.5rem);
+  // Same centered column as the bands (and the subpages' text).
+  padding-inline: max(#{$home-pad}, calc((100% - #{$brutal-column}) / 2));
   border-bottom: $brutal-border solid $brutal-ink;
 
-  .m-wordmark { max-width: none; font-size: clamp(3.25rem, 19vw, 12.5rem); margin: 0 0 $space-md -0.07em; }
+  // 10.5rem caps QUARTETS at ~the column width; below the cap 19vw fills phones.
+  .m-wordmark { max-width: none; font-size: clamp(3.25rem, 19vw, 10.5rem); margin: 0 0 $space-md -0.07em; }
   .m-lede { max-width: 40ch; font-size: $font-lg; font-weight: 700; margin-bottom: $space-xs; }
 }
 .theme-brutal .m-hero__pitch {
@@ -844,7 +849,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 // colors, bottom-right, behind nothing — pure decoration.
 .theme-brutal .m-hero__quads {
   position: absolute;
-  right: $home-pad;
+  right: max(#{$home-pad}, calc((100% - #{$brutal-column}) / 2)); // hug the column edge
   bottom: clamp(#{$space-lg}, 6vw, 3.5rem);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -871,12 +876,10 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
     repeating-linear-gradient(-45deg, rgba($brutal-ink, 0.04) 0 2px, transparent 2px 14px)
     #131313;
   border-bottom: $brutal-border solid $brutal-ink;
-
-  > * { margin-inline: auto; }
 }
 .theme-brutal .m-titles {
   list-style: none;
-  margin: 0 auto; // the band caps this at 62rem; auto keeps the block centered
+  margin: 0; // spans the band's column, same width as every other section
   padding: 0;
   border-top: 2px solid rgba($brutal-ink, 0.25);
 }
@@ -906,7 +909,6 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 // and bleeding off the right edge.
 .theme-brutal .m-band--why { overflow: hidden; } // clip the bleeding board
 .theme-brutal .m-why {
-  max-width: none;
   display: grid;
   grid-template-columns: minmax(14rem, 0.85fr) 1.15fr;
   gap: clamp(#{$space-lg}, 5vw, 4rem);
@@ -949,7 +951,9 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   gap: 6px;
   transform: rotate(-2.5deg);
   margin: $space-md 0;
-  margin-right: calc(-1 * #{$home-pad}); // bleed off the right edge
+  // Bleed off the viewport's right edge (50% is this grid column's width, 50vw
+  // overshoots past it; the band's overflow:hidden clips the excess).
+  margin-right: calc(50% - 50vw);
 }
 .theme-brutal .m-winrow {
   border: $brutal-border solid #000;
@@ -981,9 +985,10 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   border-top: $brutal-border solid $brutal-ink;
 }
 .theme-brutal .m-manifesto {
-  max-width: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  // 10rem min keeps all the columns on one row inside the band's column;
+  // narrower screens auto-fit down to two, then one.
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: clamp(#{$space-lg}, 4vw, 3rem) clamp(#{$space-lg}, 4vw, 3.5rem);
   margin: 0 0 $space-xl;
   // Only the band's own multicolor head gets color; everything in the columns is
