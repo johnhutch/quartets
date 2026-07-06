@@ -90,6 +90,32 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     expect(page).to have_no_css("[data-controller='game']")
   end
 
+  # Swapping two blocks' colors: pencil → menu → pick. The two boxes recolor in
+  # place (contents stay put; the easiest→hardest order reasserts on reload) and
+  # autosave persists the exchange.
+  it "swaps two groups' colors from the block's color menu" do
+    user = create(:user)
+    login_as(user, scope: :user)
+    puzzle = create(:puzzle, :complete, user: user)
+    yellow = puzzle.groups.find_by(color: "yellow").tap { |g| g.update!(description: "Sunny") }
+    purple = puzzle.groups.find_by(color: "purple").tap { |g| g.update!(description: "Grape") }
+
+    visit edit_puzzle_path(puzzle)
+    within(".m-group--yellow") do
+      find(".m-group__recolor").click # the legend's pencil (aria-label "Change color")
+      click_button "Purple"
+    end
+
+    # Live: both boxes recolor in place, contents unmoved.
+    expect(find(".m-group--purple")).to have_field("Category", with: "Sunny")
+    expect(find(".m-group--yellow")).to have_field("Category", with: "Grape")
+
+    # Autosave persists the exchange.
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
+    expect(yellow.reload.color).to eq("purple")
+    expect(purple.reload.color).to eq("yellow")
+  end
+
   # Fills one color block: its four answers plus the category.
   def fill_group(color, words, category)
     within(".m-group--#{color}") do

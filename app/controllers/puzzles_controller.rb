@@ -136,10 +136,11 @@ class PuzzlesController < ApplicationController
     )
   end
 
-  # Authoring/form block order: reverse rainbow (purple → blue → green → yellow),
-  # hardest group first. Drives the form blocks (via position) and the answers
-  # list — not the enum's stored integers (blue:0…purple:3) or the shuffled board.
-  FORM_COLOR_ORDER = %w[purple blue green yellow].freeze
+  # Authoring/form block order: easiest → hardest (yellow → green → blue → purple),
+  # the NYT difficulty order. The form sorts its blocks by this (see _form), so a
+  # color swap reorders on the next load — not the enum's stored integers
+  # (blue:0…purple:3) or the shuffled board.
+  FORM_COLOR_ORDER = %w[yellow green blue purple].freeze
 
   # The form always shows all four colored blocks, even on a sparse old draft.
   def ensure_four_groups

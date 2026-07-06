@@ -26,6 +26,24 @@ RSpec.describe Group, type: :model do
       other = build(:group, puzzle: create(:puzzle), color: :blue)
       expect(other).to be_valid
     end
+
+    # The authoring form's color-swap updates both groups in one nested save.
+    # Validation has to judge the incoming set, not each record against the
+    # stale DB, or every swap 422s.
+    it "allows two sibling groups to swap colors in one nested save" do
+      puzzle = create(:puzzle, :complete)
+      yellow = puzzle.groups.find_by(color: "yellow")
+      purple = puzzle.groups.find_by(color: "purple")
+
+      puzzle.assign_attributes(groups_attributes: [
+        { id: yellow.id, color: "purple" },
+        { id: purple.id, color: "yellow" }
+      ])
+
+      expect(puzzle.save).to be(true)
+      expect(yellow.reload.color).to eq("purple")
+      expect(purple.reload.color).to eq("yellow")
+    end
   end
 
   describe "draft leniency" do
