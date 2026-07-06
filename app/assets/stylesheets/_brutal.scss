@@ -871,7 +871,8 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 // width-capped and centered; the band itself lifts off the page with a faint
 // charcoal + hairline-pinstripe background (full-bleed, cassette-label quiet).
 .theme-brutal .m-band--strip {
-  text-align: center; // centers the head + CTA sticker; the flex rows ignore it
+  text-align: center; // centers the CTA sticker; the flex rows ignore it
+  .m-band__head { text-align: left; } // heads sit left, like every other band
   background:
     repeating-linear-gradient(-45deg, rgba($brutal-ink, 0.04) 0 2px, transparent 2px 14px)
     #131313;

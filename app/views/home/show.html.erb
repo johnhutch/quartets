@@ -67,9 +67,11 @@
       what this site actually gives you, with a solved board as the graphic so the
       copy never outweighs it. %>
   <section class="m-band m-band--why">
+    <%# Head at band level so it runs the full column, not the pitch grid's
+        narrow left track. %>
+    <h2 class="m-band__head"><%= multicolor(t("home.why.head")) %></h2>
     <div class="m-why">
       <div class="m-why__pitch">
-        <h2 class="m-band__head"><%= multicolor(t("home.why.head")) %></h2>
         <ul class="m-why__list">
           <% t("home.why.features").each do |f| %>
             <li class="m-why__feature">
