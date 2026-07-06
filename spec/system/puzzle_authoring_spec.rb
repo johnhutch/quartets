@@ -83,7 +83,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     expect(Puzzle.last).to be_published
     expect(page).to have_content(/phone-authored.*is published!/i)
     expect(page).to have_content(/share it with your friends and enemies/i)
-    expect(page).to have_css(".m-publish-prompt--done button[data-action='clipboard#copy']")
+    expect(page).to have_css(".m-publish-prompt--done button[data-action='share#share']")
     expect(page).to have_css(".m-card", count: 16)
   end
 

@@ -22,9 +22,9 @@
     <aside class="m-publish-prompt">
       <p class="m-publish-prompt__text">Looking good! Share the link with anyone, or publish it to the site.</p>
       <%= tag.button type: "button", class: "m-btn m-btn--share",
-            data: { controller: "clipboard", clipboard_text_value: play_url(@puzzle.share_token),
-                    action: "clipboard#copy" } do %>
-        <%= icon(:share) %><span data-clipboard-target="label">Share</span>
+            data: { controller: "share", share_url_value: play_url(@puzzle.share_token),
+                    action: "share#share" } do %>
+        <%= icon(:share) %><span data-share-target="label">Share</span>
       <% end %>
       <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
     </aside>
@@ -34,9 +34,9 @@
         <%= multicolor(@puzzle.title) %> is published! Share it with your friends and enemies.
       </p>
       <%= tag.button type: "button", class: "m-btn m-btn--share",
-            data: { controller: "clipboard", clipboard_text_value: play_url(@puzzle.share_token),
-                    action: "clipboard#copy" } do %>
-        <%= icon(:share) %><span data-clipboard-target="label">Share</span>
+            data: { controller: "share", share_url_value: play_url(@puzzle.share_token),
+                    action: "share#share" } do %>
+        <%= icon(:share) %><span data-share-target="label">Share</span>
       <% end %>
     </aside>
   <% end %>
