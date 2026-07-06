@@ -37,16 +37,12 @@ en:
     nameplate: "NoTimes"
     wordmark: "Quartets"
     lede_html: "16 words. 4 groups. 4 mistakes."
-    create:
-      title: "Create"
-      line: "Make your own. Send it to your friends or publish on the site. No signup needed!"
-      cta: "Make a Quartet"
+    hero:
+      pitch: "Make your own — send it to your friends or publish it on the site, no signup needed. Or just solve puzzles made by internet randos. Go for it."
+      create_cta: "Make a Quartet"
+      browse_cta: "Browse the archive"
       aside_html: "Wanna see stats about your puzzles? Or about your own attempts (a trophy case!)? %{signup} whenever."
       signup: "Sign up"
-    play:
-      title: "Play"
-      line: "Wanna just solve puzzles made by internet randos? Go for it." 
-      cta: "Browse the archive"
     strip:
       head: "Jump in"
       by: "by %{author}"
