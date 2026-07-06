@@ -58,6 +58,19 @@ body.theme-brutal {
   a { color: inherit; }
 }
 
+// --- Etched panel: the shared fine-print background --------------------------
+// Near-black lifted one step off the page, with a faint graph-paper grid — the
+// spec-sheet counterpart to the strip band's diagonal pinstripes. Used by the
+// homepage manifesto band and the global footer. Contrast stays WCAG AA on the
+// #111 base: $brutal-ink ≈ 15:1, $brutal-muted ≈ 7.6:1 (the 3.5%-alpha hairlines
+// don't move it).
+@mixin brutal-etched-panel {
+  background:
+    repeating-linear-gradient(0deg,  rgba($brutal-ink, 0.035) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba($brutal-ink, 0.035) 0 1px, transparent 1px 22px)
+    #111;
+}
+
 // --- Wordmark: oversized, bleeds off the left edge --------------------------
 .theme-brutal .m-wordmark {
   font-family: $font-display;
@@ -656,9 +669,11 @@ body.theme-brutal {
 }
 
 .theme-brutal .l-footer {
+  @include brutal-etched-panel;
   border-top: $brutal-border solid $brutal-ink;
   color: $brutal-ink;
   font-family: $font-display;
+  padding-top: $space-md;
   padding-bottom: $space-lg;
 
   a {
@@ -859,6 +874,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   background:
     repeating-linear-gradient(-45deg, rgba($brutal-ink, 0.04) 0 2px, transparent 2px 14px)
     #131313;
+  border-bottom: $brutal-border solid $brutal-ink;
 
   > * { margin-inline: auto; }
 }
@@ -962,9 +978,10 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   .theme-brutal .m-winboard { margin-right: 0; }
 }
 
-// WHY IT'S LIKE THIS — dark band, multicolor head. The manifesto: stark, small
-// text in columns. Angry on purpose.
+// ETHICALLY BUILT — the manifesto: stark, small text in columns, on the shared
+// etched-panel background (same treatment as the global footer).
 .theme-brutal .m-band--about {
+  @include brutal-etched-panel;
   border-top: $brutal-border solid $brutal-ink;
 }
 .theme-brutal .m-manifesto {
