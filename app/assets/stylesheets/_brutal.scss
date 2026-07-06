@@ -58,6 +58,19 @@ body.theme-brutal {
   a { color: inherit; }
 }
 
+// --- Etched panel: the shared fine-print background --------------------------
+// Near-black lifted one step off the page, with a faint graph-paper grid — the
+// spec-sheet counterpart to the strip band's diagonal pinstripes. Used by the
+// homepage manifesto band and the global footer. Contrast stays WCAG AA on the
+// #111 base: $brutal-ink ≈ 15:1, $brutal-muted ≈ 7.6:1 (the 3.5%-alpha hairlines
+// don't move it).
+@mixin brutal-etched-panel {
+  background:
+    repeating-linear-gradient(0deg,  rgba($brutal-ink, 0.035) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba($brutal-ink, 0.035) 0 1px, transparent 1px 22px)
+    #111;
+}
+
 // --- Wordmark: oversized, bleeds off the left edge --------------------------
 .theme-brutal .m-wordmark {
   font-family: $font-display;
@@ -393,11 +406,8 @@ body.theme-brutal {
 // Secondary / "muted" copy bumped to a WCAG-AA grey on the near-black page.
 .theme-brutal {
   .m-auth__lede,
-  .m-home-foot,
   .m-empty,
   .m-form__note,
-  .m-hero__pitch,
-  .m-hero__nowplaying,
   .m-game__mistakes,
   .m-pagination__at { color: $brutal-muted; }
 }
@@ -408,18 +418,6 @@ body.theme-brutal {
   align-items: flex-start;
   justify-content: space-between; // title left, sticker right
   gap: $space-md;
-}
-
-// The create sticker floats over the top-right of the hero instead of taking
-// its own row — keeps it on the same horizontal plane as the wordmark rather
-// than shoving QUARTETS down.
-.theme-brutal .m-hero-brutal { position: relative; }
-
-.theme-brutal .m-hero-brutal__top {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 3;
 }
 
 .theme-brutal .m-play-head h1 { margin-bottom: $space-md; } // pull back interior-heading spacing
@@ -671,9 +669,11 @@ body.theme-brutal {
 }
 
 .theme-brutal .l-footer {
+  @include brutal-etched-panel;
   border-top: $brutal-border solid $brutal-ink;
   color: $brutal-ink;
   font-family: $font-display;
+  padding-top: $space-md;
   padding-bottom: $space-lg;
 
   a {
@@ -750,5 +750,319 @@ body.theme-brutal {
       background: $brutal-ink;
       color: $brutal-paper;
     }
+  }
+}
+
+// --- Homepage launchpad: full-bleed bands, content inset, never boxed ---------
+.theme-brutal .l-home { position: relative; }
+
+// $home-pad: the inset gutter — content never goes flush to the band edge.
+$home-pad: clamp(#{$space-md}, 6vw, 4rem);
+
+// Auth: a small ink chip floating top-right (the killed topbar's lone survivor).
+.theme-brutal .l-home-auth {
+  position: absolute;
+  top: $space-md;
+  right: $home-pad;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: $font-sm;
+  a { color: $brutal-muted; text-decoration: none; }
+  a:hover { color: $color-yellow; }
+  &__out { display: contents; }
+  &__out button {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font: inherit; color: $brutal-muted; text-transform: uppercase;
+  }
+  &__out button:hover { color: $color-yellow; }
+}
+
+// Generic band: full-width background, content inset by the gutter, headers loud.
+.theme-brutal .m-band {
+  padding: clamp(#{$space-lg}, 9vw, 5rem) $home-pad;
+
+  > * { max-width: 62rem; } // keep lines readable on wide screens; bg stays full
+
+  &__head {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    line-height: 0.85;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    margin: 0 0 $space-lg;
+  }
+  &__lead { font-size: $font-lg; font-weight: 700; }
+  &__cta  { margin-top: $space-lg; }
+}
+
+// HERO — one dark masthead band. The wordmark bleeds off the left on purpose;
+// the primary nav is a sticker CTA + a quiet archive link (Play's real front
+// door is the Jump In band below, so it gets no billboard here). The Q-quadrant
+// cluster parks in the bottom-right corner for a hit of brand color.
+.theme-brutal .m-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(#{$space-xl}, 8vw, 5rem) $home-pad clamp(#{$space-lg}, 6vw, 3.5rem);
+  border-bottom: $brutal-border solid $brutal-ink;
+
+  .m-wordmark { max-width: none; font-size: clamp(3.25rem, 19vw, 12.5rem); margin: 0 0 $space-md -0.07em; }
+  .m-lede { max-width: 40ch; font-size: $font-lg; font-weight: 700; margin-bottom: $space-xs; }
+}
+.theme-brutal .m-hero__pitch {
+  margin: 0;
+  max-width: 46ch;
+  color: $brutal-muted;
+}
+.theme-brutal .m-hero__nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-md $space-lg;
+  margin-top: $space-lg;
+}
+.theme-brutal .m-hero__cta { transform: rotate(-2deg); font-size: $font-lg; }
+.theme-brutal .m-hero__browse {
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: $font-sm;
+  color: $brutal-ink;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  &:hover { color: $color-yellow; }
+}
+.theme-brutal .m-hero__aside {
+  margin: $space-md 0 0;
+  font-size: $font-sm;
+  color: $brutal-muted;
+  a { color: $brutal-ink; }
+  a:hover { color: $color-yellow; }
+}
+// The brand's Q-quadrants (see the favicon): a tilted 2×2 of the category
+// colors, bottom-right, behind nothing — pure decoration.
+.theme-brutal .m-hero__quads {
+  position: absolute;
+  right: $home-pad;
+  bottom: clamp(#{$space-lg}, 6vw, 3.5rem);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  transform: rotate(-4deg);
+}
+.theme-brutal .m-hero__quad {
+  width: clamp(2.25rem, 5.5vw, 4.25rem);
+  aspect-ratio: 1;
+  border: $brutal-border solid #000;
+  @each $name, $color in $category-colors { &--#{$name} { background: $color; } }
+}
+// On phones the wordmark is the whole show — the cluster would crowd the nav.
+@media (max-width: $bp-nav) {
+  .theme-brutal .m-hero__quads { display: none; }
+}
+
+// JUMP IN — real puzzles as a big oversized title list (no cards). Content is
+// width-capped and centered; the band itself lifts off the page with a faint
+// charcoal + hairline-pinstripe background (full-bleed, cassette-label quiet).
+.theme-brutal .m-band--strip {
+  text-align: center; // centers the head + CTA sticker; the flex rows ignore it
+  background:
+    repeating-linear-gradient(-45deg, rgba($brutal-ink, 0.04) 0 2px, transparent 2px 14px)
+    #131313;
+  border-bottom: $brutal-border solid $brutal-ink;
+
+  > * { margin-inline: auto; }
+}
+.theme-brutal .m-titles {
+  list-style: none;
+  margin: 0 auto; // the band caps this at 62rem; auto keeps the block centered
+  padding: 0;
+  border-top: 2px solid rgba($brutal-ink, 0.25);
+}
+.theme-brutal .m-titles__row {
+  display: flex;
+  align-items: baseline;
+  gap: $space-md;
+  padding: $space-sm 0;
+  border-bottom: 2px solid rgba($brutal-ink, 0.25);
+  text-decoration: none;
+  color: $brutal-ink;
+}
+.theme-brutal .m-titles__name {
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-size: clamp(1.25rem, 4.4vw, 1.85rem);
+}
+.theme-brutal .m-titles__by { margin-left: auto; text-align: right; font-style: italic; color: $brutal-muted; font-size: $font-sm; }
+.theme-brutal .m-titles__row:hover .m-titles__name { color: $color-yellow; }
+.theme-brutal .m-titles__row:hover { padding-left: $space-sm; transition: padding 0.08s; }
+
+// WHY PLAY HERE — dark band, multicolor head. One line on the rules, then the real
+// pitch, balanced by a heavy graphic: a solved board (the colorful payoff) tilted
+// and bleeding off the right edge.
+.theme-brutal .m-band--why { overflow: hidden; } // clip the bleeding board
+.theme-brutal .m-why {
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.85fr) 1.15fr;
+  gap: clamp(#{$space-lg}, 5vw, 4rem);
+  align-items: center;
+}
+.theme-brutal .m-why__rules {
+  margin: 0 0 $space-lg;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  font-size: $font-sm;
+  color: $brutal-muted;
+}
+.theme-brutal .m-why__list { list-style: none; margin: 0; padding: 0; display: grid; gap: $space-md; }
+.theme-brutal .m-why__feature {
+  padding-top: $space-sm;
+  border-top: 2px solid rgba($brutal-ink, 0.18);
+}
+.theme-brutal .m-why__lead {
+  display: block;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+  font-size: clamp(1.7rem, 4.6vw, 2.6rem);
+  -webkit-text-stroke: 0.01em currentColor;
+}
+.theme-brutal .m-why__note { display: block; margin-top: $space-xs; font-size: $font-sm; color: $brutal-ink; max-width: 30ch; }
+.theme-brutal .m-why__feature:nth-child(5n+1) .m-why__lead { color: $color-yellow; }
+.theme-brutal .m-why__feature:nth-child(5n+2) .m-why__lead { color: $color-green; }
+.theme-brutal .m-why__feature:nth-child(5n+3) .m-why__lead { color: $color-blue; }
+.theme-brutal .m-why__feature:nth-child(5n+4) .m-why__lead { color: $color-purple; }
+.theme-brutal .m-why__feature:nth-child(5n)   .m-why__lead { color: $color-yellow; }
+
+.theme-brutal .m-why__show { position: relative; justify-self: end; width: 100%; }
+.theme-brutal .m-winboard {
+  display: grid;
+  gap: 6px;
+  transform: rotate(-2.5deg);
+  margin: $space-md 0;
+  margin-right: calc(-1 * #{$home-pad}); // bleed off the right edge
+}
+.theme-brutal .m-winrow {
+  border: $brutal-border solid #000;
+  padding: $space-md;
+  color: #000;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba(#000, 0.45);
+  @each $name, $color in $category-colors { &--#{$name} { background: $color; } }
+  &__cat {
+    display: block;
+    font-family: $font-display; font-weight: 700; text-transform: uppercase;
+    letter-spacing: -0.02em; line-height: 1; font-size: $font-lg;
+  }
+  &__words {
+    display: block; margin-top: 4px;
+    font-family: $font-display; font-weight: 500;
+    font-size: $font-sm; letter-spacing: 0.03em;
+  }
+}
+@media (max-width: $bp-stack) {
+  .theme-brutal .m-why { grid-template-columns: 1fr; }
+  .theme-brutal .m-why__show { margin-top: $space-xl; justify-self: stretch; }
+  .theme-brutal .m-winboard { margin-right: 0; }
+}
+
+// ETHICALLY BUILT — the manifesto: stark, small text in columns, on the shared
+// etched-panel background (same treatment as the global footer).
+.theme-brutal .m-band--about {
+  @include brutal-etched-panel;
+  border-top: $brutal-border solid $brutal-ink;
+}
+.theme-brutal .m-manifesto {
+  max-width: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: clamp(#{$space-lg}, 4vw, 3rem) clamp(#{$space-lg}, 4vw, 3.5rem);
+  margin: 0 0 $space-xl;
+  // Only the band's own multicolor head gets color; everything in the columns is
+  // white. Hierarchy comes from weight (display caps) and size, not hue.
+  &__head {
+    margin: 0 0 $space-xs;
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    font-size: $font-base;
+    color: $brutal-ink;
+  }
+  &__body {
+    margin: 0;
+    max-width: 34ch;
+    font-size: $font-sm;
+    line-height: 1.5;
+    color: $brutal-ink;
+  }
+  &__list {
+    list-style: none;
+    margin: $space-sm 0 0;
+    padding: 0;
+    max-width: 34ch;
+  }
+  &__item {
+    margin-top: $space-sm;
+    padding-top: $space-sm;
+    border-top: 1px solid rgba($brutal-ink, 0.18);
+  }
+  &__label {
+    display: block;
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    font-size: $font-sm;
+    color: $brutal-ink;
+    text-decoration: none;
+  }
+  a.m-manifesto__label:hover { color: $color-yellow; }
+  &__note {
+    display: block;
+    margin-top: 2px;
+    font-size: $font-sm;
+    line-height: 1.45;
+    color: $brutal-ink;
+
+    // Inline links inside a note (note_html) — underlined so they read as links.
+    a { text-decoration: underline; }
+    a:hover { color: $color-yellow; }
+  }
+}
+
+// --- Homepage: vary the tilt so nothing leans the same as its neighbor -------
+.theme-brutal .m-band--strip .m-band__cta { display: inline-block; transform: rotate(-1.5deg); }
+
+// --- Homepage footer-as-section: scannable, not a paragraph ------------------
+.theme-brutal .m-foot {
+  border-top: $brutal-border solid $brutal-ink;
+
+  &__by {
+    max-width: 44ch;
+    font-size: $font-lg;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  &__legal {
+    margin-top: $space-xl;
+    font-size: $font-sm;
+    color: $brutal-muted;
+    a { color: $brutal-muted; }
+    a:hover { color: $color-yellow; }
   }
 }

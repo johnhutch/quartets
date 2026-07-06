@@ -65,6 +65,9 @@
     <%# Bypass blocks (WCAG 2.4.1): the first focusable element jumps past the nav
         to <main>. Visually hidden until focused (see .l-skiplink). %>
     <a class="l-skiplink" href="#main">Skip to main content</a>
+    <%# The homepage fronts its own nav (the split panel + floating auth); every
+        other page gets the global topbar. %>
+    <% unless home_page? %>
     <header class="l-topbar">
       <%= link_to multicolor("Quartets"), root_path, class: "l-topbar__home" %>
 
@@ -106,6 +109,7 @@
         </nav>
       </details>
     </header>
+    <% end %>
 
     <%# Status messages (WCAG 4.1.3): errors/alerts announce assertively, the
         rest politely. role + aria-live so a screen reader catches them on
@@ -121,6 +125,10 @@
       <%= yield %>
     </main>
 
-    <%= render "shared/footer" %>
+    <%# The homepage rolls its own footer-as-section (creator + ethics + legal),
+        so the global footer is suppressed there. %>
+    <% unless home_page? %>
+      <%= render "shared/footer" %>
+    <% end %>
   </body>
 </html>

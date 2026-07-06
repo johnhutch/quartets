@@ -413,44 +413,9 @@
   }
 }
 
-// --- Homepage hero ------------------------------------------------------
-.m-hero {
-  text-align: center;
-  margin-bottom: $space-lg;
-
-  &__title {
-    margin-bottom: $space-xs;
-  }
-
-  &__pitch {
-    color: $color-muted;
-    margin-bottom: 0;
-  }
-
-  &__nowplaying {
-    text-align: center;
-    color: $color-muted;
-    font-size: $font-sm;
-  }
-}
-
-.m-home-nav {
-  display: flex;
-  justify-content: center;
-  gap: $space-sm;
-  margin-top: $space-lg;
-}
-
 .m-empty {
   text-align: center;
   padding: $space-xl $space-md;
-  color: $color-muted;
-}
-
-.m-home-foot {
-  margin-top: $space-xl;
-  text-align: center;
-  font-size: $font-sm;
   color: $color-muted;
 }
 

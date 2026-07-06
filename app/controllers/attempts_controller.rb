@@ -40,7 +40,10 @@ class AttemptsController < ApplicationController
     params.require(:attempt).permit(
       :solved,
       :mistakes_count,
-      guesses: [{ words: [], colors: [] }]
+      :duration_ms,
+      # Each guess also carries `t` — ms since the game clock started — for
+      # per-guess timing (the Guess value object reads it back).
+      guesses: [:t, { words: [], colors: [] }]
     )
   end
 end

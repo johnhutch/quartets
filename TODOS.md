@@ -29,12 +29,9 @@ Planned work that has been scoped but not yet started. Read this at session star
 
 ### Follow-ups from the one-play-per-user work (ADR-0009)
 
-- **Gate the home page's featured board too.** `home#show` renders a replayable
-  board even if the player already finished that featured puzzle — now inconsistent
-  with `play#show`, which gates non-owners (signed-in *and* anonymous, ADR-0012).
-  Reuse the pieces that already exist: `PlayController#finished_attempt` (the lookup)
-  + the `play/_result` finished-board partial; render the result when an attempt
-  exists.
+- ~~Gate the home page's featured board too.~~ **Moot** — the homepage rework
+  (2026-06-19) made `home#show` a launchpad with no board at all, so there's
+  nothing to gate.
 - **Claim anonymous attempts on login.** Like the `creator_token` claim (ADR-0005),
   optionally reassign a player's cookie-attributed attempts to their account on
   sign-in so pre-login plays count toward the one-play cap + "✓ Played" badges.
@@ -75,8 +72,12 @@ yet. To build (data + form already exist):
   2. the never-featured puzzle with the most views;
   3. a never-featured puzzle with a **positive upvote score**;
   4. the puzzle with the **oldest `last_featured` date**.
-  Replaces today's `RANDOM()` featured pick in `HomeController`. (Depends on the
-  upvote/downvote feature for step 3, and a views counter for step 2.)
+  (Depends on the upvote/downvote feature for step 3, and a views counter for step
+  2.) **Note:** post-homepage-rework (2026-06-19) there's no single featured board
+  on home anymore — it's a launchpad with a `RANDOM()` strip of ≤5 published puzzles
+  (`HomeController::STRIP_SIZE`). A daily-featured puzzle now needs a *new* home slot
+  decided (e.g. a pinned "Today's quartet" band above the strip), not a drop-in
+  replacement.
   **Unblocks:** the **dashboard streak stat** (deferred from ADR-0011) — there's no
   "today"/consecutive-days notion to count until a daily puzzle exists. When this
   lands, add a Streak cell next to Played · Solved · Solve rate · Created in the
@@ -98,6 +99,42 @@ yet. To build (data + form already exist):
   out). Decide the CSV shape (one row per puzzle with the 4 groups flattened, or
   one row per group).
 
+### Stats — completion analytics
+
+The recorded **guess log** (`attempts.guesses`) already reconstructs almost every
+completion stat retroactively (see the deep dive in the 2026-06-18 session). The
+few signals that are *irreversibly lost* if not captured at play time are now being
+recorded (below); the rest is read-side display work, buildable whenever.
+
+**Capture — shipped 2026-06-18 (recording only, nothing displayed yet):**
+- **Per-guess timing + total duration.** Each guess in the `guesses` jsonb carries
+  `t` (ms since the clock started, which starts on the first tile tap); the attempt
+  carries `duration_ms`. `Guess#elapsed_ms` reads it back; both are nil-safe for
+  pre-timing plays. Game controller measures it; `attempts#create` permits it.
+- **`game_started` / abandons.** New `Event` model (`event_type` enum, `game_started`
+  only for now) + `events#create` beacon, fired on the first tile tap (`/p/:token/
+  events`). Same gate + anonymous `player_token` as attempts. *Abandoned* plays are
+  **derived** later — a `game_started` with no finishing `Attempt`, joined on
+  player_token + puzzle, time-windowed — so there's nothing extra to record.
+
+**Display — TODO (future, no frontend yet):**
+- **Surface the timing + funnel stats.** Player-facing: solve duration, time-to-
+  first-group, personal-best/speed percentile vs other solvers of the same puzzle.
+  Creator/admin-facing: a `started → finished` funnel and **abandon rate** per
+  puzzle (join `Event.game_started` to `Attempt`, ~30-min window). New value objects
+  alongside `PuzzleStats`/`PlayerStats`; the funnel piece overlaps the Analytics-B
+  `FunnelStats` + superuser dashboard, so build it there when that lands. Likely
+  also fold a duration row into `/puzzles/:id/stats` and the dashboard block.
+
+**Capture — still not built (additive, build if/when the stat is wanted):**
+- **Shuffle / deselect counts** *(cheap, low value)*. The game controller tracks
+  both and discards them — recording counts enables "solved without shuffling"
+  flavor trophies. Fold into the attempt next time the payload is touched.
+- **`published_at` on puzzles** *(medium-low)*. `status` changes aren't timestamped
+  (only `created_at`/`updated_at`), so we can't reconstruct *when* a puzzle went
+  public → author-timeline stats (publishing streaks, time-to-first-play) are
+  lossy. Add a timestamp if author-timeline stats reach the roadmap.
+
 ### Quick wins (no decisions needed)
 
 - **Pin the live game-over stamp's arrow too.** `game_controller.js`
@@ -110,7 +147,9 @@ yet. To build (data + form already exist):
 - **Move UI copy into `en.yml` site-wide** (own-branch job — user's call). Specs
   that assert hard-coded copy are brittle: the footer spec broke this session when
   a link was removed. The pattern: copy → `en.yml`, view + spec both reference the
-  i18n key, so a wording/link change is a locale edit, not a test edit.
+  i18n key, so a wording/link change is a locale edit, not a test edit. The
+  **homepage is now fully i18n'd** (`home.*`, incl. the manifesto columns + win-board
+  filler as structured arrays) — use it as the template for the rest.
 - **Richer share payload** — cube + title + direct link in the share sheet
   (verify what commit `b3acb2b` already covers first).
 - **Tune the auto-save debounce** — currently 1000ms

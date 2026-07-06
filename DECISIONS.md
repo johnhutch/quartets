@@ -517,6 +517,43 @@ OS level — the default experience is untouched.
 
 ---
 
+## 0014 — Homepage is a launchpad, not a play surface
+
+**Date:** 2026-06-19
+**Status:** accepted (retires the home featured-board model referenced in 0009/0012)
+
+**Context.** The homepage dropped visitors straight into a playable board — a
+random *featured* puzzle, else a random *unplayed* published one (NYT "today's
+puzzle" style). That only pays off with a deep, curated library; with a thin
+archive it surfaced the same handful and buried the two things that actually
+matter — that you can **play *and* author, free, no signup**. ADR-0009 and 0012
+both left "gate the home featured board" as an unfinished follow-up.
+
+**Decision.**
+- **Home is a launchpad.** `home#show` renders no board and embeds no game. It
+  serves a random strip of ≤5 published puzzles (`HomeController::STRIP_SIZE`,
+  `RANDOM()`) inside full-bleed bands that front **Create/Play**, a "why play here"
+  pitch, and a manifesto footer.
+- **The global topbar + global footer are suppressed on home only** (new
+  `home_page?` helper gates both in the layout). Home fronts its own nav — the
+  Create/Play **fork** carries the `Primary` nav landmark the topbar usually would —
+  and its own footer-as-section. Every other page keeps the global chrome.
+- **The featured/unplayed-puzzle home logic is retired** (the `featured`-on-home
+  path + the "you've done them all" empty state). `featured` as a column/concept is
+  otherwise untouched, reserved for a future daily-puzzle slot (see TODOS).
+- **All homepage copy lives in `en.yml`** (`home.*`).
+
+**Consequence.** The "gate the home featured board" follow-up from 0009/0012 is
+**moot** — there's no board on home to gate. `home_spec.rb` is rewritten to the
+launchpad contract (no embedded game, no login wall, published-only strip, caps at
+STRIP_SIZE, still mints `player_token`); `navigation_spec` + `pages_spec` move their
+topbar/footer assertions to `/play`, since those are no longer site-wide. A future
+daily-featured puzzle needs a *new* home slot decided, not a drop-in replacement.
+The toggleable theme-skins idea (`8bit`/`broadsheet`) is scoped in
+[`docs/THEMES.md`](docs/THEMES.md) but deliberately **not** an ADR until built.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

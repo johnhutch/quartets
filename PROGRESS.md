@@ -1,7 +1,7 @@
 # Progress
 
-**Last updated:** 2026-06-18
-**Active branch:** develop (feature branches per task; `main` is prod/deploy)
+**Last updated:** 2026-06-19
+**Active branch:** homepage-rework (feature branches per task; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
 
@@ -46,8 +46,38 @@ pass** (animations, floating toast, color mistake-boxes, per-tile font-fit — s
 shipped log). The next big threads: the **superuser/admin dashboard** (gates the
 analytics build) and the deferred **discovery surfacing**.
 
+The **homepage was reworked into a launchpad** (`homepage-rework`, this session):
+the old "today's puzzle" drop-in is gone — home now fronts Create/Play, a strip of
+random published puzzles, a "why play here" pitch, and a manifesto footer (full
+suite green). A **toggleable theme-skins plan** (`8bit` + `broadsheet` over the
+`brutal` default) is written to `docs/THEMES.md` on its own branch — scoped, not
+built.
+
 ## Shipped log (most recent first)
 
+- **Homepage rework — launchpad, not a live puzzle (`homepage-rework`).** The old
+  "today's puzzle" home (dropped you into a featured/unplayed board) is replaced by
+  a launchpad of full-bleed color bands: a hero, a two-color **Create/Play fork**
+  (carries the `Primary` nav landmark), a random **jump-in strip** of ≤5 published
+  puzzles (`HomeController::STRIP_SIZE = 5`, `RANDOM()`), a **"Why play here"** pitch
+  with a solved-board + reverse-rainbow-trophy + emoji-cube graphic, and a
+  **manifesto footer-as-section**. Topbar + global footer are suppressed on home
+  only (new `home_page?` helper). **All homepage copy lives in `en.yml`** under
+  `home.*`. `home_spec.rb` rewritten to the new contract (no embedded game, no login
+  wall, published-only strip, caps at STRIP_SIZE, mints player_token);
+  `navigation_spec` + `pages_spec` retargeted to `/play` (topbar + global footer now
+  live only on sub-pages); `accessibility_spec` unchanged (home keeps skip link,
+  `main#main`, one named `<nav>`). 282 green.
+- **Theme-skins plan (`docs/theme-skins-plan` branch, docs only).** Scoped a
+  toggleable skin system in `docs/THEMES.md` for logged-in users: a CSS
+  custom-property refactor of the brutalist theme **first**, then `8bit` (arcade)
+  and `broadsheet` ("The No Times" NYT parody) as thin override layers on the
+  `brutal` default, a `users.theme` column + settings picker, self-hosted per-theme
+  fonts. ADA stance: keep the AA default, engineer both skins to AA, gate
+  un-fixable CRT/scanline effects behind `prefers-reduced-motion` / `prefers-contrast`
+  / `forced-colors` — a warning label is **not** a compliance substitute. Standalone
+  visual comps (8-bit full app + broadsheet homepage) built during the session, kept
+  out of the repo. No code.
 - **Short-cache mutable `public/` files (CDN fix).** `public_file_server.headers`
   pins everything in `public/` for a year — right for digest-stamped `/assets/`,
   wrong for loose files like `robots.txt`/favicon, which got stranded **stale at

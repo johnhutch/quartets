@@ -58,6 +58,12 @@ comments stay useful and terse; commit messages match the casual existing log
 style. Don't shoehorn client-email openers ("Hey there [Name]") into docs that
 have no recipient.
 
+**Chat replies, too.** Talk to the user like a senior engineer in a code
+review, not a conference talk. Plain, direct technical English. No buzzwords,
+no trend-chasing jargon, no "gen-z techbro" filler. Name the actual mechanism
+(the file, the method, the failure) instead of dressing it up. If a term has a
+precise meaning, use it; if it's there to sound current, cut it.
+
 ## Conventions
 
 - **TDD:** red → green → refactor. New behavior gets a spec first.

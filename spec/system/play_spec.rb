@@ -81,6 +81,27 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(attempt).to be_solved
   end
 
+  it "beacons game_started on the first tap and records play timing" do
+    visit play_path(puzzle.share_token)
+
+    # No event until the player actually starts.
+    click_button "cat" # first tile tap fires the game_started beacon
+    expect(page).to have_css(".m-game[data-started='true']")
+    expect(Event.where(puzzle: puzzle).game_started.count).to eq(1)
+
+    # Finish out the win and let the record round-trip land.
+    click_button "dog"
+    click_button "owl"
+    click_button "fox"
+    click_button "Submit"
+    answers.except(:blue).each_value { |group| solve(group) }
+    expect(page).to have_css(".m-game[data-recorded='true']")
+
+    attempt = Attempt.last
+    expect(attempt.duration_ms).to be_present
+    expect(attempt.guesses.first["t"]).to be_present
+  end
+
   it "awards a reverse rainbow for a flawless hardest-first win (ADR-0011)" do
     visit play_path(puzzle.share_token)
 
