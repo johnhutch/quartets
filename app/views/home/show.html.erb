@@ -58,7 +58,7 @@
             <div class="m-titles__row<%= ' is-done' if done %>">
               <span class="m-titles__text">
                 <%= link_to puzzle.title, play_path(puzzle.share_token), class: "m-titles__name" %>
-                <% if puzzle.author_name.present? %><span class="m-titles__by"><%= t("home.strip.by_html", author: author_link(puzzle)) %></span><% end %>
+                <% if puzzle.author_display_name.present? %><span class="m-titles__by"><%= t("home.strip.by_html", author: author_link(puzzle)) %></span><% end %>
               </span>
               <% if done %>
                 <span class="m-check" aria-label="<%= t('home.strip.played') %>">✓</span>

@@ -63,11 +63,12 @@ module ApplicationHelper
 
   # A puzzle's byline name: linked to the creator's public page (/u/:handle)
   # when the puzzle belongs to an account, plain text for anonymous
-  # (cookie-owned) puzzles. The visible name stays the free-text author_name.
+  # (cookie-owned) puzzles. Shows Puzzle#author_display_name — the owner's
+  # display_name when set, else the puzzle's own free-text author_name.
   def author_link(puzzle)
-    return puzzle.author_name unless puzzle.user&.handle
+    return puzzle.author_display_name unless puzzle.user&.handle
 
-    link_to puzzle.author_name, user_page_path(puzzle.user.handle)
+    link_to puzzle.author_display_name, user_page_path(puzzle.user.handle)
   end
 
   # On-page rendering of an EmojiCube: each emoji square becomes a CSS block in

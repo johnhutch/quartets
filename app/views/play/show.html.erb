@@ -42,7 +42,7 @@
   <% end %>
 
   <h1 class="m-play-title"><%= multicolor(@puzzle.title) %></h1>
-  <% if @puzzle.author_name.present? %>
+  <% if @puzzle.author_display_name.present? %>
     <p class="m-byline">by <%= author_link(@puzzle) %></p>
   <% end %>
 

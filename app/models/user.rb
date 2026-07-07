@@ -17,6 +17,11 @@ class User < ApplicationRecord
   before_validation :assign_handle, on: :create
   validates :handle, presence: true, uniqueness: true
 
+  # Optional byline name, asked at signup and editable in settings. When present
+  # it beats the puzzle's free-text author_name everywhere (Puzzle#author_display_name),
+  # so renaming here renames every byline at once.
+  validates :display_name, length: { maximum: 50 }, allow_blank: true
+
   private
 
   def assign_handle

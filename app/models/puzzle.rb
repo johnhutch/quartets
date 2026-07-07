@@ -43,6 +43,13 @@ class Puzzle < ApplicationRecord
   validate :complete_structure, if: :published?
   validate :no_duplicate_answers, if: :published?
 
+  # The byline name every display surface uses: the owner's account-wide
+  # display_name when set (renaming there renames every byline at once), else
+  # the puzzle's own free-text author_name (the whole story for anonymous work).
+  def author_display_name
+    user&.display_name.presence || author_name
+  end
+
   # Fully filled out and ready to publish: a title, all four groups, and every
   # group has its four words + a category. Drives the "Save draft"→"Finish"
   # button label (server-side default; the autosave controller keeps it live).
