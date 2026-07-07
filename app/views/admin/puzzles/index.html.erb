@@ -1,0 +1,23 @@
+<% content_for :title, "Admin · Puzzles" %>
+
+<div class="l-container">
+  <h1><%= multicolor("Admin") %></h1>
+  <%= render "admin/tabs", active: :puzzles %>
+
+  <ul class="m-puzzle-list m-puzzle-list--dash">
+    <%= render partial: "puzzles/row", collection: @puzzles, as: :puzzle,
+          locals: { show_owner: true } %>
+  </ul>
+
+  <% if @total_pages > 1 %>
+    <nav class="m-pagination">
+      <% if @page > 1 %>
+        <%= link_to "← Prev", admin_puzzles_path(page: @page - 1), class: "m-pagination__step" %>
+      <% end %>
+      <span class="m-pagination__at">Page <%= @page %> of <%= @total_pages %></span>
+      <% if @page < @total_pages %>
+        <%= link_to "Next →", admin_puzzles_path(page: @page + 1), class: "m-pagination__step" %>
+      <% end %>
+    </nav>
+  <% end %>
+</div>

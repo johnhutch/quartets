@@ -12,8 +12,8 @@ RSpec.describe "Play (public)", type: :request do
       get play_index_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Out in the world")
-      expect(response.body).not_to include("Still cooking")
+      expect(page_text).to include("Out in the world")
+      expect(page_text).not_to include("Still cooking")
     end
 
     it "marks puzzles the logged-in player has already completed (ADR-0009)" do
@@ -26,8 +26,8 @@ RSpec.describe "Play (public)", type: :request do
 
       get play_index_path
 
-      expect(response.body).to include("Finished it")
-      expect(response.body).to include("Not yet")
+      expect(page_text).to include("Finished it")
+      expect(page_text).to include("Not yet")
       expect(response.body.scan(/class="m-check"/).size).to eq(1) # only the finished one gets the check square
     end
   end
@@ -234,8 +234,8 @@ RSpec.describe "Play (public)", type: :request do
 
         get play_index_path
 
-        expect(response.body).not_to include("Mine Own")
-        expect(response.body).to include("Someone Elses")
+        expect(page_text).not_to include("Mine Own")
+        expect(page_text).to include("Someone Elses")
       end
 
       it "shows your own puzzles when hide_mine is unchecked" do
@@ -243,7 +243,7 @@ RSpec.describe "Play (public)", type: :request do
 
         get play_index_path(hide_mine: "0")
 
-        expect(response.body).to include("Mine Own")
+        expect(page_text).to include("Mine Own")
       end
 
       it "marks completed puzzles with the check square and dims the row" do
@@ -252,7 +252,7 @@ RSpec.describe "Play (public)", type: :request do
 
         get play_index_path
 
-        expect(response.body).to include("Done Deal")
+        expect(page_text).to include("Done Deal")
         expect(response.body).to include("m-check")
         expect(response.body).to include("is-done")
       end
@@ -264,8 +264,8 @@ RSpec.describe "Play (public)", type: :request do
 
         get play_index_path(hide_completed: "1")
 
-        expect(response.body).not_to include("Done Deal")
-        expect(response.body).to include("Fresh One")
+        expect(page_text).not_to include("Done Deal")
+        expect(page_text).to include("Fresh One")
       end
 
       it "offers the filter fold-out to signed-in players only" do

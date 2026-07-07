@@ -297,6 +297,7 @@ export default class extends Controller {
         const data = await response.json().catch(() => ({}))
         this.renderAwards(data.awards)
         this.renderShare(data.cube, data.share)
+        this.renderRating(data.rating)
       }
     } catch {
       // Stats are nice-to-have; a failed save shouldn't break the player's game.
@@ -306,6 +307,12 @@ export default class extends Controller {
   // The trophies + quip block (ADR-0011), rendered server-side from our own
   // partial — trusted markup, so inject it as-is above the shareable cube.
   renderAwards(html) {
+    if (html) this.element.insertAdjacentHTML("beforeend", html)
+  }
+
+  // Post-play rating buttons (published puzzles only) — server-rendered partial;
+  // its own Stimulus controller wires up once injected.
+  renderRating(html) {
     if (html) this.element.insertAdjacentHTML("beforeend", html)
   }
 

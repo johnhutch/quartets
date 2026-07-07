@@ -100,6 +100,24 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(page).to have_no_css(".m-card.is-selected")
   end
 
+  it "rates the puzzle from the game-over screen" do
+    visit play_path(puzzle.share_token)
+
+    answers.each_value { |group| solve(group) }
+
+    # The rating block rides in with the finished-play response.
+    expect(page).to have_content(/was this a good one\?/i)
+    click_button "Hell yeah!"
+    expect(page).to have_css(".m-rating__opt.is-on", text: /hell yeah/i)
+
+    click_button "@!#?@!"
+    expect(page).to have_css(".m-rating__opt.is-on", count: 2)
+
+    attempt = Attempt.last
+    expect(attempt.quality).to eq("hell_yeah")
+    expect(attempt.difficulty).to eq("cursed")
+  end
+
   it "records the finished play for stats" do
     visit play_path(puzzle.share_token)
 

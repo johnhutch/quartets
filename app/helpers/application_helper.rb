@@ -37,6 +37,7 @@ module ApplicationHelper
     menu: 'M3.75 6.75h16.5 M3.75 12h16.5 M3.75 17.25h16.5',
     close: 'M6 18 18 6 M6 6l12 12',
     filter: 'M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3z',
+    thumb: 'M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V3a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904 M6.633 10.25c.806 0 1.533-.446 2.031-1.08 M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375z',
     clear: 'M9.75 9.75l4.5 4.5 M14.25 9.75l-4.5 4.5 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'
   }.freeze
 
@@ -58,6 +59,15 @@ module ApplicationHelper
   # suppressed there (see the layout). Sub-pages keep the topbar.
   def home_page?
     controller_name == "home"
+  end
+
+  # A puzzle's byline name: linked to the creator's public page (/u/:handle)
+  # when the puzzle belongs to an account, plain text for anonymous
+  # (cookie-owned) puzzles. The visible name stays the free-text author_name.
+  def author_link(puzzle)
+    return puzzle.author_name unless puzzle.user&.handle
+
+    link_to puzzle.author_name, user_page_path(puzzle.user.handle)
   end
 
   # On-page rendering of an EmojiCube: each emoji square becomes a CSS block in

@@ -1,0 +1,33 @@
+<%# Post-play rating block (published puzzles only): one positive-only quality
+    vote and one difficulty vote, both stored on the viewer's attempt. Buttons
+    PATCH via rating_controller and light up in place; a revisit renders the
+    saved picks lit. Expects `puzzle` and `attempt` locals. %>
+<div class="m-rating" data-controller="rating"
+     data-rating-url-value="<%= play_rating_path(puzzle.share_token) %>">
+  <div class="m-rating__q">
+    <p class="m-rating__ask">Was this a good one?</p>
+    <div class="m-rating__opts">
+      <button type="button" class="m-rating__opt<%= ' is-on' if attempt&.quality_yeah? %>"
+              data-action="rating#rate" data-rating-field-param="quality" data-rating-choice-param="yeah">
+        <%= icon(:thumb) %><span>Yeah!</span>
+      </button>
+      <button type="button" class="m-rating__opt<%= ' is-on' if attempt&.quality_hell_yeah? %>"
+              data-action="rating#rate" data-rating-field-param="quality" data-rating-choice-param="hell_yeah">
+        <%= icon(:thumb) %><%= icon(:thumb) %><span>Hell yeah!</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="m-rating__q">
+    <p class="m-rating__ask">How hard was it?</p>
+    <div class="m-rating__opts">
+      <% { pretty_easy: "Pretty easy", not_bad: "Not bad",
+           pretty_hard: "Pretty hard", cursed: "@!#?@!" }.each do |value, label| %>
+        <button type="button" class="m-rating__opt<%= ' is-on' if attempt&.difficulty == value.to_s %>"
+                data-action="rating#rate" data-rating-field-param="difficulty" data-rating-choice-param="<%= value %>">
+          <span><%= label %></span>
+        </button>
+      <% end %>
+    </div>
+  </div>
+</div>
