@@ -116,6 +116,20 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     expect(purple.reload.color).to eq("yellow")
   end
 
+  # Every filled text box grows an in-box × that empties it; the × only shows
+  # when there's something to clear.
+  it "clears a filled box from its × icon and hides the icon again" do
+    visit new_puzzle_path
+
+    fill_in "Title", with: "Oops"
+    expect(page).to have_css(".m-clearable__clear", visible: :visible, count: 1)
+
+    find(".m-clearable__clear", visible: :visible).click
+
+    expect(find_field("Title").value).to eq("")
+    expect(page).to have_no_css(".m-clearable__clear", visible: :visible)
+  end
+
   # Fills one color block: its four answers plus the category.
   def fill_group(color, words, category)
     within(".m-group--#{color}") do

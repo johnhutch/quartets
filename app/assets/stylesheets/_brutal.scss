@@ -504,11 +504,48 @@ body.theme-brutal {
     color: $brutal-ink;
     border: $brutal-border solid $brutal-ink;
     border-radius: 0;
+    // Same springy curve as the board tiles' lift.
+    transition: transform 0.22s $ease-spring, box-shadow 0.22s ease, background-color 0.15s ease;
 
+    // Focus pops the box like picking a board tile: a springy lift with a hard
+    // offset shadow (transform + shadow only — paint, not layout, so no CLS),
+    // plus a lightened well and the border brightened to full white. This
+    // replaces the global blue :focus-visible outline here (still a clearly
+    // visible indicator — WCAG 2.4.7); reduced-motion flattens the spring to an
+    // instant state change via the global rule in _base.
     &:focus {
-      outline: $brutal-border solid $color-blue;
-      outline-offset: 2px;
+      outline: none;
+      background: #1d1d1d;
+      border-color: #fff;
+      transform: translate(-2px, -5px);
+      // The house hard shadow. Ink-alpha so it reads on the near-black page;
+      // inside the colored group boxes it goes black-alpha (below), matching
+      // how the winrows/menus shadow on the bright fills.
+      box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.35);
+      position: relative;
+      z-index: 1; // ride above the next input so the shadow isn't clipped
     }
+  }
+
+  .m-group input:focus,
+  .m-group textarea:focus {
+    box-shadow: $brutal-shadow $brutal-shadow 0 rgba(#000, 0.45);
+  }
+
+  // The in-box clear ×: quiet until hovered, like the other muted controls.
+  // It rides the focus pop (same offsets as the input's lift above) and stays
+  // painted above the lifted box.
+  .m-clearable__clear {
+    color: $brutal-muted;
+    z-index: 2;
+    transition: transform 0.22s $ease-spring;
+    &:hover { color: $color-yellow; }
+  }
+  .m-clearable:focus-within .m-clearable__clear {
+    transform: translate(-2px, calc(-50% - 5px));
+  }
+  .m-clearable--area:focus-within .m-clearable__clear {
+    transform: translate(-2px, -5px); // textarea ×: no baseline centering to keep
   }
 
   // Auto-save indicator stays quiet; only the failure state shouts (red).

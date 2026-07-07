@@ -20,19 +20,25 @@
 
   <div class="m-form__field">
     <%= f.label :title %>
-    <%= f.text_field :title %>
+    <%= clearable do %>
+      <%= f.text_field :title %>
+    <% end %>
   </div>
 
   <div class="m-form__field">
     <%= f.label :author_name, "Author" %>
-    <%= f.text_field :author_name %>
+    <%= clearable do %>
+      <%= f.text_field :author_name %>
+    <% end %>
   </div>
 
   <div class="m-form__field" data-controller="charcount"
        data-charcount-max-value="<%= Puzzle::DESCRIPTION_LIMIT %>">
     <%= f.label :description, "Short description" %>
-    <%= f.text_area :description, rows: 2, maxlength: Puzzle::DESCRIPTION_LIMIT,
-          data: { charcount_target: "input", action: "input->charcount#update" } %>
+    <%= clearable(area: true) do %>
+      <%= f.text_area :description, rows: 2, maxlength: Puzzle::DESCRIPTION_LIMIT,
+            data: { charcount_target: "input", action: "input->charcount#update" } %>
+    <% end %>
     <p class="m-form__note">Optional — shows when shared. <span data-charcount-target="count"></span></p>
   </div>
 
@@ -111,17 +117,21 @@
         <% Group::WORDS_PER_GROUP.times do |i| %>
           <%# Each input carries its own accessible name (WCAG 3.3.2/4.1.2) — the
               placeholder isn't a label, and "Answers" sits above all four. %>
-          <%= text_field_tag "#{gf.object_name}[words][]",
-                Array(gf.object.words)[i],
-                placeholder: "Word #{i + 1}",
-                "aria-label": "#{gf.object.color.to_s.titleize} answer #{i + 1}",
-                data: { colorswap_target: "answer" } %>
+          <%= clearable do %>
+            <%= text_field_tag "#{gf.object_name}[words][]",
+                  Array(gf.object.words)[i],
+                  placeholder: "Word #{i + 1}",
+                  "aria-label": "#{gf.object.color.to_s.titleize} answer #{i + 1}",
+                  data: { colorswap_target: "answer" } %>
+          <% end %>
         <% end %>
       </div>
 
       <div class="m-form__field">
         <%= gf.label :description, "Category" %>
-        <%= gf.text_field :description, placeholder: "What links them?" %>
+        <%= clearable do %>
+          <%= gf.text_field :description, placeholder: "What links them?" %>
+        <% end %>
       </div>
     </fieldset>
   <% end %>
