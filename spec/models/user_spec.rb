@@ -56,4 +56,27 @@ RSpec.describe User, type: :model do
   it "is not a superuser by default" do
     expect(create(:user)).not_to be_superuser
   end
+
+  # Display name is optional, but once set it can be changed — never cleared.
+  # Blanking it would silently un-byline every puzzle the account owns
+  # (Puzzle#author_display_name falls back to per-puzzle names, usually absent
+  # for accounts that had a display name).
+  describe "display_name" do
+    it "stays optional — a nameless legacy user can still update their account" do
+      user = create(:user, display_name: nil)
+      expect(user.update(email: "new@example.com")).to be(true)
+    end
+
+    it "can be set later, and changed once set" do
+      user = create(:user, display_name: nil)
+      expect(user.update(display_name: "Hutch")).to be(true)
+      expect(user.update(display_name: "The Real Hutch")).to be(true)
+    end
+
+    it "cannot be cleared once set" do
+      user = create(:user, display_name: "Hutch")
+      expect(user.update(display_name: "")).to be(false)
+      expect(user.errors[:display_name]).to be_present
+    end
+  end
 end
