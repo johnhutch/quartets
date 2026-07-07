@@ -17,7 +17,9 @@ class PlayController < ApplicationController
 
     scope = Puzzle.published.includes(:user).order(created_at: :desc)
     if user_signed_in?
-      scope = scope.where.not(user_id: current_user.id) if @hide_mine
+      # NULL-safe "not mine": plain `user_id != ?` also drops anonymous puzzles
+      # (NULL != x is NULL, not true). IS DISTINCT FROM keeps them.
+      scope = scope.where("puzzles.user_id IS DISTINCT FROM ?", current_user.id) if @hide_mine
       scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
     end
     @puzzles = scope
