@@ -119,7 +119,7 @@ module ApplicationHelper
   TROPHY_PATH = "M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .748 3.806 19.5 19.5 0 0 1-.748-3.806zm10.804 0a19.5 19.5 0 0 1-.748 3.806 2 2 0 0 0 .748-3.806z".freeze
   # Top-to-bottom hard-edged bands: hardest group (purple) at the top, easiest
   # (yellow) at the bottom — the difficulty rainbow, reversed.
-  RAINBOW_BANDS = %w[#b04ef0 #4f86f7 #4bd15b #ffd400].freeze # keep in sync with $color-* in _variables.scss
+  RAINBOW_BANDS = %w[#cf9bdb #8db4f2 #8ed081 #f2c94c].freeze # keep in sync with $color-* in _variables.scss
 
   def trophy(tier)
     tier = tier.to_s

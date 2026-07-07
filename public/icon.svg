@@ -3,10 +3,10 @@
   <clipPath id="tile"><rect width="512" height="512" rx="80"/></clipPath>
 </defs>
 <g clip-path="url(#tile)">
-  <rect x="0" y="0" width="256" height="256" fill="#ffd400"/>
-  <rect x="256.0" y="0" width="256" height="256" fill="#4bd15b"/>
-  <rect x="0" y="256.0" width="256" height="256" fill="#4f86f7"/>
-  <rect x="256.0" y="256.0" width="256" height="256" fill="#b04ef0"/>
+  <rect x="0" y="0" width="256" height="256" fill="#f2c94c"/>
+  <rect x="256.0" y="0" width="256" height="256" fill="#8ed081"/>
+  <rect x="0" y="256.0" width="256" height="256" fill="#8db4f2"/>
+  <rect x="256.0" y="256.0" width="256" height="256" fill="#cf9bdb"/>
   <path d="M336 -14Q207 -14 131.0 58.5Q55 131 55 268V432Q55 569 131.0 641.5Q207 714 336 714Q465 714 541.5 641.5Q618 569 618 432V268Q618 131 541.5 58.5Q465 -14 336 -14ZM336 83Q419 83 464.0 131.5Q509 180 509 264V436Q509 520 464.0 568.5Q419 617 336 617Q255 617 209.0 568.5Q163 520 163 436V264Q163 180 209.0 131.5Q255 83 336 83ZM379 -171Q336 -171 309.5 -144.5Q283 -118 283 -73V0H389V-55Q389 -85 417 -85H479V-171Z" fill="#000" transform="translate(115.83 369.09) scale(0.41654 -0.41654)"/>
 </g>
 </svg>
