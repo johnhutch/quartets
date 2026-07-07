@@ -82,12 +82,25 @@
   .m-form__field + .m-form__field { margin-top: $space-md; }
 }
 
-// --- Emoji result cube (🟨🟩🟦🟪) — shareable bragging grid ------------
+// --- Result cube — the shareable bragging grid --------------------------
+// On-page it's CSS blocks in our exact palette (cube_grid helper /
+// game_controller renderShare); the raw 🟨🟩🟦🟪 emoji only ride along in the
+// copied share text.
 .m-cube {
-  font-size: $font-lg;
-  letter-spacing: 0.1em;
-  line-height: 1.3;
-  white-space: pre; // preserve the rows exactly as generated
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+
+  &__row { display: flex; gap: 4px; }
+
+  &__cell {
+    width: 1.4rem;
+    aspect-ratio: 1;
+    border: 2px solid rgba(#000, 0.55);
+
+    @each $name, $color in $category-colors { &--#{$name} { background: $color; } }
+    &--blank { background: $color-line; }
+  }
 }
 
 // --- Trophies + game-over awards (ADR-0011) -----------------------------

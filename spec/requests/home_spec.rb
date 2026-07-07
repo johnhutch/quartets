@@ -48,6 +48,29 @@ RSpec.describe "Home", type: :request do
       expect(response.body).not_to include("Backbench")
     end
 
+    it "skips themed (specialized) puzzles — the strip is for anyone to jump into" do
+      create(:published_puzzle, title: "For Everyone")
+      create(:published_puzzle, title: "Nerds Only", specialized: true)
+
+      get root_path
+
+      expect(response.body).to include("For Everyone")
+      expect(response.body).not_to include("Nerds Only")
+    end
+
+    it "flags the ones a signed-in player already finished, like the archive does" do
+      user = create(:user)
+      sign_in user
+      played = create(:published_puzzle, title: "Been There")
+      create(:published_puzzle, title: "Fresh Meat")
+      create(:attempt, puzzle: played, user: user, solved: true)
+
+      get root_path
+
+      expect(response.body).to include("✓ Played")
+      expect(response.body.scan("✓ Played").size).to eq(1)
+    end
+
     it "does not embed a playable game" do
       create(:published_puzzle)
 

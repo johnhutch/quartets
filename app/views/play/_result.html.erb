@@ -31,7 +31,7 @@
 
   <% if result.cube.present? %>
     <div class="m-game__share">
-      <div class="m-cube"><%= result.cube %></div>
+      <div class="m-cube" aria-hidden="true"><%= cube_grid(result.cube) %></div>
       <%= tag.button type: "button", class: "m-btn m-btn--share",
             data: { controller: "clipboard",
                     clipboard_text_value: result.share,

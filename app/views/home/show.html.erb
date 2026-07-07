@@ -54,6 +54,9 @@
           <li>
             <%= link_to play_path(puzzle.share_token), class: "m-titles__row" do %>
               <span class="m-titles__name"><%= puzzle.title %></span>
+              <% if @completed_ids.include?(puzzle.id) %>
+                <span class="m-titles__done"><%= t("home.strip.played") %></span>
+              <% end %>
               <% if puzzle.author_name.present? %><span class="m-titles__by"><%= t("home.strip.by", author: puzzle.author_name) %></span><% end %>
             <% end %>
           </li>
