@@ -66,6 +66,9 @@
   padding: $space-md;
   border-radius: $radius;
   margin-bottom: $space-sm;
+  // A color swap (colorswap_controller) melts one fill into the other instead
+  // of snapping. Reduced-motion flattens this via the global rule in _base.
+  transition: background-color 0.4s ease;
 
   @each $name, $color in $category-colors {
     &--#{$name} {
