@@ -19,8 +19,13 @@ class User < ApplicationRecord
 
   # Optional byline name, asked at signup and editable in settings. When present
   # it beats the puzzle's free-text author_name everywhere (Puzzle#author_display_name),
-  # so renaming here renames every byline at once.
-  validates :display_name, length: { maximum: 50 }, allow_blank: true
+  # so renaming here renames every byline at once. Once set it can be changed but
+  # never cleared — blanking it would silently un-byline every puzzle the account
+  # owns (their per-puzzle author_names are usually empty). Legacy/never-set
+  # accounts stay valid.
+  validates :display_name, length: { maximum: 50 }
+  validates :display_name, presence: true,
+            if: -> { display_name_changed? && display_name_was.present? }
 
   private
 
