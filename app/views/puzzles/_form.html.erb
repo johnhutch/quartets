@@ -25,12 +25,23 @@
     <% end %>
   </div>
 
-  <div class="m-form__field">
-    <%= f.label :author_name, "Author" %>
-    <%= clearable do %>
-      <%= f.text_field :author_name %>
-    <% end %>
-  </div>
+  <%# Byline: a signed-in author with a display_name gets it automatically
+      (Puzzle#author_display_name), so no field. Signed-in without one keeps the
+      field plus a nudge to set the account-wide name; anonymous authors just get
+      the field — it's all they have. %>
+  <% if user_signed_in? && current_user.display_name.present? %>
+    <p class="m-form__note">Published as <strong><%= current_user.display_name %></strong> — change it in <%= link_to "account settings", edit_user_registration_path %>.</p>
+  <% else %>
+    <div class="m-form__field">
+      <%= f.label :author_name, "Author" %>
+      <%= clearable do %>
+        <%= f.text_field :author_name %>
+      <% end %>
+      <% if user_signed_in? %>
+        <p class="m-form__note">Tip: set a display name in <%= link_to "account settings", edit_user_registration_path %> and every quartet you make gets it automatically.</p>
+      <% end %>
+    </div>
+  <% end %>
 
   <div class="m-form__field" data-controller="charcount"
        data-charcount-max-value="<%= Puzzle::DESCRIPTION_LIMIT %>">

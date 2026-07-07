@@ -15,6 +15,13 @@
     </div>
 
     <div class="m-form__field">
+      <%= f.label :display_name, "Display name" %>
+      <%= f.text_field :display_name, autocomplete: "nickname",
+            placeholder: "How your name appears on your quartets" %>
+      <p class="m-form__note">Optional — bylines fall back to a per-puzzle name without one.</p>
+    </div>
+
+    <div class="m-form__field">
       <%= f.label :password %>
       <%= f.password_field :password, autocomplete: "new-password",
             placeholder: @minimum_password_length ? "#{@minimum_password_length}+ characters" : "Choose a password" %>

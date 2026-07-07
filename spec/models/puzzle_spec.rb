@@ -130,6 +130,23 @@ RSpec.describe Puzzle, type: :model do
     end
   end
 
+  describe "#author_display_name" do
+    it "prefers the owner's display name" do
+      puzzle = build(:puzzle, user: build(:user, display_name: "Hutch"), author_name: "Pen Name")
+      expect(puzzle.author_display_name).to eq("Hutch")
+    end
+
+    it "falls back to the puzzle's author_name when the owner has none" do
+      puzzle = build(:puzzle, user: build(:user, display_name: ""), author_name: "Pen Name")
+      expect(puzzle.author_display_name).to eq("Pen Name")
+    end
+
+    it "uses author_name for anonymous (cookie-owned) puzzles" do
+      puzzle = build(:puzzle, user: nil, author_name: "Mystery")
+      expect(puzzle.author_display_name).to eq("Mystery")
+    end
+  end
+
   describe "#complete?" do
     it "is true for a fully filled-out puzzle" do
       expect(build(:published_puzzle)).to be_complete
