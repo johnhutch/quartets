@@ -15,12 +15,25 @@ Rails.application.routes.draw do
   # names matching ?q=. Public (creation is public, ADR-0005).
   get "/tags", to: "tags#index", as: :tags
 
+  # Public per-creator page (deferred D3 of ADR-0005): published puzzles + stats.
+  get "/u/:handle", to: "users#show", as: :user_page
+
+  # Superuser-only admin: puzzles + users tabs. Gated in Admin::BaseController
+  # (404 to everyone else — the area doesn't exist unless you're the superuser).
+  namespace :admin do
+    root "puzzles#index"
+    resources :puzzles, only: :index
+    resources :users, only: :index
+  end
+
   # Public play surface — no login. Browse published puzzles, open one by its
   # unguessable share token.
   get "/play", to: "play#index", as: :play_index
   get "/p/:share_token", to: "play#show", as: :play
   # The game posts a finished play here for stats (anonymous, cookie-attributed).
   post "/p/:share_token/attempts", to: "attempts#create", as: :play_attempts
+  # Post-play quality/difficulty rating — updates the viewer's attempt.
+  patch "/p/:share_token/rating", to: "ratings#update", as: :play_rating
   # And beacons game_started here on the first tile tap, so we can tell a started-
   # but-abandoned game from one that was only ever opened.
   post "/p/:share_token/events", to: "events#create", as: :play_events

@@ -15,7 +15,7 @@ class PlayController < ApplicationController
     @hide_mine = params[:hide_mine] != "0"
     @hide_completed = params[:hide_completed] == "1"
 
-    scope = Puzzle.published.order(created_at: :desc)
+    scope = Puzzle.published.includes(:user).order(created_at: :desc)
     if user_signed_in?
       scope = scope.where.not(user_id: current_user.id) if @hide_mine
       scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?

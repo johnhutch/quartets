@@ -10,18 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_18_120100) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_07_061040) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "attempts", force: :cascade do |t|
     t.integer "achievement"
     t.datetime "created_at", null: false
+    t.integer "difficulty"
     t.integer "duration_ms"
     t.jsonb "guesses"
     t.integer "mistakes_count"
     t.string "player_token"
     t.bigint "puzzle_id", null: false
+    t.integer "quality"
     t.boolean "solved"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
@@ -235,13 +237,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_120100) do
 
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.datetime "current_sign_in_at"
+    t.string "current_sign_in_ip"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.string "handle", null: false
+    t.datetime "last_sign_in_at"
+    t.string "last_sign_in_ip"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.integer "sign_in_count", default: 0, null: false
+    t.boolean "superuser", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["handle"], name: "index_users_on_handle", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 

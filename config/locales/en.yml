@@ -45,7 +45,7 @@ en:
       signup: "Sign up"
     strip:
       head: "Jump in"
-      by: "by %{author}"
+      by_html: "by %{author}" # _html so the author interpolation may be a profile link
       played: "Played"
       cta: "The whole archive"
     why:

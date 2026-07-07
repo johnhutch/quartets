@@ -27,7 +27,7 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body).to include("Front and center")
+      expect(page_text).to include("Front and center")
       expect(response.body).to include(play_path(puzzle.share_token))
     end
 
@@ -45,7 +45,7 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body).not_to include("Backbench")
+      expect(page_text).not_to include("Backbench")
     end
 
     it "skips themed (specialized) puzzles — the strip is for anyone to jump into" do
@@ -54,8 +54,8 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body).to include("For Everyone")
-      expect(response.body).not_to include("Nerds Only")
+      expect(page_text).to include("For Everyone")
+      expect(page_text).not_to include("Nerds Only")
     end
 
     it "flags the ones a signed-in player already finished, like the archive does" do

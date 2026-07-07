@@ -16,6 +16,12 @@ class Attempt < ApplicationRecord
   # counts are `achievement >= n` (reverse rainbow counts toward all three).
   enum :achievement, { perfect: 1, purple_first: 2, reverse_rainbow: 3 }
 
+  # Post-play ratings; nil = hasn't rated. Quality is positive-only ("was this a
+  # good one?" — there's no downvote, just degrees of yes). Difficulty runs
+  # pretty-easy → @!#?@! (`cursed`).
+  enum :quality, { yeah: 1, hell_yeah: 2 }, prefix: true
+  enum :difficulty, { pretty_easy: 0, not_bad: 1, pretty_hard: 2, cursed: 3 }, prefix: true
+
   before_create { self.achievement = earned_achievement }
 
   validates :player_token, presence: true

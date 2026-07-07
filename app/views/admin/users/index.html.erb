@@ -1,0 +1,42 @@
+<% content_for :title, "Admin · Users" %>
+
+<div class="l-container">
+  <h1><%= multicolor("Admin") %></h1>
+  <%= render "admin/tabs", active: :users %>
+
+  <table class="m-admin-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Last login</th>
+        <th>Created</th>
+        <th>Solved</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td>
+            <%= link_to user.handle, user_page_path(user.handle) %>
+            <span class="m-admin-table__sub"><%= user.email %></span>
+          </td>
+          <td><%= user.current_sign_in_at ? "#{time_ago_in_words(user.current_sign_in_at)} ago" : "never" %></td>
+          <td><%= @created_counts.fetch(user.id, 0) %></td>
+          <td><%= @solved_counts.fetch(user.id, 0) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% if @total_pages > 1 %>
+    <nav class="m-pagination">
+      <% if @page > 1 %>
+        <%= link_to "← Prev", admin_users_path(page: @page - 1), class: "m-pagination__step" %>
+      <% end %>
+      <span class="m-pagination__at">Page <%= @page %> of <%= @total_pages %></span>
+      <% if @page < @total_pages %>
+        <%= link_to "Next →", admin_users_path(page: @page + 1), class: "m-pagination__step" %>
+      <% end %>
+    </nav>
+  <% end %>
+</div>

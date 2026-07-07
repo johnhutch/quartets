@@ -341,13 +341,16 @@ body.theme-brutal {
       padding: $space-md;
     }
 
-    > .m-puzzle-list__text a {
+    // Title chrome only on the title link (a DIRECT child of the text block) —
+    // the byline's author link nests inside __author and keeps byline scale.
+    .m-puzzle-list__text > a {
       font-family: $font-display;
       font-weight: 700;
       font-size: $font-lg;
       text-transform: uppercase;
       text-decoration: none;
       overflow-wrap: anywhere;
+      &:hover { text-decoration: underline; }
     }
 
     // Finished ones step back so the doable ones stand out; the check square
@@ -373,6 +376,99 @@ body.theme-brutal {
   font-weight: 700;
   font-size: $font-lg;
   border-left: $brutal-border solid $brutal-ink;
+}
+
+// --- Post-play rating (quality + difficulty) ----------------------------------
+.theme-brutal .m-rating {
+  display: grid;
+  gap: $space-md;
+  justify-items: center;
+  margin-top: $space-lg;
+  text-align: center;
+
+  &__ask {
+    margin: 0 0 $space-xs;
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    color: $brutal-muted;
+  }
+
+  &__opts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $space-sm;
+  }
+
+  &__opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: $space-xs $space-md;
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    background: none;
+    color: $brutal-ink;
+    border: 2px solid $brutal-ink;
+    cursor: pointer;
+    .m-icon { width: 1.1em; height: 1.1em; }
+
+    &:hover { background: $color-yellow; color: #000; }
+    &.is-on { background: $color-green; color: #000; border-color: $brutal-ink; }
+  }
+}
+
+// --- Admin: section tabs + the users table ------------------------------------
+.theme-brutal .m-tabs {
+  display: flex;
+  gap: $space-sm;
+  margin-bottom: $space-lg;
+
+  &__tab {
+    padding: $space-xs $space-lg;
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid $brutal-ink;
+    color: $brutal-ink;
+
+    &:hover { background: $color-yellow; color: #000; }
+    &.is-active { background: $brutal-ink; color: $brutal-paper; }
+  }
+}
+
+.theme-brutal .m-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: $brutal-border solid $brutal-ink;
+
+  th, td {
+    padding: $space-sm $space-md;
+    text-align: left;
+    border-bottom: 2px solid rgba($brutal-ink, 0.25);
+  }
+
+  th {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    background: $brutal-ink;
+    color: $brutal-paper;
+  }
+
+  td a { font-weight: 700; }
+
+  &__sub {
+    display: block;
+    font-size: $font-sm;
+    color: $brutal-muted;
+  }
 }
 
 // --- Archive filter fold-out (signed-in only) --------------------------------
@@ -463,6 +559,17 @@ body.theme-brutal {
 }
 
 .theme-brutal .m-byline { font-style: italic; color: $brutal-muted; }
+
+// Byline author links (→ /u/:handle): keep the byline's muted voice, just
+// underlined so they read as links; yellow on hover like everything else.
+.theme-brutal .m-byline a,
+.theme-brutal .m-puzzle-list__author a,
+.theme-brutal .m-titles__by a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  &:hover { color: $color-yellow; }
+}
 
 // Secondary / "muted" copy bumped to a WCAG-AA grey on the near-black page.
 .theme-brutal {
@@ -1058,9 +1165,10 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   letter-spacing: -0.02em;
   line-height: 1;
   font-size: clamp(1.25rem, 4.4vw, 1.85rem);
+  text-decoration: none; // it's the row's link now (the byline carries its own)
+  &:hover { color: $color-yellow; }
 }
 .theme-brutal .m-titles__by { font-style: italic; color: $brutal-muted; font-size: $font-sm; }
-.theme-brutal .m-titles__row:hover .m-titles__name { color: $color-yellow; }
 .theme-brutal .m-titles__row:hover { padding-left: $space-sm; transition: padding 0.08s; }
 
 // WHY PLAY HERE — dark band, multicolor head. One line on the rules, then the real

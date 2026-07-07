@@ -40,4 +40,9 @@
       <% end %>
     </div>
   <% end %>
+
+  <%# Post-play rating (published puzzles only) — revisits show the saved picks. %>
+  <% if puzzle.published? %>
+    <%= render "play/rating", puzzle: puzzle, attempt: attempt %>
+  <% end %>
 </div>

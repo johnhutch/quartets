@@ -30,7 +30,12 @@ class AttemptsController < ApplicationController
     result = PlayResult.new(attempt, url: play_url(puzzle.share_token), viewer: current_user)
     awards = render_to_string(partial: "play/achievement", formats: [:html],
                               locals: result.awards_locals)
-    render json: { cube: result.cube, share: result.share, achievement: result.achievement, awards: },
+    # Rating buttons ride along for published puzzles (unlisted work isn't rated).
+    rating = if puzzle.published?
+      render_to_string(partial: "play/rating", formats: [:html],
+                       locals: { puzzle: puzzle, attempt: attempt })
+    end
+    render json: { cube: result.cube, share: result.share, achievement: result.achievement, awards:, rating: },
            status: :created
   rescue ActiveRecord::RecordInvalid
     head :unprocessable_content

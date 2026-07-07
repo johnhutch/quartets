@@ -114,9 +114,14 @@ class PuzzlesController < ApplicationController
   private
 
   # Scoped to the requester — by account or creator_token — so one author can
-  # never reach another's work.
+  # never reach another's work. The superuser passes on everything (the /admin
+  # puzzles tab hands them the same owner-grade action rows).
   def set_puzzle
-    @puzzle = owned_puzzles.find(params[:id])
+    @puzzle = accessible_puzzles.find(params[:id])
+  end
+
+  def accessible_puzzles
+    user_signed_in? && current_user.superuser? ? Puzzle.all : owned_puzzles
   end
 
   # Background draft saves flag themselves so we answer quietly instead of

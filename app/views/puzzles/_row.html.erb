@@ -1,0 +1,68 @@
+<%# One owner-grade dashboard row (title + status + the full action cluster).
+    Shared by the owner dashboard and the admin puzzles tab — the admin view
+    passes show_owner: true to append the creator to the status line. The action
+    routes are the plain /puzzles ones; superusers pass their gate via the
+    accessible_puzzles bypass (PuzzlesController#set_puzzle). %>
+<% show_owner = local_assigns.fetch(:show_owner, false) %>
+<li class="m-puzzle-list__item">
+  <% title = puzzle.title.presence || "Untitled" %>
+  <div class="m-puzzle-list__head">
+    <%# Complete puzzles (published or unlisted) are playable, so the title
+        opens the board; an incomplete one opens the editor instead. %>
+    <%= link_to multicolor(title),
+          (puzzle.complete? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
+          class: "m-puzzle-list__title" %>
+    <span class="m-puzzle-list__status">
+      <% if puzzle.published? %>
+        Published &middot; <%= pluralize(puzzle.attempts.count, "play") %>
+      <% elsif puzzle.complete? %>
+        Unlisted &middot; link only
+      <% else %>
+        Incomplete
+      <% end %>
+      <% if show_owner %>
+        &middot; <%= puzzle.user&.handle ? link_to(puzzle.user.handle, user_page_path(puzzle.user.handle)) : "anonymous" %>
+      <% end %>
+    </span>
+  </div>
+
+  <%# One filled accent button per row (the encouraged next step), then
+      quiet secondary links, then the danger group pushed to the right. %>
+  <div class="m-puzzle-list__actions">
+    <% if puzzle.published? %>
+      <%= tag.button type: "button", class: "m-btn m-btn--sm",
+            data: { controller: "share", share_url_value: play_url(puzzle.share_token),
+                    action: "share#share" } do %>
+        <%= icon(:share) %><span data-share-target="label">Share</span>
+      <% end %>
+      <%= link_to "Play", play_path(puzzle.share_token), class: "m-puzzle-list__link" %>
+      <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+    <% elsif puzzle.complete? %>
+      <%= button_to publish_puzzle_path(puzzle), method: :patch,
+            class: "m-btn m-btn--sm m-btn--go" do %>
+        <%= icon(:eye) %><span>Publish</span>
+      <% end %>
+      <%# Unlisted but complete = playable by link, so the owner gets a Share too. %>
+      <%= tag.button type: "button", class: "m-btn m-btn--sm",
+            data: { controller: "share", share_url_value: play_url(puzzle.share_token),
+                    action: "share#share" } do %>
+        <%= icon(:share) %><span data-share-target="label">Share</span>
+      <% end %>
+      <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+    <% else %>
+      <%= link_to edit_puzzle_path(puzzle), class: "m-btn m-btn--sm" do %>
+        <%= icon(:edit) %><span>Finish</span>
+      <% end %>
+    <% end %>
+
+    <span class="m-puzzle-list__danger">
+      <% if puzzle.published? %>
+        <%= link_to "Make unlisted", unpublish_puzzle_path(puzzle), class: "m-puzzle-list__unpublish",
+              data: { turbo_method: :patch,
+                      turbo_confirm: "Make #{title} unlisted? The link still works, it just won't be listed." } %>
+      <% end %>
+      <%= button_to "Delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
+            data: { turbo_confirm: "Delete “#{title}”? This can’t be undone." } %>
+    </span>
+  </div>
+</li>

@@ -1,0 +1,8 @@
+<%# The two admin surfaces, toggled from one landing spot. `active` is :puzzles
+    or :users. %>
+<nav class="m-tabs" aria-label="Admin sections">
+  <%= link_to "Puzzles", admin_puzzles_path,
+        class: "m-tabs__tab#{' is-active' if active == :puzzles}" %>
+  <%= link_to "Users", admin_users_path,
+        class: "m-tabs__tab#{' is-active' if active == :users}" %>
+</nav>
