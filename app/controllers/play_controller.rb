@@ -6,9 +6,21 @@ class PlayController < ApplicationController
   include Creator # for owns? — the owner gets a share prompt on their own puzzle
 
   def index
-    @puzzles = Puzzle.published.order(created_at: :desc)
-    # Which of these the signed-in player has already finished, for the badge.
+    # Which of these the signed-in player has already finished, for the check.
     @completed_ids = user_signed_in? ? current_user.attempts.distinct.pluck(:puzzle_id).to_set : Set.new
+
+    # Signed-in filters, GET params only (nothing persists): "hide my puzzles"
+    # defaults ON — you can't play your own (Playability), so they're noise here;
+    # "hide completed" defaults OFF — finished ones stay visible but dimmed.
+    @hide_mine = params[:hide_mine] != "0"
+    @hide_completed = params[:hide_completed] == "1"
+
+    scope = Puzzle.published.order(created_at: :desc)
+    if user_signed_in?
+      scope = scope.where.not(user_id: current_user.id) if @hide_mine
+      scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
+    end
+    @puzzles = scope
   end
 
   def show

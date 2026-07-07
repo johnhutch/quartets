@@ -529,14 +529,6 @@
     color: $color-muted;
     font-size: $font-sm;
   }
-
-  // "✓ Played" badge on the browse list — the puzzles you've already finished.
-  &__done {
-    flex: none;
-    font-size: $font-sm;
-    font-weight: 700;
-    color: $color-green;
-  }
 }
 
 // The "already played" result view — one play per puzzle (ADR-0009): the cube +

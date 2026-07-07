@@ -46,7 +46,7 @@ en:
     strip:
       head: "Jump in"
       by: "by %{author}"
-      played: "✓ Played"
+      played: "Played"
       cta: "The whole archive"
     why:
       head: "Why play here"

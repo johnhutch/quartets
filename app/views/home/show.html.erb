@@ -52,12 +52,15 @@
       <ul class="m-titles">
         <% @puzzles.each do |puzzle| %>
           <li>
-            <%= link_to play_path(puzzle.share_token), class: "m-titles__row" do %>
-              <span class="m-titles__name"><%= puzzle.title %></span>
-              <% if @completed_ids.include?(puzzle.id) %>
-                <span class="m-titles__done"><%= t("home.strip.played") %></span>
+            <% done = @completed_ids.include?(puzzle.id) %>
+            <%= link_to play_path(puzzle.share_token), class: "m-titles__row#{' is-done' if done}" do %>
+              <span class="m-titles__text">
+                <span class="m-titles__name"><%= puzzle.title %></span>
+                <% if puzzle.author_name.present? %><span class="m-titles__by"><%= t("home.strip.by", author: puzzle.author_name) %></span><% end %>
+              </span>
+              <% if done %>
+                <span class="m-check" aria-label="<%= t('home.strip.played') %>">✓</span>
               <% end %>
-              <% if puzzle.author_name.present? %><span class="m-titles__by"><%= t("home.strip.by", author: puzzle.author_name) %></span><% end %>
             <% end %>
           </li>
         <% end %>
