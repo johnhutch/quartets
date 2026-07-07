@@ -307,8 +307,10 @@ export default class extends Controller {
   }
 
   // The shareable cube + a copy-to-clipboard button, for bragging over text. The
-  // grid shows the bare cube; the copy writes the full block (title + cube +
-  // link) the server built, falling back to the cube if it didn't send one.
+  // grid shows the cube as palette-matched CSS blocks (mirrors the cube_grid
+  // helper — the raw emoji live only in the copied share text); the copy writes
+  // the full block (title + cube + link) the server built, falling back to the
+  // cube if it didn't send one.
   renderShare(cube, shareText) {
     if (!cube) return
     const toCopy = shareText || cube
@@ -316,9 +318,20 @@ export default class extends Controller {
     const share = document.createElement("div")
     share.className = "m-game__share"
 
+    const CELLS = { "🟨": "yellow", "🟩": "green", "🟦": "blue", "🟪": "purple" }
     const grid = document.createElement("p")
     grid.className = "m-cube"
-    grid.textContent = cube
+    grid.setAttribute("aria-hidden", "true")
+    cube.split("\n").forEach((line) => {
+      const row = document.createElement("span")
+      row.className = "m-cube__row"
+      ;[...line].forEach((square) => {
+        const cell = document.createElement("span")
+        cell.className = `m-cube__cell m-cube__cell--${CELLS[square] || "blank"}`
+        row.appendChild(cell)
+      })
+      grid.appendChild(row)
+    })
 
     const copy = document.createElement("button")
     copy.type = "button"

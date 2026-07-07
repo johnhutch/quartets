@@ -5,10 +5,14 @@
 // --- The four Connections category colors -------------------------------
 // Ordered easy -> hard, matching NYT. These are the load-bearing brand of
 // the whole app, so they get first-class names, not $color-1.
-$color-yellow: #f9df6d; // easiest
-$color-green:  #a0c35a;
-$color-blue:   #b0c4ef;
-$color-purple: #ba81c5; // hardest
+// Ours, not NYT's pastels: saturated signal colors (brutalist poster territory),
+// deliberately near the 🟨🟩🟦🟪 emoji-square hues so pasted shares look kin to
+// the site. All four hold ≥4.5:1 with black text on the fill AND ≥4.5:1 as text
+// on the near-black page (WCAG AA both ways).
+$color-yellow: #ffd400; // easiest
+$color-green:  #4bd15b;
+$color-blue:   #4f86f7;
+$color-purple: #b04ef0; // hardest
 
 // Map for iterating (group blocks, emoji cube, stats bars).
 $category-colors: (

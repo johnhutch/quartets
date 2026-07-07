@@ -34,12 +34,12 @@
 
     <%# Absolute image URL + dimensions so iMessage / Slack / Facebook all
         render the large card reliably. ?v= busts stale social-scraper caches. %>
-    <meta property="og:image" content="<%= root_url %>share.png?v=2">
+    <meta property="og:image" content="<%= root_url %>share.png?v=3">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Quartets">
-    <meta name="twitter:image" content="<%= root_url %>share.png?v=2">
+    <meta name="twitter:image" content="<%= root_url %>share.png?v=3">
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>

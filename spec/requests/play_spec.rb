@@ -167,7 +167,9 @@ RSpec.describe "Play (public)", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Solved it")               # the win stamp / finished state
-        expect(response.body).to include("🟦🟦🟦🟦")                  # the cube
+        # The on-page cube renders as palette-matched blocks (the raw emoji live
+        # only in the copyable share text).
+        expect(response.body.scan(/m-cube__cell--blue/).size).to eq(4)
         expect(response.body).not_to include('data-controller="game"') # no fresh board
       end
 

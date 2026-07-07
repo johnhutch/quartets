@@ -987,6 +987,15 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   line-height: 1;
   font-size: clamp(1.25rem, 4.4vw, 1.85rem);
 }
+// "✓ Played" chip — same green display-face badge as the archive list's.
+.theme-brutal .m-titles__done {
+  flex: none;
+  font-family: $font-display;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: $font-sm;
+  color: $color-green;
+}
 .theme-brutal .m-titles__by { margin-left: auto; text-align: right; font-style: italic; color: $brutal-muted; font-size: $font-sm; }
 .theme-brutal .m-titles__row:hover .m-titles__name { color: $color-yellow; }
 .theme-brutal .m-titles__row:hover { padding-left: $space-sm; transition: padding 0.08s; }
@@ -1062,7 +1071,8 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 @media (max-width: $bp-stack) {
   .theme-brutal .m-why { grid-template-columns: 1fr; }
   .theme-brutal .m-why__show { margin-top: $space-xl; justify-self: stretch; }
-  .theme-brutal .m-winboard { margin-right: 0; }
+  // The board keeps its off-the-right-edge bleed on phones too (the 50%−50vw
+  // margin from the base rule still applies).
 }
 
 // ETHICALLY BUILT — the manifesto: stark, small text in columns, on the shared

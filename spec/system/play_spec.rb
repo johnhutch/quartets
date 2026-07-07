@@ -85,8 +85,8 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
 
     # The engine flags the element once the background save round-trips.
     expect(page).to have_css(".m-game[data-recorded='true']")
-    # …and shows the shareable cube it got back.
-    expect(page).to have_css(".m-cube", text: "🟦")
+    # …and shows the shareable cube it got back, as palette-matched blocks.
+    expect(page).to have_css(".m-cube .m-cube__cell--blue", count: 4)
     expect(page).to have_button("Copy result")
 
     attempt = Attempt.last
