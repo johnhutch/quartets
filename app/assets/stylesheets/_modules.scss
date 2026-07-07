@@ -537,6 +537,16 @@
   display: grid;
   gap: $space-md;
 
+  // The reconstructed game-over board reuses the live game's status markup, but
+  // outside .m-game the overlay defaults (absolute, opacity 0, waiting for
+  // .is-visible) would leave the stamp invisible — pin it static and shown,
+  // same as .m-game.is-over does.
+  .m-game__status {
+    position: static;
+    opacity: 1;
+    place-items: center;
+  }
+
   &__note {
     display: block;
     font-size: $font-sm;
