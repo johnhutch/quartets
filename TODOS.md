@@ -15,13 +15,10 @@ Planned work that has been scoped but not yet started. Read this at session star
 
 ## Still open
 
-### Accounts — the last unbuilt pieces
+### Accounts — the last unbuilt piece
 
-- **Per-creator public homepage `/u/:handle`** (deferred from D3). Needs a stable
-  per-account handle/slug and a rule for how free-text `author_name` reconciles
-  with a claimed account. Then a public per-creator index listing their published
-  puzzles, linkable from the share/CTA flow. *This is the only part of the auth
-  epic still unbuilt.*
+- ~~Per-creator public homepage `/u/:handle`~~ **Shipped 2026-07-07 (ADR-0016)** —
+  `users.handle` + public page + linked bylines.
 - **"My puzzles" aggregate stats table** — the dashboard already lists puzzles
   with a per-puzzle `Stats` link; turn that into an at-a-glance table with
   inline aggregates per row: # of completions, # of *successful* completions, and
@@ -86,12 +83,11 @@ yet. To build (data + form already exist):
   each puzzle (play surfaces). Upvotes start at **1**, downvotes at **0** — so a
   fresh puzzle's total score is **1**. The total score shows on the puzzle's
   stats page. Anonymous-safe (one vote per player_token, like attempts).
-- **Superuser admin page** — a role-gated admin surface (needs a `superuser`/role
-  mechanism on `User` — doesn't exist yet) with **user**, **puzzle**, and **tag**
-  admin. Lists **all** puzzles (every author's); manages users; and — key for the
-  tags cold-start (see below) — lets an admin **edit/merge/delete tags** to clean
-  up spelling divergence ("Star Wars" vs "starwars"). The one place
-  creation/ownership stays account-gated post-ADR-0005.
+- **Admin: tag + user management** — the `/admin` shell shipped (ADR-0016:
+  superuser role, all-puzzles tab with owner-grade actions, users list). Still
+  unbuilt: a **tag admin** (edit/merge/delete tags to clean spelling divergence —
+  key for the tags cold-start) and user *management* beyond the read-only list
+  (e.g. delete/superuser toggles from the UI).
 - **Bulk "Export my puzzles" (CSV)** — export is now a *separate* function: an
   "Export my puzzles" link at the **bottom of Your Puzzles** downloads **all** of
   the owner's puzzles as one CSV. Per-puzzle export is gone from the UI (the
@@ -116,6 +112,13 @@ recorded (below); the rest is read-side display work, buildable whenever.
   events`). Same gate + anonymous `player_token` as attempts. *Abandoned* plays are
   **derived** later — a `game_started` with no finishing `Attempt`, joined on
   player_token + puzzle, time-windowed — so there's nothing extra to record.
+
+**Capture — shipped 2026-07-07:**
+- **Post-play ratings.** `attempts.quality` (yeah/hell_yeah) + `attempts.difficulty`
+  (pretty_easy…cursed), voted from the game-over/revisit rating block (published
+  puzzles only). Nothing displayed yet — surface aggregates on `/puzzles/:id/stats`
+  (and maybe a badge on browse rows); the *voted* difficulty also feeds the
+  ADR-0010 "difficulty from stats" idea, which no longer needs to be inferred-only.
 
 **Display — TODO (future, no frontend yet):**
 - **Surface the timing + funnel stats.** Player-facing: solve duration, time-to-
@@ -150,8 +153,9 @@ recorded (below); the rest is read-side display work, buildable whenever.
   i18n key, so a wording/link change is a locale edit, not a test edit. The
   **homepage is now fully i18n'd** (`home.*`, incl. the manifesto columns + win-board
   filler as structured arrays) — use it as the template for the rest.
-- **Richer share payload** — cube + title + direct link in the share sheet
-  (verify what commit `b3acb2b` already covers first).
+- ~~Richer share payload~~ **Done** — `ShareText` is title + cube + link, and the
+  Share buttons now go through the native share sheet (`share_controller.js`,
+  2026-07-06).
 - **Tune the auto-save debounce** — currently 1000ms
   (`data-autosave-debounce-value` on the form). Feel it on a real phone and adjust.
 - **Finish the "quartet" rename in body copy** — chrome (nav/buttons/titles/
@@ -174,8 +178,8 @@ recorded (below); the rest is read-side display work, buildable whenever.
 Three streams: **A traffic** (referrers/sessions/uniques, incl. AI-referral
 segmentation for GEO), **B product funnels** (create→publish, play→complete,
 anon→signup), **C error tracking**. Bot/crawler measurement is a cross-cutting
-concern. **Sequencing:** B and C are queued **after the superuser role + admin/
-user dashboard** ship (a couple items out); A tool-pick still open.
+concern. **Sequencing:** the superuser role + `/admin` shell that gated B and C
+**shipped (ADR-0016)** — both are now unblocked; A tool-pick still open.
 
 - **B — product funnels (designed, build as one chunk post-superuser).** Tight
   **`Event`** model, enum-constrained to `puzzle_opened` / `game_started` /
@@ -224,10 +228,12 @@ user dashboard** ship (a couple items out); A tool-pick still open.
   `letter_opener`; production reads `SMTP_ADDRESS`/`SMTP_PORT`/`SMTP_USERNAME`/
   `SMTP_PASSWORD`/`MAILER_SENDER`/`APP_HOST` from the NAS `.env`. Fill at first
   deploy (ADR-0005).
-- **Finish the robots.txt cache fix.** `ShortLivedLoosePublicFiles` is on `develop`
-  → merge to `main` (deploy), then **purge Cloudflare's cached `/robots.txt`** once
-  to clear the year-pinned stale copy. Verify with
-  `curl https://playquartets.com/robots.txt`.
+- **Verify the one-time Cloudflare purge landed.** `ShortLivedLoosePublicFiles` is
+  on `main` (deployed); after the new-palette deploy, a single **Purge Everything**
+  clears the year-pinned robots.txt/favicons. Verify:
+  `curl -sI https://playquartets.com/favicon.ico | grep -i cache-control` should
+  say `max-age=3600`. (Browsers that cached the old favicon keep it until their
+  copy expires — expected, not fixable server-side.)
 
 ### Hosting (exploratory — NO decision to move has been made)
 
@@ -259,9 +265,8 @@ for reference *only*:
 
 ## Suggested order
 
-1. **Quick wins, no decisions** — richer share payload → auto-save debounce tune.
+1. **Rating aggregates on stats pages** — the data's already flowing; pure read-side.
 2. **"My puzzles" aggregate stats table** — needs no new decision; builds on the
    existing owner-scoped dashboard + `PuzzleStats`.
-3. **Per-creator public homepage `/u/:handle`** — settle the deferred D3 (handle
-   model) via `grill-me` and record it in DECISIONS.md *first*, then build the
-   public index.
+3. **Analytics B + C** — now unblocked by the `/admin` shell (ADR-0016); build the
+   funnels into a third admin tab.

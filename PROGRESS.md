@@ -1,7 +1,7 @@
 # Progress
 
-**Last updated:** 2026-06-19
-**Active branch:** homepage-rework (feature branches per task; `main` is prod/deploy)
+**Last updated:** 2026-07-07
+**Active branch:** main (feature branches per task; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
 
@@ -13,15 +13,15 @@ The app plays **end-to-end** — author → publish → share link → play → 
 emoji cube — and the brutalist design now covers the whole site. Phases 0–4 are
 done; Phase 5 (import + export) is mostly there.
 
-The **auth & accounts epic shipped** (ADR-0005): creation is now fully public,
-anonymous authors own their work via a `creator_token` cookie, signing in/up
-claims it, and the styled Devise flows (signup/login/logout/forgot-password) are
-on-theme. What's left of that thread: the per-creator **public homepage
-(`/u/:handle`)** — deferred (D3) — and turning the dashboard's per-puzzle Stats
-links into an **at-a-glance aggregate table**. The remaining quick-wins (richer
-share payload, debounce tune) need no decisions. Deploy is **live** — push to
-`main` builds + ships to GHCR and Watchtower recreates `web` on the NAS, now with
-a Caddy front proxy so the restart no longer 502s (ADR-0006 + ADR-0007). Still
+The **auth & accounts epic is now fully shipped** (ADR-0005 + ADR-0016): creation
+is public, anonymous authors own their work via a `creator_token` cookie, signing
+in/up claims it, the Devise flows are on-theme, and the once-deferred D3 landed —
+every account has a stable **`handle`** and a public **`/u/:handle`** page (published
+puzzles + stats), with bylines linked site-wide. The **superuser role + `/admin`**
+(puzzles & users tabs) also exists (ADR-0016). Still open from that thread: the
+dashboard's **at-a-glance aggregate stats table**. Deploy is **live** — push to
+`main` builds + ships to GHCR and Watchtower recreates `web` on the NAS, with a
+Caddy front proxy so the restart no longer 502s (ADR-0006 + ADR-0007). Still
 outstanding: real SMTP creds in the NAS `.env` for forgot-password mail.
 
 The **visibility model shipped** (ADR-0008): "draft" retired into *incomplete*
@@ -38,24 +38,96 @@ shipped this session.
 
 **Analytics is scoped, not built** — a full privacy-first plan (streams A traffic
 / B product funnels / C error tracking + bot/crawler measurement) lives in the
-TODOS Analytics section; B and C are queued after the superuser/admin work. The
+TODOS Analytics section; the superuser/admin dashboard that gated B and C now
+**exists (ADR-0016)**, so those are unblocked. The
 **AI-bot stance shipped** as a hand-owned `public/robots.txt` (allow
 search/citation crawlers, block training crawlers) backed by Cloudflare's "Block
 AI bots" rule. **CLS is now eliminated** and the **play window got a full polish
 pass** (animations, floating toast, color mistake-boxes, per-tile font-fit — see
-shipped log). The next big threads: the **superuser/admin dashboard** (gates the
-analytics build) and the deferred **discovery surfacing**.
+shipped log). The next big threads: the **analytics build** (now unblocked) and
+the deferred **discovery surfacing**.
 
-The **homepage was reworked into a launchpad** (`homepage-rework`, this session):
-the old "today's puzzle" drop-in is gone — home now fronts Create/Play, a strip of
-random published puzzles, a "why play here" pitch, and a manifesto footer (full
-suite green). A **toggleable theme-skins plan** (`8bit` + `broadsheet` over the
-`brutal` default) is written to `docs/THEMES.md` on its own branch — scoped, not
-built.
+The **homepage launchpad is merged and reworked again** (PR #19 + follow-ups): a
+masthead hero (no more Create/Play fork), a centered jump-in strip, and the whole
+page width-constrained to the subpages' column. The **category palette is ours
+now** (ADR-0017): soft pastels in the Connections register but deliberately
+**never NYT's exact hexes** (trade-dress risk), with ≥8:1 contrast both ways.
+**Play rules changed:** owners can't play their own puzzles (ADR-0015), wrong
+guesses stay selected with a duplicate-guess guard, and finished plays can be
+**rated** (quality + difficulty, stored on the attempt — display TODO). A
+**toggleable theme-skins plan** (`8bit` + `broadsheet` over the `brutal` default)
+is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
-- **Homepage rework — launchpad, not a live puzzle (`homepage-rework`).** The old
+- **Category palette settled — ours, never NYT's (ADR-0017).** After four variants
+  (emoji-signal, hot print, warning-label, threat-scale), landed on soft pastels in
+  the Connections register with deliberately distinct values (`#f2c94c`/`#8ed081`/
+  `#8db4f2`/`#cf9bdb` in `_variables.scss`, the single source): golden-vs-butter,
+  mint-vs-olive, sky-vs-periwinkle, lilac-vs-orchid. ≥9:1 black-on-fill, ≥8:1 as
+  text on the dark page. Propagates to the trophy gradient (`RAINBOW_BANDS`),
+  styleguide, favicon set (`tmp/brand/build_favicon.py`), and `share.png` (new
+  regenerable source `tmp/brand/share.html`, Chrome-rendered; OG meta at `?v=4`).
+  On-page emoji cubes now render as **CSS blocks in our palette** (`cube_grid`
+  helper + `renderShare`); raw 🟨🟩🟦🟪 live only in the copied share text.
+- **User pages + superuser admin (ADR-0016, settles D3).** `users.handle` (unique,
+  minted from the email local-part, stable) → public **`/u/:handle`** (published
+  puzzles + PlayerStats block); bylines link there site-wide (`author_link`).
+  `users.superuser` gates **`/admin`** (404 to everyone else): a puzzles tab
+  (everyone's puzzles, the shared `puzzles/_row` owner-grade actions —
+  `set_puzzle`'s `accessible_puzzles` waves superusers through) and a users tab
+  (last login via new Devise **trackable**, created/solved counts), tab-toggled,
+  paginated. Anoint via console: `user.update!(superuser: true)`.
+- **Post-play ratings.** Quality ("was this a good one?" — 👍 Yeah! / 👍👍 Hell
+  yeah!, positive-only) + difficulty (pretty easy → `@!#?@!`) as nullable enums on
+  **Attempt** (one finished play = one vote, anonymous included; re-rating
+  overwrites). `PATCH /p/:token/rating` + `rating_controller.js`; the block rides
+  the finished-play JSON and the revisit view, **published puzzles only**. Display
+  of aggregates is TODO.
+- **Archive cleanup (logged-in).** Completed rows get a full-height flush-right
+  green **check square** (`.m-check`, shared with the jump-in strip) and dim to
+  55%; bylines stack under titles. **Your own puzzles are auto-hidden**, with a
+  fold-out **Filter** (funnel icon → hide-mine default-on, hide-completed
+  default-off; plain GET params, nothing persists). Jump-in rows restructured
+  (div, not nested anchors) after byline links broke them.
+- **Owners can't play their own puzzles (ADR-0015).** `Playability` gained
+  `:owned`; owners see the board **revealed** (`play/_revealed` + a Share button)
+  instead of playable, and `attempts#create` refuses owner posts — no self-earned
+  trophies or stats. Reverses ADR-0009's "owners never gated".
+- **Wrong guesses stay selected.** A miss wiggles but no longer deselects — the
+  player clears tiles themselves (tap-by-tap or Deselect all). Companion guard:
+  resubmitting any already-guessed-wrong set toasts "You already made that guess"
+  instead of burning a mistake.
+- **Authoring form UX pass.** Bigger inputs (≥16px kills iOS focus-zoom), more
+  tap-space between fields, blocks reordered **easiest→hardest** (yellow→purple,
+  `FORM_COLOR_ORDER` now drives render order, not stored position), a per-block
+  **color-swap menu** (pencil in the legend → exchange colors with another block,
+  recolors in place with a bg transition, reorders on reload; `colorswap`
+  controller), an in-box **clear ×** on every text input (`clearable` helper +
+  controller), and focus that **pops like a board tile** (lift + house hard
+  shadow, no CLS). `Group` color uniqueness now validates the in-memory sibling
+  set (a swap 422'd against stale DB colors); publish-time **duplicate-answer
+  validation** (16 distinct words, case/space-insensitive) — the `:complete`
+  factory now builds distinct words per group.
+- **Share buttons use the native share sheet.** `share_controller.js`:
+  `navigator.share({url})` when available (iOS composes a real rich link — a
+  pasted URL often doesn't unfurl), clipboard fallback on desktop. Bare URL only;
+  "Copy result" stays clipboard (text + link never unfurls, the Wordle pattern).
+- **Board rows no longer grow as groups solve.** The CLS min-height reservation
+  now tracks live rows (`--rows` var set by `render()`) instead of stretching the
+  remaining tiles. Tile text bumped to `clamp(0.75rem, 3vw, 1.2rem)`.
+- **Brand refresh.** Favicon rebuilt: normal-weight Space Grotesk Q over 2×2
+  color quadrants, rounded corners (`tmp/brand/build_favicon.py`, fontTools-based).
+  Stamp padding bumped; revisit-view stamp was invisible (overlay defaults outside
+  `.m-game`) — fixed. `$brutal-muted` brightened (`#bcb8ae`, ~9:1).
+- **Homepage follow-ups (post-merge).** Hero reworked to a **masthead** (fork
+  retired — Jump In *is* Play; sticker CTA + quiet archive link carry the Primary
+  landmark, tilted Q-quadrant cluster for color). Whole page width-constrained to
+  the subpages' column (`$brutal-container`/`$brutal-column`, padding-based so
+  bands stay full-bleed; winboard bleeds via `50% − 50vw`, mobile included).
+  Strip band centered w/ pinstripe bg; manifesto + footer on a shared
+  etched-panel mixin; jump-in filters out `specialized` puzzles and flags
+  completed ones; auth chip uses the topbar's outline buttons. The old
   "today's puzzle" home (dropped you into a featured/unplayed board) is replaced by
   a launchpad of full-bleed color bands: a hero, a two-color **Create/Play fork**
   (carries the `Primary` nav landmark), a random **jump-in strip** of ≤5 published
@@ -412,9 +484,6 @@ built.
 
 ## Known not-done / watch-outs
 
-- **Per-creator public homepage `/u/:handle`** — deferred (D3, ADR-0005). Needs a
-  stable per-account handle/slug and how free-text `author_name` reconciles with a
-  claimed account. The last unbuilt piece of the accounts thread.
 - **"My puzzles" aggregate stats table** — the dashboard lists puzzles with a
   per-puzzle `Stats` link; the planned at-a-glance table (completions, *successful*
   completions, avg mistakes inline per row) is still TODO.

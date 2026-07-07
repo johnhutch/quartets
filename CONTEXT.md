@@ -43,13 +43,16 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   specialized). Surfacing/filtering is not built yet.
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
   yellow, purple` (enum integers blue:0…purple:3, unchanged). Authoring/form block
-  order is **reverse rainbow** — purple→blue→green→yellow, hardest first
-  (`PuzzlesController::FORM_COLOR_ORDER`, applied via `position` in
-  `ensure_four_groups`); it drives the form blocks + the answers list, not the
-  shuffled play board.
+  order is **easiest→hardest** — yellow→green→blue→purple
+  (`PuzzlesController::FORM_COLOR_ORDER`; the form **sorts by color at render**,
+  not by stored `position`, so a color swap reorders on the next load). Authors
+  can **swap two blocks' colors** from a legend menu (`colorswap_controller`).
 - **Attempt** — one play-through, keyed by a `player_token` cookie; also
   attributed to `user_id` when the player is logged in (ADR-0009). Logged-in
-  players get **one attempt per puzzle** (partial unique index).
+  players get **one attempt per puzzle** (partial unique index). Carries the
+  post-play **rating** (`quality`, `difficulty`).
+- **handle** — a user's stable public slug (`/u/:handle`), minted from the email
+  local-part at signup; `author_name` stays the free-text display name (ADR-0016).
 - **Tag** — a normalized hyphen-slug (`star-wars`) attached to taggables through a
   **polymorphic `taggings` join** (the `Taggable` concern). Canonical rows (not a
   jsonb array) so an admin can merge/rename; authors add them via a creatable
@@ -66,8 +69,10 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   cookie). `has_secure_token :share_token`. `has_many :groups` (ordered by
   `position`), `has_many :attempts`, `accepts_nested_attributes_for :groups`,
   `belongs_to :user, optional: true` (logged-out authors own via the cookie —
-  ADR-0005). **All validations are publish-only** — title + the 4×4 structural
-  rules (`GROUPS_PER_PUZZLE = 4`, four distinct colors) fire only `if: :published?`.
+  ADR-0005). **All validations are publish-only** — title, the 4×4 structural
+  rules (`GROUPS_PER_PUZZLE = 4`, four distinct colors), and **no duplicate
+  answers** (16 distinct words, case/whitespace-insensitive) fire only
+  `if: :published?`.
   `#complete?` (title + 4 groups, each with 4 filled words + a description) is the
   **playability gate** — it drives `play#show`/`attempts` access, the editor's
   "Save"→"Keep it unlisted (link only)" label, and the Publish gate. `status`
@@ -80,7 +85,9 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   **jsonb** column (defaults to `[]`) — *not* a PG array, despite the PLAN
   sketch. `WORDS_PER_GROUP = 4`. `#filled_words` strips the blanks the form
   leaves. `description`/exactly-four-words validated only when the parent is
-  published.
+  published. **Color uniqueness validates the in-memory sibling set**, not the
+  DB — the authoring color-swap updates two groups in one nested save, and a
+  DB-backed uniqueness check would 422 every swap against stale colors.
 - **Attempt** (`player_token`, optional `user_id`, `solved`, `mistakes_count`,
   `guesses` jsonb, `achievement` enum). `belongs_to :user, optional:` — anonymous
   plays carry only a `player_token`; logged-in plays also attribute to the account,
@@ -94,6 +101,12 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   solved, zero mistakes) scores. `at_least(tier)` scope = cumulative `>= n` count;
   `earned_tiers`/`quip_bucket` drive the awards view. The public play loop records
   these (the Stimulus `game_controller.js` POSTs to `play_attempts_path`).
+  **Ratings:** nullable prefixed enums `quality` (`yeah:1, hell_yeah:2` —
+  positive-only) and `difficulty` (`pretty_easy:0…cursed:3`, cursed renders as
+  `@!#?@!`), set post-play via `PATCH /p/:token/rating` (`RatingsController` —
+  resolves the viewer's attempt like the revisit view, published puzzles only,
+  re-rating overwrites). The `play/_rating` block rides the finished-play JSON
+  + the revisit view (`rating_controller.js`).
 - **Guess** (`app/models/`) — value object owning the guess-log shape (jsonb, so
   string keys from JSON, symbol keys in tests; it's the one place that normalizes
   both). `#colors`/`#words`, and the **derived** Connections rule: `#correct?` =
@@ -141,30 +154,49 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   the loud CTA and Save reads "Keep it unlisted (link only)" (ADR-0008).
 - **HomeController** — the public front door (`GET /`, includes `AnonymousPlayer`).
   A **launchpad, not a play surface** (ADR-0014): `@puzzles` is a random strip of
-  ≤`STRIP_SIZE` (5) **published** puzzles (`Puzzle.published.order(RANDOM()).limit`).
-  No board, no featured/unplayed logic, no embedded game. Still mints the
-  `player_token` cookie via `AnonymousPlayer`. The layout suppresses the global
-  topbar + footer on home only via the `home_page?` helper — home fronts its own
-  nav (the Create/Play fork, `aria-label="Primary"`) and footer-as-section. All
-  homepage copy is in `en.yml` under `home.*`.
+  ≤`STRIP_SIZE` (5) **published, non-`specialized`** puzzles (themed quartets
+  aren't a fair random jump-in), with `@completed_ids` for the signed-in
+  `.m-check` flags. No board, no featured/unplayed logic, no embedded game. Still
+  mints the `player_token` cookie via `AnonymousPlayer`. The layout suppresses the
+  global topbar + footer on home only via the `home_page?` helper — home fronts
+  its own nav (the hero's Create sticker + archive link, `aria-label="Primary"`;
+  the old Create/Play fork is gone) and footer-as-section. All homepage copy is
+  in `en.yml` under `home.*`.
+- **User / UsersController / Admin (ADR-0016)** — `User` has `handle` (unique,
+  minted from the email local-part in a `before_validation` on create, stable
+  thereafter), `superuser` (bool, console-anointed), and Devise **`:trackable`**
+  (last-login for the admin users tab). Public **`GET /u/:handle`**
+  (`UsersController#show`, 404 on unknown handle): published puzzles +
+  `PlayerStats` (created = published count only). `author_link(puzzle)` renders
+  every byline — linked to `/u/:handle` when the puzzle has an account owner,
+  plain text for cookie-owned. **`/admin`** (`Admin::BaseController`, 404 unless
+  superuser): a puzzles tab rendering the shared `puzzles/_row` partial for
+  *every* puzzle (the member actions pass because `PuzzlesController#set_puzzle`
+  resolves via `accessible_puzzles` — `Puzzle.all` for superusers) and a users
+  tab (last login, created/solved counts), both offset-paginated, tab-toggled.
 - **Auth concerns** (`app/controllers/concerns/`) — `Creator` (cookie ownership +
   `owned_puzzles` + the `owns?` view helper), `ClaimsPuzzles` (site-wide
   `before_action`: on the first authenticated request, reassigns the cookie's
   puzzles to the account and clears the cookie), `AnonymousPlayer` (the
-  `player_token` for stats). The play gate (ADR-0008) lives in the **`Playability`**
-  policy object (`app/models/`): `Playability.new(puzzle, owner:)` — `#playable?`
-  (= exists && `complete?`, owner-agnostic) and `#status` (`:playable` / `:editable`
-  = incomplete-but-owned / `:missing` = unknown token or incomplete-to-a-stranger).
-  `PlayController#show` maps `status` → response (`:editable` redirects the owner to
-  the editor, `:missing` 404s) and drops the `find_by!`/rescue; `AttemptsController#create`
-  gates on `#playable?` (no owner branch — it just 404s non-playable) and attributes
-  the attempt to `current_user` when signed in, idempotently (ADR-0009). For a **non-owner** who
-  has already finished a puzzle, `show` renders `play/_result` — the **reconstructed
-  game-over board** (groups in solve order from `attempt.solved_colors`, win/loss
-  stamp, cube + trophies) — instead of a fresh board (ADR-0012). The finished
+  `player_token` for stats). The play gate (ADR-0008 + 0015) lives in the
+  **`Playability`** policy object (`app/models/`): `Playability.new(puzzle, owner:)`
+  — `#playable?` (= exists && `complete?` && **not yours** — ADR-0015) and `#status`
+  (`:playable` / `:owned` = complete-but-yours, shown revealed / `:editable` =
+  incomplete-but-owned / `:missing` = unknown token or incomplete-to-a-stranger).
+  `PlayController#show` maps `status` → response (`:owned` renders
+  `play/_revealed` — the solved rows + a Share button, no game; `:editable`
+  redirects the owner to the editor; `:missing` 404s); `AttemptsController#create`
+  gates on `#playable?` **with the owner flag** (an owner POST 404s — no
+  self-earned trophies/stats) and attributes the attempt to `current_user` when
+  signed in, idempotently (ADR-0009). For a player who has already finished a
+  puzzle, `show` renders `play/_result` — the **reconstructed game-over board**
+  (groups in solve order from `attempt.solved_colors`, win/loss stamp, cube +
+  trophies, the rating block) — instead of a fresh board (ADR-0012). The finished
   attempt is looked up by account when signed in, else by `player_token`
-  (`PlayController#finished_attempt`); owners are never gated. `index` badges
-  completed puzzles.
+  (`PlayController#finished_attempt`). `index` marks completed puzzles with the
+  `.m-check` square + dims the row, **auto-hides your own puzzles** and offers a
+  signed-in filter fold-out (`hide_mine` default on / `hide_completed` default
+  off — plain GET params, nothing persists; `filters_controller` auto-submits).
 
 ## Gotchas
 
@@ -187,6 +219,14 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
 - **Capybara `text:` sees CSS `text-transform`** — the brutal theme uppercases
   buttons/chips/status, so assert with a case-insensitive regex (`/saved/i`), not
   a literal `"Saved"`.
+- **`Multicolor` breaks string contiguity** — a multicolored title never appears
+  as one substring in the raw HTML (3–6-letter spans). Request specs asserting
+  visible copy on multicolored surfaces use the **`page_text`** helper
+  (`spec/support/page_text.rb`, Nokogiri text), not `response.body.include?`.
+- **An explicit `display` beats the UA `[hidden]` rule** — any hidden-by-default
+  element that also sets `display:` needs a `&[hidden] { display: none; }`
+  restatement. This has bitten three times (publish tooltip, color-swap menu,
+  clearable ×).
 - **Board tiles fit long words by shrinking, not hyphenating** — `game_controller`
   sets a per-tile `--card-fit` scale (`cardFit`, keyed off the longest word) and
   `.m-card` font is `calc(clamp(...) * var(--card-fit, 1))`, so a name that has no

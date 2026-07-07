@@ -554,6 +554,98 @@ The toggleable theme-skins idea (`8bit`/`broadsheet`) is scoped in
 
 ---
 
+## 0015 — Owners don't play their own puzzles
+
+**Date:** 2026-07-06
+**Status:** accepted (reverses 0009's "owners are never gated")
+
+**Context.** ADR-0009/0012 left owners ungated on their own puzzles ("they replay
+to test"). But an owner playing their own puzzle knows the answers: every "win"
+pads their trophies and pollutes the puzzle's solve-rate stats, and with public
+user pages coming, self-farmed stats would be visible fiction.
+
+**Decision.**
+
+- **`Playability` owns the rule** (one place, as before): `#playable?` is false for
+  the owner; `#status` gains **`:owned`** (complete + yours).
+- `play#show` renders an owner's complete puzzle **revealed** (`play/_revealed` —
+  the four group rows in their solved state + a Share button), not playable. The
+  author preview job (read your work, share it) survives; the play loop doesn't.
+- `attempts#create` passes `owner:` into the same gate (via the `Creator` concern),
+  so an owner POST records nothing — trophies and stats can't be self-padded.
+  Applies to anonymous `creator_token` owners too.
+
+**Consequence.** The archive auto-hides your own puzzles (they're dead rows to
+you); the dashboard "Play" affordance now lands on the revealed view. Existing
+self-attempts remain in the DB but can't grow. ADR-0009's owner exemption is gone;
+its one-play cap and 0012's revisit reconstruction are unchanged for non-owners.
+
+---
+
+## 0016 — Handles, public user pages, and the superuser admin (settles D3)
+
+**Date:** 2026-07-07
+**Status:** accepted (completes the ADR-0005 accounts thread)
+
+**Context.** D3 (per-creator public homepage) was deferred pending a handle model
+and an `author_name` reconciliation rule. Separately, the admin dashboard that
+gates the analytics build (TODOS) needed a role mechanism that didn't exist.
+
+**Decision.**
+
+- **Handle model:** `users.handle` — unique, minted at signup from the email's
+  local part (parameterized, deduped with a numeric suffix), **backfilled** for
+  existing accounts, and **stable** (an email change never touches it, so shared
+  profile links keep working). No user-facing rename UI yet.
+- **`author_name` reconciliation:** it stays the free-text *display* name on
+  bylines; the handle is only the URL + page title. No forced sync.
+- **`/u/:handle`** (public, login-free): the user's **published** puzzles + the
+  dashboard's PlayerStats block ("Created" counts published only — drafts and
+  unlisted stay private). Bylines site-wide link the author name there when the
+  puzzle has an account owner (`author_link`); anonymous bylines stay plain.
+- **Superuser:** a `users.superuser` boolean (console-anointed), gating a
+  namespaced **`/admin`** — 404 (not 403) to everyone else. Puzzles tab = every
+  puzzle with the owner dashboard's action rows (shared `puzzles/_row` partial;
+  `PuzzlesController#set_puzzle` resolves through `accessible_puzzles`, which is
+  `Puzzle.all` for superusers — same routes, no parallel admin CRUD). Users tab =
+  paginated accounts with last-login (Devise **:trackable**, newly enabled),
+  created + solved counts.
+
+**Consequence.** The accounts epic (ADR-0005) is fully built. The analytics B/C
+streams are unblocked (they wanted this dashboard as their home). Tag admin and
+writeable user management are follow-ups (TODOS). Trackable's history starts at
+enablement — older accounts show "never" until they next sign in.
+
+---
+
+## 0017 — The category palette is ours — never NYT's exact hexes
+
+**Date:** 2026-07-07
+**Status:** accepted
+
+**Context.** The original palette exactly matched NYT Connections' pastels. Colors
+alone aren't copyrightable, but a pixel-identical palette on a Connections-style
+game is the strongest exhibit in a **trade-dress** claim — and the NYT demonstrably
+enforces in games (the 2024 Wordle-clone takedown wave). If the site ever gets
+noticed, exact hexes are free risk for zero benefit.
+
+**Decision.** The yellow→purple difficulty *convention* stays (genre vocabulary),
+but the values are ours: soft pastels in the same register, deliberately distinct
+(`#f2c94c` golden vs their butter, `#8ed081` mint vs olive, `#8db4f2` sky vs
+periwinkle, `#cf9bdb` lilac vs orchid). All four hold ≥9:1 with black text on the
+fill and ≥8:1 as text on the near-black page. `_variables.scss` is the single
+source; `RAINBOW_BANDS`, the styleguide, the favicon generator, and the share.png
+source (`tmp/brand/share.html`) mirror it. On-page emoji cubes render as CSS
+blocks in our palette (`cube_grid`); raw 🟨🟩🟦🟪 appear only in copied share text.
+
+**Consequence.** Don't "fix" the palette back to NYT's values, ever — being
+visibly-not-identical is the point. A palette change is a five-file sweep
+(variables, helper bands, styleguide, the two `tmp/brand` generators) + regenerated
+favicons/share.png (+ an OG `?v=` bump). Specs assert visible text via `page_text`,
+not raw HTML, on multicolored surfaces.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.
