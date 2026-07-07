@@ -44,6 +44,7 @@ export default class extends Controller {
     this.solvedColors = []  // colors already found
     this.mistakes = 0
     this.guesses = []       // [{ words: [...], colors: [...], t }]
+    this.wrongPicks = new Set() // sorted word-sets already guessed wrong (resubmit guard)
     this.over = false
     this.startTime = null   // set on the first tile tap; the clock for timing
 
@@ -115,6 +116,14 @@ export default class extends Controller {
   submit() {
     if (this.over || this.selected.length !== 4) return
 
+    // A wrong guess stays selected, so the same four sit one tap from being
+    // resubmitted — tell the player instead of burning a second mistake.
+    const pick = [...this.selected].sort().join("|")
+    if (this.wrongPicks.has(pick)) {
+      this.setStatus("You already made that guess")
+      return
+    }
+
     const colors = this.selected.map((word) => this.colorOf[word])
     const correct = colors.every((color) => color === colors[0])
     // Log the picked words + the true color of each, plus `t` (ms since the clock
@@ -126,6 +135,7 @@ export default class extends Controller {
     if (correct) {
       this.lockGroup(colors[0])
     } else {
+      this.wrongPicks.add(pick)
       this.registerMistake(colors)
     }
   }
@@ -181,24 +191,18 @@ export default class extends Controller {
     }
 
     this.setStatus(oneAway ? "One away…" : "Not quite — try again")
-    this.rejectSelection() // wiggle the picked tiles, then settle them back down
+    this.rejectSelection() // wiggle the picked tiles; they stay selected
   }
 
-  // Wrong guess: the picked tiles do a quick wiggle (−3°↔3°), pause, then play
-  // the deselect "push down" settle. State clears now; the visuals catch up.
+  // Wrong guess: the picked tiles do a quick wiggle (−3°↔3°) and STAY selected —
+  // the player unpicks them (tap by tap, or Deselect all) themselves, so their
+  // working memory of what they just tried isn't erased out from under them.
   rejectSelection() {
+    if (this.reducedMotion) return
     const tiles = [...this.boardTarget.querySelectorAll(".m-card.is-selected")]
-    this.selected = []
-    if (this.hasSubmitTarget) this.submitTarget.disabled = true
-
     tiles.forEach((tile) => {
-      const settle = () => {
-        tile.classList.remove("is-selected")
-        tile.removeAttribute("aria-pressed")
-      }
-      if (this.reducedMotion) { settle(); return }
       // composite:"add" layers the wiggle on top of the tile's lift transform.
-      const wiggle = tile.animate(
+      tile.animate(
         [
           { transform: "rotate(-3deg)" },
           { transform: "rotate(3deg)" },
@@ -208,7 +212,6 @@ export default class extends Controller {
         ],
         { duration: 280, easing: "ease-in-out", composite: "add" }
       )
-      wiggle.onfinish = () => setTimeout(settle, 100) // pause, then push down
     })
   }
 

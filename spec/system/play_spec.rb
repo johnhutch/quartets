@@ -66,16 +66,38 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
   it "ends the game after four mistakes" do
     visit play_path(puzzle.share_token)
 
-    # Four guesses that each deliberately straddle groups — all wrong.
+    # Four guesses that each deliberately straddle groups — all wrong. A wrong
+    # guess stays selected now, so each retry starts by clearing the last one.
     [
       %w[cat one mercury piano],
       %w[dog two venus drums],
       %w[owl three mars bass],
       %w[fox four earth flute]
-    ].each { |guess| solve(guess) }
+    ].each_with_index do |guess, i|
+      click_button "Deselect all" if i.positive?
+      solve(guess)
+    end
 
     expect(page).to have_content(/out of guesses/i) # the loss stamp
     expect(page).to have_no_button("Submit")
+  end
+
+  it "keeps a wrong guess highlighted until the player clears it" do
+    visit play_path(puzzle.share_token)
+
+    solve(%w[cat one mercury piano]) # deliberately wrong
+
+    # The four picks stay lifted — unpick them yourself, or Deselect all.
+    expect(page).to have_css(".m-card.is-selected", count: 4)
+    expect(page).to have_css(".m-mistake.is-used", count: 1)
+
+    # Resubmitting the identical four tells them instead of burning a mistake.
+    click_button "Submit"
+    expect(page).to have_content(/already made that guess/i)
+    expect(page).to have_css(".m-mistake.is-used", count: 1)
+
+    click_button "Deselect all"
+    expect(page).to have_no_css(".m-card.is-selected")
   end
 
   it "records the finished play for stats" do
