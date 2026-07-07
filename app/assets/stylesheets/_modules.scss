@@ -716,7 +716,41 @@
     font-size: $font-lg;
     padding: $space-sm;
   }
+}
 
+// A text box with an in-box clear (×) button (clearable_controller). The
+// wrapper is the positioning context; the input reserves room on the right so
+// text never runs under the icon.
+.m-clearable {
+  position: relative;
+  display: grid; // the input stretches exactly like it did as a bare grid child
+
+  input,
+  textarea { padding-right: 2.4em; }
+
+  &__clear {
+    position: absolute;
+    right: $space-sm;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    &[hidden] { display: none; } // the explicit display would beat the UA rule
+    margin: 0;
+    padding: 2px; // a little extra tap area beyond the glyph
+    background: none;
+    border: 0;
+    cursor: pointer;
+    .m-icon { width: 1.2em; height: 1.2em; }
+  }
+
+  // Textareas: pin the × to the top corner instead of the vertical middle.
+  &--area &__clear {
+    top: 0.8em;
+    transform: none;
+  }
+}
+
+.m-form {
   // Explains the autosave up front so the (rare) Save button feels optional.
   &__note {
     margin: 0;

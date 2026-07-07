@@ -35,7 +35,8 @@ module ApplicationHelper
     save: 'M5 4.5h9.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12a1.5 1.5 0 0 1 .439 1.061V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18V6A1.5 1.5 0 0 1 5 4.5z M7.5 4.5v4h7v-4 M7.5 19.5v-6h9v6',
     edit: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 0 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931z M19.5 7.125 16.862 4.487 M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10',
     menu: 'M3.75 6.75h16.5 M3.75 12h16.5 M3.75 17.25h16.5',
-    close: 'M6 18 18 6 M6 6l12 12'
+    close: 'M6 18 18 6 M6 6l12 12',
+    clear: 'M9.75 9.75l4.5 4.5 M14.25 9.75l-4.5 4.5 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'
   }.freeze
 
   # North-east arrow pinned to *text* presentation. iOS otherwise renders a bare
@@ -56,6 +57,21 @@ module ApplicationHelper
   # suppressed there (see the layout). Sub-pages keep the topbar.
   def home_page?
     controller_name == "home"
+  end
+
+  # Wraps a text input/textarea with an in-box clear (×) button — shown only
+  # while the box has something to clear (clearable_controller). `area: true`
+  # pins the × to the top corner instead of the vertical middle (textareas).
+  def clearable(area: false, &block)
+    tag.span(class: class_names("m-clearable", "m-clearable--area": area),
+             data: { controller: "clearable", action: "input->clearable#refresh" }) do
+      safe_join([
+        capture(&block),
+        tag.button(icon(:clear), type: "button", class: "m-clearable__clear",
+                   hidden: true, "aria-label": "Clear",
+                   data: { action: "clearable#clear" })
+      ])
+    end
   end
 
   def icon(name)
