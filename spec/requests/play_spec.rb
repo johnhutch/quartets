@@ -238,6 +238,16 @@ RSpec.describe "Play (public)", type: :request do
         expect(page_text).to include("Someone Elses")
       end
 
+      it "keeps anonymous puzzles visible while hiding mine (the NULL != id trap)" do
+        create(:published_puzzle, user: nil, creator_token: "tok", title: "By A Ghost")
+        create(:published_puzzle, user: user, title: "Mine Own")
+
+        get play_index_path
+
+        expect(page_text).to include("By A Ghost")
+        expect(page_text).not_to include("Mine Own")
+      end
+
       it "shows your own puzzles when hide_mine is unchecked" do
         create(:published_puzzle, user: user, title: "Mine Own")
 
