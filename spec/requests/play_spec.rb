@@ -26,10 +26,9 @@ RSpec.describe "Play (public)", type: :request do
 
       get play_index_path
 
-      text = Nokogiri::HTML(response.body).text
       expect(response.body).to include("Finished it")
       expect(response.body).to include("Not yet")
-      expect(text.scan(/Played/).size).to eq(1) # only the finished one is badged
+      expect(response.body.scan(/class="m-check"/).size).to eq(1) # only the finished one gets the check square
     end
   end
 
@@ -222,6 +221,60 @@ RSpec.describe "Play (public)", type: :request do
         expect(response.body).to include('data-owner-view="true"')
         expect(response.body).not_to include('data-controller="game"')
         expect(response.body).not_to include('data-played="true"')
+      end
+    end
+
+    context "archive filters (GET /play, signed in)" do
+      let(:user) { create(:user) }
+      before { sign_in user }
+
+      it "hides your own puzzles by default" do
+        create(:published_puzzle, user: user, title: "Mine Own")
+        create(:published_puzzle, title: "Someone Elses")
+
+        get play_index_path
+
+        expect(response.body).not_to include("Mine Own")
+        expect(response.body).to include("Someone Elses")
+      end
+
+      it "shows your own puzzles when hide_mine is unchecked" do
+        create(:published_puzzle, user: user, title: "Mine Own")
+
+        get play_index_path(hide_mine: "0")
+
+        expect(response.body).to include("Mine Own")
+      end
+
+      it "marks completed puzzles with the check square and dims the row" do
+        puzzle = create(:published_puzzle, title: "Done Deal")
+        create(:attempt, puzzle: puzzle, user: user, solved: true)
+
+        get play_index_path
+
+        expect(response.body).to include("Done Deal")
+        expect(response.body).to include("m-check")
+        expect(response.body).to include("is-done")
+      end
+
+      it "hides completed puzzles when hide_completed is checked" do
+        played = create(:published_puzzle, title: "Done Deal")
+        create(:published_puzzle, title: "Fresh One")
+        create(:attempt, puzzle: played, user: user, solved: true)
+
+        get play_index_path(hide_completed: "1")
+
+        expect(response.body).not_to include("Done Deal")
+        expect(response.body).to include("Fresh One")
+      end
+
+      it "offers the filter fold-out to signed-in players only" do
+        get play_index_path
+        expect(response.body).to include("m-filters")
+
+        sign_out user
+        get play_index_path
+        expect(response.body).not_to include("m-filters")
       end
     end
 

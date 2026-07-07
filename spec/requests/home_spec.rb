@@ -67,8 +67,8 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body).to include("✓ Played")
-      expect(response.body.scan("✓ Played").size).to eq(1)
+      expect(response.body.scan(/class="m-check"/).size).to eq(1) # the check square
+      expect(response.body).to include("is-done")                 # the dimmed row
     end
 
     it "does not embed a playable game" do

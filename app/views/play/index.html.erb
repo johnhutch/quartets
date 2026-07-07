@@ -6,16 +6,41 @@
     <%= link_to "Create #{ne_arrow}", new_puzzle_path, class: "m-sticker m-create-sticker" %>
   </header>
 
+  <%# Fold-out filters, signed-in only. Plain GET params, nothing persists; the
+      fold-out re-opens after a change because interacting always puts the
+      hidden-field params in the URL. %>
+  <% if user_signed_in? %>
+    <details class="m-filters"<%= " open" if params[:hide_mine].present? || params[:hide_completed].present? %>>
+      <summary class="m-filters__toggle"><%= icon(:filter) %><span>Filter</span></summary>
+      <%= form_with url: play_index_path, method: :get, class: "m-filters__panel",
+            data: { controller: "filters" } do %>
+        <label class="m-filters__opt">
+          <input type="hidden" name="hide_mine" value="0">
+          <%= check_box_tag :hide_mine, "1", @hide_mine, data: { action: "change->filters#apply" } %>
+          Hide my puzzles
+        </label>
+        <label class="m-filters__opt">
+          <input type="hidden" name="hide_completed" value="0">
+          <%= check_box_tag :hide_completed, "1", @hide_completed, data: { action: "change->filters#apply" } %>
+          Hide completed puzzles
+        </label>
+      <% end %>
+    </details>
+  <% end %>
+
   <% if @puzzles.any? %>
     <ul class="m-puzzle-list">
       <% @puzzles.each do |puzzle| %>
-        <li>
-          <%= link_to puzzle.title, play_path(puzzle.share_token) %>
-          <% if @completed_ids.include?(puzzle.id) %>
-            <span class="m-puzzle-list__done">✓ Played</span>
-          <% end %>
-          <% if puzzle.author_name.present? %>
-            <span class="m-puzzle-list__author">by <%= puzzle.author_name %></span>
+        <% done = @completed_ids.include?(puzzle.id) %>
+        <li class="<%= 'is-done' if done %>">
+          <span class="m-puzzle-list__text">
+            <%= link_to puzzle.title, play_path(puzzle.share_token) %>
+            <% if puzzle.author_name.present? %>
+              <span class="m-puzzle-list__author">by <%= puzzle.author_name %></span>
+            <% end %>
+          </span>
+          <% if done %>
+            <span class="m-check" aria-label="Played">✓</span>
           <% end %>
         </li>
       <% end %>

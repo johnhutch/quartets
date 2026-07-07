@@ -321,35 +321,96 @@ body.theme-brutal {
 .theme-brutal .m-puzzle-list {
   gap: $space-md;
 
-  // Public browse rows are boxed brutal cards on a single flex line.
+  // Public browse rows are boxed brutal cards: title + byline stacked on the
+  // left, the completed check square (if any) running the full height flush
+  // right. The box carries no padding of its own — the text block does — so
+  // the check can sit hard against the frame.
   li:not(.m-puzzle-list__item) {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: $space-sm;
-    padding: $space-md;
+    align-items: stretch;
+    padding: 0;
     border: $brutal-border solid $brutal-ink;
     box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
 
-    > a:first-of-type {
+    .m-puzzle-list__text {
       flex: 1 1 auto;
+      min-width: 0;
+      display: grid;
+      gap: 2px; // title over byline, minimal breathing room
+      justify-items: start;
+      padding: $space-md;
+    }
+
+    > .m-puzzle-list__text a {
       font-family: $font-display;
       font-weight: 700;
       font-size: $font-lg;
       text-transform: uppercase;
       text-decoration: none;
+      overflow-wrap: anywhere;
     }
+
+    // Finished ones step back so the doable ones stand out; the check square
+    // stays at full strength.
+    &.is-done .m-puzzle-list__text { opacity: 0.55; }
   }
 
   &__author { font-size: $font-sm; font-style: italic; color: $brutal-muted; }
+}
 
-  // "✓ Played" badge — a small green chip in the display face.
-  &__done {
+// Completed check: a full-height flush-right square (archive boxes + the
+// homepage jump-in rows share it) — green field, white padded ✓.
+.theme-brutal .m-check {
+  flex: none;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-width: 3.25rem;
+  padding: $space-sm;
+  background: $color-green;
+  color: #fff;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: $font-lg;
+  border-left: $brutal-border solid $brutal-ink;
+}
+
+// --- Archive filter fold-out (signed-in only) --------------------------------
+.theme-brutal .m-filters {
+  margin-bottom: $space-lg;
+
+  &__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+    cursor: pointer;
+    list-style: none; // no disclosure triangle; the funnel is the affordance
     font-family: $font-display;
     font-weight: 700;
     text-transform: uppercase;
     font-size: $font-sm;
-    color: $color-green;
+    color: $brutal-muted;
+    .m-icon { width: 1.1em; height: 1.1em; }
+    &:hover { color: $color-yellow; }
+    &::-webkit-details-marker { display: none; }
+  }
+
+  &__panel {
+    display: grid;
+    gap: $space-xs;
+    margin-top: $space-sm;
+    padding: $space-sm $space-md;
+    border: 2px solid rgba($brutal-ink, 0.3);
+    max-width: max-content;
+  }
+
+  &__opt {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    font-size: $font-sm;
+    cursor: pointer;
+    input[type="checkbox"] { accent-color: $color-green; }
   }
 }
 
@@ -970,15 +1031,26 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   padding: 0;
   border-top: 2px solid rgba($brutal-ink, 0.25);
 }
+// Rows: title over byline on the left; a completed row dims its text and gets
+// the shared .m-check square running the row's full height, flush right (the
+// row padding lives on the text block so the check can reach the edges).
 .theme-brutal .m-titles__row {
   display: flex;
-  align-items: baseline;
+  align-items: stretch;
   gap: $space-md;
-  padding: $space-sm 0;
   border-bottom: 2px solid rgba($brutal-ink, 0.25);
   text-decoration: none;
   color: $brutal-ink;
 }
+.theme-brutal .m-titles__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 2px; // minimal breathing room between title and byline
+  justify-items: start;
+  padding: $space-sm 0;
+}
+.theme-brutal .m-titles__row.is-done .m-titles__text { opacity: 0.55; }
 .theme-brutal .m-titles__name {
   font-family: $font-display;
   font-weight: 700;
@@ -987,16 +1059,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   line-height: 1;
   font-size: clamp(1.25rem, 4.4vw, 1.85rem);
 }
-// "✓ Played" chip — same green display-face badge as the archive list's.
-.theme-brutal .m-titles__done {
-  flex: none;
-  font-family: $font-display;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: $font-sm;
-  color: $color-green;
-}
-.theme-brutal .m-titles__by { margin-left: auto; text-align: right; font-style: italic; color: $brutal-muted; font-size: $font-sm; }
+.theme-brutal .m-titles__by { font-style: italic; color: $brutal-muted; font-size: $font-sm; }
 .theme-brutal .m-titles__row:hover .m-titles__name { color: $color-yellow; }
 .theme-brutal .m-titles__row:hover { padding-left: $space-sm; transition: padding 0.08s; }
 
