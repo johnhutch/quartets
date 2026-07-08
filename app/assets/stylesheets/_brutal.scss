@@ -626,36 +626,85 @@ body.theme-brutal {
 }
 
 // --- Description spoiler fold-out (play show page) ---------------------------
+// Show-page header: title + byline left, a compact meta-info box floated right.
+.theme-brutal .m-play-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: $space-md;
+  margin-bottom: $space-md;
+
+  &__main { flex: 1 1 14rem; min-width: 0; }
+}
+
+// The meta-info box: votes (stacked) + the theme chip, boxed and hugging the
+// right edge. Renders only when there's something to show.
+.theme-brutal .m-metabox {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: grid;
+  gap: $space-sm;
+  padding: $space-sm $space-md;
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  background: rgba($brutal-ink, 0.03);
+
+  // Stack likes over the difficulty meter inside the box.
+  .m-ratemeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $space-xs;
+  }
+  .m-themed--inline { margin: 0; }
+}
+
 .theme-brutal .m-description {
-  margin: $space-sm 0 $space-md;
+  margin: $space-md 0;
 
   &__toggle {
-    display: inline-flex;
-    align-items: baseline;
-    gap: $space-xs;
+    display: inline-grid;
+    gap: 1px;
     cursor: pointer;
-    list-style: none; // the warning label is the affordance, not a triangle
+    list-style: none; // the label + caret are the affordance, not a triangle
+    &::-webkit-details-marker { display: none; }
+  }
+
+  // Primary affordance: caps label + a caret that flips on open.
+  &__head {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
     font-family: $font-display;
     font-weight: 700;
     text-transform: uppercase;
     font-size: $font-sm;
-    color: $brutal-muted;
-    &:hover { color: $color-yellow; }
-    &::-webkit-details-marker { display: none; }
+    color: $brutal-ink;
   }
+  &__toggle:hover &__head { color: $color-yellow; }
 
+  &__caret {
+    width: 1em;
+    height: 1em;
+    transition: transform 0.15s ease;
+  }
+  &[open] &__caret { transform: rotate(180deg); }
+
+  // The spoiler caption: smaller, muted, sits under the label.
   &__warn {
-    font-weight: 400;
-    text-transform: none;
+    font-size: $font-xs;
     font-style: italic;
+    color: $brutal-muted;
   }
 
-  &__text {
-    margin: $space-sm 0 0;
+  // Opened blurb reads as a callout: yellow accent bar + faint wash.
+  &__body {
+    margin-top: $space-sm;
     padding: $space-sm $space-md;
-    border: 2px solid rgba($brutal-ink, 0.3);
-    max-width: max-content;
+    border-left: 4px solid $color-yellow;
+    background: rgba($brutal-ink, 0.05);
+    max-width: 62ch;
   }
+  &__text { margin: 0; }
 }
 
 // "Already played" result view — muted note reads on the dark page.

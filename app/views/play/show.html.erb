@@ -41,23 +41,45 @@
     </aside>
   <% end %>
 
-  <h1 class="m-play-title"><%= multicolor(@puzzle.title) %></h1>
-  <% if @puzzle.author_display_name.present? %>
-    <p class="m-byline">by <%= author_link(@puzzle) %></p>
-  <% end %>
+  <%# Header: title + byline on the left, a compact meta-info box (votes + theme)
+      floated to the right. The box only appears when there's something to show. %>
+  <header class="m-play-header">
+    <div class="m-play-header__main">
+      <h1 class="m-play-title"><%= multicolor(@puzzle.title) %></h1>
+      <% if @puzzle.author_display_name.present? %>
+        <p class="m-byline">by <%= author_link(@puzzle) %></p>
+      <% end %>
+    </div>
 
-  <% if @rating_summary %>
-    <p class="m-play-ratemeta"><%= render "play/rating_summary", summary: @rating_summary %></p>
-  <% end %>
-
-  <%= render "play/themed_flag", puzzle: @puzzle, inline_tags: true %>
+    <% if @rating_summary || @puzzle.specialized? %>
+      <aside class="m-metabox" aria-label="Quartet info">
+        <% if @rating_summary %>
+          <%= render "play/rating_summary", summary: @rating_summary %>
+        <% end %>
+        <% if @puzzle.specialized? %>
+          <%= render "play/themed_flag", puzzle: @puzzle %>
+        <% end %>
+      </aside>
+    <% end %>
+  </header>
 
   <%# The author's blurb can telegraph the trick, so it hides behind a native
-      <details> fold-out (same no-JS pattern as the archive filters). %>
+      <details> fold-out with a spoiler caption under the toggle. %>
   <% if @puzzle.description.present? %>
     <details class="m-description">
-      <summary class="m-description__toggle">View description <span class="m-description__warn">(warning: may contain hints or spoilers!)</span></summary>
-      <p class="m-description__text"><%= @puzzle.description %></p>
+      <summary class="m-description__toggle">
+        <span class="m-description__head">
+          <span class="m-description__label">View description</span>
+          <svg class="m-description__caret" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+        <span class="m-description__warn">may contain hints or spoilers</span>
+      </summary>
+      <div class="m-description__body">
+        <p class="m-description__text"><%= @puzzle.description %></p>
+      </div>
     </details>
   <% end %>
 
