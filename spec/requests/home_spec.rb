@@ -48,14 +48,54 @@ RSpec.describe "Home", type: :request do
       expect(page_text).not_to include("Backbench")
     end
 
-    it "skips themed (specialized) puzzles — the strip is for anyone to jump into" do
+    # Themed puzzles used to be excluded from the strip outright (ADR-0010);
+    # now the visible flag does the warning work, so they ride along flagged.
+    it "includes themed (specialized) puzzles, flagged so people can dodge or chase them" do
       create(:published_puzzle, title: "For Everyone")
-      create(:published_puzzle, title: "Nerds Only", specialized: true)
+      themed = create(:published_puzzle, title: "Nerds Only", specialized: true)
+      themed.update!(tag_names: ["star wars"])
 
       get root_path
 
-      expect(page_text).to include("For Everyone")
-      expect(page_text).not_to include("Nerds Only")
+      expect(page_text).to include("Nerds Only")
+      expect(response.body.scan(/m-themed"/).size).to eq(1) # only the themed row
+      expect(page_text).to include("star-wars")             # tags ride in the fold-out
+    end
+
+    # You can't play your own puzzles (ADR-0015), so a jump-in row for one is a
+    # dead link to a revealed board. Filtered like the archive's hide-mine.
+    it "leaves the signed-in visitor's own puzzles out of the strip" do
+      user = create(:user)
+      sign_in user
+      create(:published_puzzle, user: user, title: "Mine Own")
+      create(:published_puzzle, title: "Someone Elses")
+
+      get root_path
+
+      expect(page_text).not_to include("Mine Own")
+      expect(page_text).to include("Someone Elses")
+    end
+
+    it "leaves an anonymous author's cookie-owned puzzles out of the strip too" do
+      post puzzles_path, params: { puzzle: { title: "Scratch" } } # mints my creator cookie
+      create(:published_puzzle, user: nil, creator_token: Puzzle.last.creator_token, title: "Anon Work")
+      create(:published_puzzle, title: "Someone Elses")
+
+      get root_path
+
+      expect(page_text).not_to include("Anon Work")
+      expect(page_text).to include("Someone Elses")
+    end
+
+    it "shows the rating aggregate on rated strip rows, like the archive does" do
+      rated = create(:published_puzzle, title: "Crowd Pleaser")
+      create(:attempt, puzzle: rated, quality: :yeah, difficulty: :not_bad)
+      create(:published_puzzle, title: "Unrated One")
+
+      get root_path
+
+      expect(response.body.scan(/m-ratemeta"/).size).to eq(1)
+      expect(page_text).to include("Not bad")
     end
 
     it "flags the ones a signed-in player already finished, like the archive does" do

@@ -6,10 +6,11 @@
     <%= link_to "Create #{ne_arrow}", new_puzzle_path, class: "m-sticker m-create-sticker" %>
   </header>
 
-  <%# Fold-out filters, signed-in only. Plain GET params, nothing persists; the
-      fold-out re-opens after a change because interacting always puts the
-      hidden-field params in the URL. %>
-  <% if user_signed_in? %>
+  <%# Fold-out filters for anyone with something to filter: an account, or an
+      anonymous author's creator cookie (hide-mine covers both). Plain GET
+      params, nothing persists; the fold-out re-opens after a change because
+      interacting always puts the hidden-field params in the URL. %>
+  <% if user_signed_in? || current_creator_token.present? %>
     <details class="m-filters"<%= " open" if params[:hide_mine].present? || params[:hide_completed].present? %>>
       <summary class="m-filters__toggle"><%= icon(:filter) %><span>Filter</span></summary>
       <%= form_with url: play_index_path, method: :get, class: "m-filters__panel",
@@ -19,11 +20,14 @@
           <%= check_box_tag :hide_mine, "1", @hide_mine, data: { action: "change->filters#apply" } %>
           Hide my puzzles
         </label>
-        <label class="m-filters__opt">
-          <input type="hidden" name="hide_completed" value="0">
-          <%= check_box_tag :hide_completed, "1", @hide_completed, data: { action: "change->filters#apply" } %>
-          Hide completed puzzles
-        </label>
+        <%# Completion is account-tracked, so this one is signed-in only. %>
+        <% if user_signed_in? %>
+          <label class="m-filters__opt">
+            <input type="hidden" name="hide_completed" value="0">
+            <%= check_box_tag :hide_completed, "1", @hide_completed, data: { action: "change->filters#apply" } %>
+            Hide completed puzzles
+          </label>
+        <% end %>
       <% end %>
     </details>
   <% end %>
@@ -38,6 +42,8 @@
             <% if puzzle.author_display_name.present? %>
               <span class="m-puzzle-list__author">by <%= author_link(puzzle) %></span>
             <% end %>
+            <%= render "play/rating_summary", summary: @rating_summaries[puzzle.id] %>
+            <%= render "play/themed_flag", puzzle: puzzle %>
           </span>
           <% if done %>
             <span class="m-check" aria-label="Played">✓</span>

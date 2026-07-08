@@ -587,6 +587,96 @@
   font-style: italic;
 }
 
+// Compact vote aggregate (weighted thumbs + averaged difficulty) — rides on
+// archive rows, the jump-in strip, and under the show-page byline.
+.m-ratemeta {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+  font-size: $font-sm;
+  color: $color-muted;
+  white-space: nowrap;
+
+  &__thumbs,
+  &__difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  .m-icon {
+    width: 1em;
+    height: 1em;
+  }
+}
+
+.m-play-ratemeta { margin: $space-xs 0 0; }
+
+// THEMED flag on specialized puzzles — a purple caps chip in the house tilted-
+// sticker language. On list rows it's a <details>: tap toggles the tag bubble
+// (hover works too, for pointer devices); the show page (--inline) lays the
+// tags out as plain chips instead.
+.m-themed {
+  position: relative;
+  display: inline-block;
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1em 0.5em;
+    border: 2px solid $color-purple;
+    border-radius: $radius;
+    color: $color-purple;
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: $font-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transform: rotate(-2deg);
+    cursor: pointer;
+    list-style: none; // it's a summary on list rows; no disclosure triangle
+
+    &::-webkit-details-marker { display: none; }
+  }
+
+  // The tag fold-out bubble on list rows.
+  &__bubble {
+    position: absolute;
+    top: calc(100% + $space-xs);
+    left: 0;
+    z-index: 2;
+    padding: $space-xs $space-sm;
+    border: 2px solid $color-purple;
+    border-radius: $radius;
+    background: $color-ink;
+    color: $color-paper;
+    font-size: $font-sm;
+    white-space: nowrap;
+    display: none;
+  }
+
+  &[open] > .m-themed__bubble,
+  &:hover > .m-themed__bubble { display: block; }
+
+  // Show-page variant: tags visible inline, no disclosure.
+  &--inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm;
+    margin: $space-sm 0 0;
+  }
+
+  &__tag {
+    display: inline-flex;
+    padding: 0.1em 0.5em;
+    border: 1px solid $color-line;
+    border-radius: $radius;
+    font-size: $font-sm;
+    color: $color-muted;
+  }
+}
+
 // Headline stat — a tilted stamp wants vertical room so its rotation + shadow
 // don't crowd the rows beneath it.
 .m-stats-hero {

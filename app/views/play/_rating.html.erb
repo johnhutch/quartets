@@ -21,9 +21,8 @@
   <div class="m-rating__q">
     <p class="m-rating__ask">How hard was it?</p>
     <div class="m-rating__opts">
-      <% { pretty_easy: "Pretty easy", not_bad: "Not bad",
-           pretty_hard: "Pretty hard", cursed: "@!#?@!" }.each do |value, label| %>
-        <button type="button" class="m-rating__opt<%= ' is-on' if attempt&.difficulty == value.to_s %>"
+      <% RatingSummary::DIFFICULTY_LABELS.each do |value, label| %>
+        <button type="button" class="m-rating__opt<%= ' is-on' if attempt&.difficulty == value %>"
                 data-action="rating#rate" data-rating-field-param="difficulty" data-rating-choice-param="<%= value %>">
           <span><%= label %></span>
         </button>

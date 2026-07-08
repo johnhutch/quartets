@@ -510,8 +510,44 @@ body.theme-brutal {
   }
 }
 
+// --- Description spoiler fold-out (play show page) ---------------------------
+.theme-brutal .m-description {
+  margin: $space-sm 0 $space-md;
+
+  &__toggle {
+    display: inline-flex;
+    align-items: baseline;
+    gap: $space-xs;
+    cursor: pointer;
+    list-style: none; // the warning label is the affordance, not a triangle
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    color: $brutal-muted;
+    &:hover { color: $color-yellow; }
+    &::-webkit-details-marker { display: none; }
+  }
+
+  &__warn {
+    font-weight: 400;
+    text-transform: none;
+    font-style: italic;
+  }
+
+  &__text {
+    margin: $space-sm 0 0;
+    padding: $space-sm $space-md;
+    border: 2px solid rgba($brutal-ink, 0.3);
+    max-width: max-content;
+  }
+}
+
 // "Already played" result view — muted note reads on the dark page.
 .theme-brutal .m-result__note { color: $brutal-muted; }
+
+// Vote aggregates: muted secondary text on the dark page.
+.theme-brutal .m-ratemeta { color: $brutal-muted; }
 
 // Trophies + dashboard stats (ADR-0011): muted secondary text on the dark page.
 .theme-brutal {

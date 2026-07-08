@@ -9,20 +9,20 @@ class PlayController < ApplicationController
     # Which of these the signed-in player has already finished, for the check.
     @completed_ids = user_signed_in? ? current_user.attempts.distinct.pluck(:puzzle_id).to_set : Set.new
 
-    # Signed-in filters, GET params only (nothing persists): "hide my puzzles"
-    # defaults ON — you can't play your own (Playability), so they're noise here;
+    # Filters, GET params only (nothing persists): "hide my puzzles" defaults
+    # ON — you can't play your own (Playability), so they're noise here — and
+    # covers anonymous authors via their creator_token cookie (ADR-0005);
     # "hide completed" defaults OFF — finished ones stay visible but dimmed.
     @hide_mine = params[:hide_mine] != "0"
     @hide_completed = params[:hide_completed] == "1"
 
-    scope = Puzzle.published.includes(:user).order(created_at: :desc)
-    if user_signed_in?
-      # NULL-safe "not mine": plain `user_id != ?` also drops anonymous puzzles
-      # (NULL != x is NULL, not true). IS DISTINCT FROM keeps them.
-      scope = scope.where("puzzles.user_id IS DISTINCT FROM ?", current_user.id) if @hide_mine
-      scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
-    end
+    scope = Puzzle.published.includes(:user, :tags).order(created_at: :desc)
+    scope = scope.not_owned_by(user: current_user, creator_token: current_creator_token) if @hide_mine
+    scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
     @puzzles = scope
+    # One grouped query for the whole page's vote aggregates (keyed by id;
+    # unrated puzzles get no entry and render nothing).
+    @rating_summaries = RatingSummary.for(@puzzles)
   end
 
   def show
@@ -36,14 +36,18 @@ class PlayController < ApplicationController
     case Playability.new(@puzzle, owner: @puzzle && owns?(@puzzle)).status
     when :editable then return redirect_to(edit_puzzle_path(@puzzle))
     when :missing  then return head(:not_found)
-    when :owned    then @owned_view = true and return
+    when :owned    then @owned_view = true
     end
+
+    # The crowd's verdict, shown under the byline (owners see it on their own
+    # puzzle too — it's their feedback).
+    @rating_summary = RatingSummary.for_puzzle(@puzzle)
 
     # One play per player (ADR-0009, ADR-0012): once they've finished a puzzle,
     # show the reconstructed finished board instead of a fresh one. Logged-in
     # players are keyed by account; anonymous players by their player_token
     # (best-effort — clearing the cookie still lets a stranger replay, fine).
-    @my_attempt = finished_attempt
+    @my_attempt = finished_attempt unless @owned_view
   end
 
   private
