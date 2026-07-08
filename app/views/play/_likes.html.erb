@@ -1,0 +1,6 @@
+<%# Likes tally: the weighted thumb count (RatingSummary#thumbs). Standalone so
+    it can ride in the ratemeta cluster (show page) or next to a browse card's
+    byline. Renders nothing when unrated. Expects `summary`. %>
+<% if summary&.thumbs %>
+  <span class="m-likes"><%= icon(:thumb) %><%= summary.thumbs %></span>
+<% end %>

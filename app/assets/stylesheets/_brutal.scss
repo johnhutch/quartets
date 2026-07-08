@@ -400,11 +400,15 @@ body.theme-brutal {
     overflow-wrap: anywhere;
   }
 
-  &__by {
-    font-style: italic;
+  // Byline row: the likes tally, then the (unlinked) author, on one line.
+  &__byline {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-sm;
     color: $brutal-muted;
     font-size: $font-sm;
   }
+  &__by { font-style: italic; }
 
   // Meta cluster hugs the right edge (rating over theme tags), so the title
   // owns the width. Drops full-width + left on a narrow phone.
@@ -438,8 +442,9 @@ body.theme-brutal {
     .m-browse__meta { opacity: 0.4; }
   }
 
-  // Completed overlay: a translucent green wash + diagonal pinstripes over the
-  // whole card, centered ✓ that swaps to a CTA on hover/focus.
+  // Completed overlay: a light green wash + thin diagonal pinstripes (same 2px/
+  // 14px geometry as the jump-in band) over the whole card, with a blocky ✓
+  // badge that swaps to a CTA on hover/focus.
   &__done {
     position: absolute;
     inset: 0;
@@ -447,8 +452,8 @@ body.theme-brutal {
     place-items: center;
     background:
       repeating-linear-gradient(-45deg,
-        rgba($color-green, 0.3) 0 9px, transparent 9px 18px),
-      rgba($color-green, 0.14);
+        rgba($color-green, 0.22) 0 2px, transparent 2px 14px),
+      rgba($color-green, 0.06);
   }
   &__done-mark,
   &__done-cta {
@@ -458,15 +463,16 @@ body.theme-brutal {
   &__done-mark {
     display: grid;
     place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
     background: $color-green;
     color: $color-ink;
     border: $brutal-border solid $color-ink;
-    border-radius: 50%;
-    font-family: $font-display;
-    font-weight: 700;
-    font-size: 1.5rem;
+    border-radius: $radius; // blocky, not a circle
+  }
+  &__check {
+    width: 1.5rem;
+    height: 1.5rem;
   }
   &__done-cta {
     opacity: 0;

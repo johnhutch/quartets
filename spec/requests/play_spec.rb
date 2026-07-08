@@ -35,8 +35,9 @@ RSpec.describe "Play (public)", type: :request do
 
       get play_index_path
 
-      expect(response.body.scan(/m-ratemeta"/).size).to eq(1)
-      expect(page_text).to include("3/4 difficulty") # pretty_hard → 3rd of 4 on the meter
+      expect(response.body.scan(/class="m-difficulty"/).size).to eq(1)
+      expect(response.body).to include("m-likes")     # likes ride by the byline now
+      expect(page_text).to include("3/4 difficulty")  # pretty_hard → 3rd of 4 on the meter
     end
 
     it "marks puzzles the logged-in player has already completed (ADR-0009)" do

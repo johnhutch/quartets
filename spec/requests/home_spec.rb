@@ -94,8 +94,9 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body.scan(/m-ratemeta"/).size).to eq(1)
-      expect(page_text).to include("2/4 difficulty") # not_bad → 2nd of 4 on the meter
+      expect(response.body.scan(/class="m-difficulty"/).size).to eq(1)
+      expect(response.body).to include("m-likes")     # likes ride by the byline now
+      expect(page_text).to include("2/4 difficulty")  # not_bad → 2nd of 4 on the meter
     end
 
     it "flags the ones a signed-in player already finished, like the archive does" do
