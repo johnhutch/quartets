@@ -28,9 +28,14 @@
       <span class="m-hero__quad m-hero__quad--purple"></span>
     </div>
 
+    <%# The masthead gag re-rolls every load (like Multicolor + the quips). The
+        inline --np-scale (1 / char count) lets CSS size any name — short ones
+        run at full nameplate size, long ones shrink to span the wordmark. %>
+    <% nameplate = t("home.nameplates").sample %>
     <div class="m-nameplate-stack">
       <h1 class="m-wordmark"><%= multicolor(t("home.wordmark")) %></h1>
-      <span class="m-nameplate" aria-hidden="true"><%= t("home.nameplate") %></span>
+      <span class="m-nameplate" aria-hidden="true"
+            style="--np-scale: <%= (1.0 / nameplate.length).round(4) %>"><%= nameplate %></span>
     </div>
     <p class="m-lede"><%= t("home.lede_html") %></p>
     <p class="m-hero__pitch"><%= t("home.hero.pitch") %></p>
