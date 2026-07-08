@@ -34,21 +34,28 @@ class PuzzleStats
 
   # The four-word combos players wrongly grouped together, most frequent first.
   # A guess is "wrong" when its tiles span more than one true color; order within
-  # a guess doesn't matter, so we canonicalize by sorting the words.
+  # a guess doesn't matter, so we canonicalize by sorting the words. Each word
+  # keeps its true category color (the colors come from the puzzle, so they're
+  # identical across attempts) — the view renders them as color-coded chips.
   def common_wrong_guesses(limit: 5)
     tally = Hash.new(0)
+    tiles = {}
 
     @attempts.each do |attempt|
       attempt.guess_log.each do |guess|
         next unless guess.wrong? # a correct group isn't a "wrong guess"
 
-        words = guess.words.sort
-        tally[words] += 1 unless words.empty?
+        pairs = guess.words.zip(guess.colors).sort
+        next if pairs.empty?
+
+        words = pairs.map(&:first)
+        tally[words] += 1
+        tiles[words] ||= pairs.map { |word, color| { word: word, color: color } }
       end
     end
 
     tally.sort_by { |words, count| [-count, words] }
          .first(limit)
-         .map { |words, count| { words: words, count: count } }
+         .map { |words, count| { tiles: tiles[words], count: count } }
   end
 end

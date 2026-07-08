@@ -858,6 +858,15 @@ body.theme-brutal {
   }
 }
 
+// Wrong-guess word chips: hard-edged like the board tiles, black on the fill.
+.theme-brutal .m-guess-tiles__chip {
+  font-family: $font-display;
+  text-transform: uppercase;
+  border-radius: 0;
+  border: 2px solid $brutal-ink;
+  color: #000;
+}
+
 // --- Author form ------------------------------------------------------------
 .theme-brutal .m-form {
   gap: $space-lg;

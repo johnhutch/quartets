@@ -39,7 +39,11 @@
       <div class="m-stats">
         <% wrong.each do |guess| %>
           <div class="m-stats__row">
-            <span><%= guess[:words].join(", ") %></span>
+            <span class="m-guess-tiles">
+              <% guess[:tiles].each do |tile| %>
+                <span class="m-guess-tiles__chip m-guess-tiles__chip--<%= tile[:color] %>"><%= tile[:word] %></span>
+              <% end %>
+            </span>
             <span>×<%= guess[:count] %></span>
           </div>
         <% end %>

@@ -58,7 +58,14 @@ RSpec.describe PuzzleStats do
 
       common = described_class.new(attempts).common_wrong_guesses
 
-      expect(common.first[:words]).to eq(%w[cat dog one owl]) # sorted, canonical
+      # Word–color pairs, canonically sorted by word, so the view can render
+      # each word as a chip in its true category color.
+      expect(common.first[:tiles]).to eq([
+        { word: "cat", color: "blue" },
+        { word: "dog", color: "blue" },
+        { word: "one", color: "green" },
+        { word: "owl", color: "blue" }
+      ])
       expect(common.first[:count]).to eq(2)
     end
 
