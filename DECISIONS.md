@@ -341,7 +341,9 @@ dual identity (`player_token` always; `user_id` when logged in).
 ## 0010 — Quartet specificity & discovery: `specialized` flag + tags + description (no subject categories)
 
 **Date:** 2026-06-15
-**Status:** accepted (authoring half built; the discovery *surfacing* half is deferred — see TODOS)
+**Status:** accepted (authoring half built; surfacing half-built via 0018 — THEMED
+chip + tag fold-outs + description spoiler shipped, and 0018 amends this ADR's
+jump-in-strip exclusion; tag links, classic toggle, search still deferred — see TODOS)
 
 **Context.** Goal: let authors make highly specific, non-general quartets (a Star
 Wars grid, a kids-knowledge grid) and let solvers find or avoid them. A `grill-me`
@@ -643,6 +645,42 @@ visibly-not-identical is the point. A palette change is a five-file sweep
 (variables, helper bands, styleguide, the two `tmp/brand` generators) + regenerated
 favicons/share.png (+ an OG `?v=` bump). Specs assert visible text via `page_text`,
 not raw HTML, on multicolored surfaces.
+
+---
+
+## 0018 — Themed puzzles ride the jump-in strip flagged; owned puzzles leave it
+
+**Date:** 2026-07-08
+**Status:** accepted (amends 0010's strip exclusion; extends 0015 to browse surfaces)
+
+**Context.** ADR-0010 kept `specialized` puzzles out of the homepage strip
+because a themed quartet isn't a fair blind jump-in. That was the right call
+when nothing *marked* them as themed. Meanwhile the strip had no ownership
+filter at all: your own puzzles could land there, but owners can't play their
+own work (ADR-0015) — the row dead-ends on a revealed board. The archive's
+hide-mine filter also only covered accounts, so anonymous authors
+(creator_token, ADR-0005) kept seeing their own puzzles everywhere.
+
+**Decision.** A visible **THEMED chip** (purple, tilted, house chip language)
+replaces the exclusion: the strip now draws from all published puzzles, and the
+flag lets people dodge or chase themed ones. On list rows the chip is a
+`<details>` fold-out revealing the tags (tap anywhere, hover on pointer
+devices); the show page lays the tags out inline (inert — tag-filtered browse
+is still TODO). Ownership filtering went the other way: a shared
+`Puzzle.not_owned_by(user:, creator_token:)` scope (mirrors `Creator#owns?`,
+NULL-safe via `IS DISTINCT FROM`) unconditionally excludes your own puzzles
+from the strip and powers the archive's hide-mine for accounts *and* anonymous
+creator cookies. The archive filter fold-out now shows for anyone with
+something to filter (signed in, or holding a creator_token); the
+hide-completed checkbox stays signed-in-only since completion is
+account-tracked there.
+
+**Consequence.** `HomeController` includes `Creator` now. A themed puzzle's
+reach improved (strip + archive, flagged) — the "specialized puzzles need their
+own discovery surface" pressure from ADR-0010 is partly relieved, though tag
+chips/filters remain unbuilt. Rating aggregates shipped alongside
+(`RatingSummary`: SUM(quality) as weighted thumbs since the enum ints are the
+weights, AVG(difficulty) rounded to its label; unrated puzzles render nothing).
 
 ---
 

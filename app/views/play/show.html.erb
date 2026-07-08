@@ -46,6 +46,21 @@
     <p class="m-byline">by <%= author_link(@puzzle) %></p>
   <% end %>
 
+  <% if @rating_summary %>
+    <p class="m-play-ratemeta"><%= render "play/rating_summary", summary: @rating_summary %></p>
+  <% end %>
+
+  <%= render "play/themed_flag", puzzle: @puzzle, inline_tags: true %>
+
+  <%# The author's blurb can telegraph the trick, so it hides behind a native
+      <details> fold-out (same no-JS pattern as the archive filters). %>
+  <% if @puzzle.description.present? %>
+    <details class="m-description">
+      <summary class="m-description__toggle">View description <span class="m-description__warn">(warning: may contain hints or spoilers!)</span></summary>
+      <p class="m-description__text"><%= @puzzle.description %></p>
+    </details>
+  <% end %>
+
   <% if @owned_view %>
     <%= render "play/revealed", puzzle: @puzzle %>
   <% elsif @my_attempt %>

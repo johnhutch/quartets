@@ -47,13 +47,15 @@ design — no access control.
 Authoring captures `specialized` + tags + `description`; none of it is surfaced
 yet. To build (data + form already exist):
 - **`/play` "Classic-style only" toggle** (`?classic=1` → `where(specialized: false)`,
-  default off/all). Specialized rows show their **clickable tag chips** → a
-  tag-filtered list at **`/play?tag=star-wars`** (`Tag#puzzles`). Classic rows stay
-  chip-less. Show page mirrors the chips.
+  default off/all). ~~Tag visibility~~ **shipped 2026-07-08 (ADR-0018)** — themed
+  rows carry the THEMED chip with a tag fold-out, show page renders tags inline.
+  Still TODO: make the chips **clickable** → a tag-filtered list at
+  **`/play?tag=star-wars`** (`Tag#puzzles`) — deliberately left inert for scope.
 - **Surface `description` on-page.** The meta/`og`/`twitter:description` slice
-  shipped (per-puzzle: author blurb, else generated fallback — `puzzle_meta_description`).
-  Still TODO: show the description **under the byline** on `play#show` and as a
-  **browse teaser** on `/play`.
+  shipped, and the show-page half landed 2026-07-08 as a **spoiler fold-out**
+  under the byline (`.m-description`, ADR-0018 session). Still TODO: a
+  **browse teaser** on `/play` rows, if ever — the archive rows now carry
+  ratings + the themed flag, so a teaser may be too much.
 - **Full-text search** over title + description (+ tags) — defer until there's a
   corpus worth searching; then Postgres `tsvector`. Pretty `/t/:tag` hubs later.
 - **Difficulty from stats** (ADR-0010) — a future job deriving difficulty from
@@ -116,9 +118,11 @@ recorded (below); the rest is read-side display work, buildable whenever.
 **Capture — shipped 2026-07-07:**
 - **Post-play ratings.** `attempts.quality` (yeah/hell_yeah) + `attempts.difficulty`
   (pretty_easy…cursed), voted from the game-over/revisit rating block (published
-  puzzles only). Nothing displayed yet — surface aggregates on `/puzzles/:id/stats`
-  (and maybe a badge on browse rows); the *voted* difficulty also feeds the
-  ADR-0010 "difficulty from stats" idea, which no longer needs to be inferred-only.
+  puzzles only). **Display shipped 2026-07-08** on browse rows, the jump-in strip,
+  and the show page (`RatingSummary`: weighted thumbs + averaged difficulty label).
+  Still TODO: fold the aggregates into `/puzzles/:id/stats` (owner view); the
+  *voted* difficulty also feeds the ADR-0010 "difficulty from stats" idea, which
+  no longer needs to be inferred-only.
 
 **Display — TODO (future, no frontend yet):**
 - **Surface the timing + funnel stats.** Player-facing: solve duration, time-to-
@@ -140,6 +144,10 @@ recorded (below); the rest is read-side display work, buildable whenever.
 
 ### Quick wins (no decisions needed)
 
+- **Tag fold-out bubble overlaps the next list row when open.** Legible (purple
+  border, ink bg, z-indexed) and closes on tap, but it sits on top of the row
+  below — right-anchor it or flip it above the chip if it grates
+  (`.m-themed__bubble` in `_modules.scss`).
 - **Pin the live game-over stamp's arrow too.** `game_controller.js`
   `renderEndStamp` still writes a raw `"Solved it ↗"` — iOS renders the emoji
   block the `ne_arrow` helper (U+FE0E) fixed everywhere else. Append `︎` in
@@ -265,7 +273,8 @@ for reference *only*:
 
 ## Suggested order
 
-1. **Rating aggregates on stats pages** — the data's already flowing; pure read-side.
+1. **Rating aggregates on `/puzzles/:id/stats`** — browse/strip/show shipped
+   2026-07-08 (`RatingSummary`); the owner stats page is the remaining slice.
 2. **"My puzzles" aggregate stats table** — needs no new decision; builds on the
    existing owner-scoped dashboard + `PuzzleStats`.
 3. **Analytics B + C** — now unblocked by the `/admin` shell (ADR-0016); build the

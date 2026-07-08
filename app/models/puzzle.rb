@@ -29,6 +29,21 @@ class Puzzle < ApplicationRecord
   # Hand-picked for the homepage rotation. Curated, not "everything published."
   scope :featured, -> { where(featured: true) }
 
+  # Everything NOT owned by this requester — by account when signed in, else by
+  # the anonymous creator_token cookie (mirrors Creator#owns?). Owners can't
+  # play their own puzzles (ADR-0015), so play surfaces filter them out here.
+  # IS DISTINCT FROM keeps it NULL-safe: plain `!=` would also drop anonymous
+  # puzzles (NULL != x is NULL, not true).
+  scope :not_owned_by, ->(user:, creator_token:) do
+    if user
+      where("puzzles.user_id IS DISTINCT FROM ?", user.id)
+    elsif creator_token
+      where("puzzles.creator_token IS DISTINCT FROM ?", creator_token)
+    else
+      all
+    end
+  end
+
   # Auto-generates an unguessable token on create; the unique index backs it.
   has_secure_token :share_token
 

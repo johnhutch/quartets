@@ -1,0 +1,13 @@
+<%# Compact vote aggregate (RatingSummary): weighted thumb count + averaged
+    difficulty label. Callers pass summary: (nil for unrated — renders nothing,
+    so the cold-start lists stay clean). %>
+<% if summary %>
+  <span class="m-ratemeta">
+    <% if summary.thumbs %>
+      <span class="m-ratemeta__thumbs"><%= icon(:thumb) %><%= summary.thumbs %></span>
+    <% end %>
+    <% if summary.difficulty_label %>
+      <span class="m-ratemeta__difficulty"><%= summary.difficulty_label %></span>
+    <% end %>
+  </span>
+<% end %>

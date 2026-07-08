@@ -1,7 +1,7 @@
 # Progress
 
-**Last updated:** 2026-07-07
-**Active branch:** main (feature branches per task; `main` is prod/deploy)
+**Last updated:** 2026-07-08
+**Active branch:** develop (uncommitted: the ADR-0018 punch list + rich seeds; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
 
@@ -31,10 +31,11 @@ migration** (name + random-suffix play URLs) — see the TODOS reminder.
 
 The **discovery-authoring half shipped** (ADR-0010): a `specialized` flag
 (Classic by default), creatable autocomplete **tags** (polymorphic), and a 200-char
-**description** are now captured on the authoring form. The **discovery surfacing**
-half — browse filters, tag-chip pages, on-page description teaser, search — is
-**not built yet** (see TODOS); the meta/`og`/`twitter:description` slice of it
-shipped this session.
+**description** are now captured on the authoring form. **Surfacing is now half
+built (ADR-0018):** a THEMED chip with a tag fold-out on the archive + jump-in
+rows and inline tags on the show page, plus a description **spoiler fold-out**
+on `play#show`. Still unbuilt: tag *links*/filtered browse, the `/play` classic
+toggle, and search (see TODOS).
 
 **Analytics is scoped, not built** — a full privacy-first plan (streams A traffic
 / B product funnels / C error tracking + bot/crawler measurement) lives in the
@@ -52,14 +53,47 @@ masthead hero (no more Create/Play fork), a centered jump-in strip, and the whol
 page width-constrained to the subpages' column. The **category palette is ours
 now** (ADR-0017): soft pastels in the Connections register but deliberately
 **never NYT's exact hexes** (trade-dress risk), with ≥8:1 contrast both ways.
-**Play rules changed:** owners can't play their own puzzles (ADR-0015), wrong
-guesses stay selected with a duplicate-guess guard, and finished plays can be
-**rated** (quality + difficulty, stored on the attempt — display TODO). A
+**Play rules changed:** owners can't play their own puzzles (ADR-0015) — now
+enforced on the browse surfaces too (strip + archive hide-mine cover accounts
+*and* anonymous creator cookies, ADR-0018) — wrong guesses stay selected with a
+duplicate-guess guard, and finished plays can be **rated** (quality +
+difficulty; aggregates now display on browse rows, the strip, and the show page
+via `RatingSummary` — the stats-page slice is still TODO). A
 **toggleable theme-skins plan** (`8bit` + `broadsheet` over the `brutal` default)
 is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
+- **Seeds now replicate the prod experience (dev-only layer).** `db/seeds.rb`
+  grew a development-gated community-fixture layer on top of the env-agnostic
+  superuser + Demo set: a cast of owners (named account, handle-less account,
+  pure player "Speedrun Sally", anonymous `seed-anon-creator` cookie), puzzles
+  in every state (themed+tagged+described, unlisted-complete, incomplete drafts,
+  anonymous published, a long-word tile-fit stress test), and plays built from
+  **real guess logs** so the derived data is genuine — all three trophy tiers,
+  weighted ratings (incl. a hell-yeah-AND-cursed puzzle), a repeated common
+  wrong guess, per-guess timings, and `game_started` events with two abandons.
+  Idempotent (re-run changes nothing); prints a dev-login cheat sheet. The Demo
+  layer also gained two descriptions + asserts `superuser: true` on the admin.
+- **Play-surface punch list (ADR-0018).** Four features in one pass, full TDD
+  (377 green). **Description spoiler toggle:** `play#show` folds the author's
+  blurb behind a native `<details>` ("View description (warning: may contain
+  hints or spoilers!)", `.m-description`), all three page states. **Rating
+  aggregates:** new `RatingSummary` value object — SUM(quality) is the weighted
+  thumb count (enum ints are the weights), AVG(difficulty) rounds to its label —
+  rendered by a shared `play/_rating_summary` partial on archive rows, the
+  jump-in strip, and under the show-page byline; one grouped query per list;
+  unrated renders nothing; `_rating.html.erb`'s inline label hash moved to
+  `RatingSummary::DIFFICULTY_LABELS`. **THEMED flag:** purple tilted chip
+  (`.m-themed`) on all three surfaces; list rows get a `<details>` tag fold-out
+  (tap + hover), show page lays tags inline (inert — tag links still TODO); the
+  strip's `where(specialized: false)` exclusion is gone, flag replaces it.
+  **Owned-puzzle filtering:** shared `Puzzle.not_owned_by(user:, creator_token:)`
+  scope excludes your own puzzles from the strip outright and powers the
+  archive's hide-mine for accounts *and* anonymous creator cookies; the filter
+  fold-out shows for anyone with something to filter (hide-completed stays
+  signed-in-only). Verified live at phone width (selenium screenshots + curl
+  cookie-jar probes); runtime recipe persisted to `.claude/skills/verify/`.
 - **Category palette settled — ours, never NYT's (ADR-0017).** After four variants
   (emoji-signal, hot print, warning-label, threat-scale), landed on soft pastels in
   the Connections register with deliberately distinct values (`#f2c94c`/`#8ed081`/

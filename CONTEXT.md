@@ -38,9 +38,13 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   incomplete (unlisted & !complete?), unlisted (unlisted & complete?), published.
   **Naming:** user-facing chrome (nav, buttons, titles, headings) calls a Puzzle a
   **"quartet"**; the model, table, and routes stay `Puzzle`/`puzzles`.
-  **Discovery (ADR-0010):** `specialized` bool (false = "Classic", the general
-  default), optional `description` (≤200), and `tags` (only meaningful when
-  specialized). Surfacing/filtering is not built yet.
+  **Discovery (ADR-0010 + 0018):** `specialized` bool (false = "Classic", the
+  general default), optional `description` (≤200), and `tags` (only meaningful
+  when specialized). Surfaced since ADR-0018: a **THEMED chip** (`.m-themed`,
+  `play/_themed_flag`) on archive/strip rows (tags in a `<details>` fold-out)
+  and the show page (tags inline, inert); the description hides behind a
+  **spoiler fold-out** on `play#show` (`.m-description`). Tag *links*/filtering
+  and search are still not built.
 - **Group** — one of four colored categories in a puzzle. Colors: `blue, green,
   yellow, purple` (enum integers blue:0…purple:3, unchanged). Authoring/form block
   order is **easiest→hardest** — yellow→green→blue→purple
@@ -80,7 +84,10 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   Discovery metadata (ADR-0010): `specialized` (bool, default false), `description`
   (validated ≤ `DESCRIPTION_LIMIT = 200`, optional), and `include Taggable` →
   `has_many :tags, through: :taggings` with a `tag_names=`/`tag_names` accessor.
-  See ADR 0001 + 0005 + 0008 + 0010.
+  **`not_owned_by(user:, creator_token:)`** scope (ADR-0018): NULL-safe
+  (`IS DISTINCT FROM`) "not this requester's" — mirrors `Creator#owns?` (account
+  first, else cookie); powers the strip's unconditional owner-exclusion and the
+  archive's hide-mine. See ADR 0001 + 0005 + 0008 + 0010 + 0018.
 - **Group** (`color` enum, `description`, `position`, `words`). `words` is a
   **jsonb** column (defaults to `[]`) — *not* a PG array, despite the PLAN
   sketch. `WORDS_PER_GROUP = 4`. `#filled_words` strips the blanks the form
@@ -106,7 +113,9 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   `@!#?@!`), set post-play via `PATCH /p/:token/rating` (`RatingsController` —
   resolves the viewer's attempt like the revisit view, published puzzles only,
   re-rating overwrites). The `play/_rating` block rides the finished-play JSON
-  + the revisit view (`rating_controller.js`).
+  + the revisit view (`rating_controller.js`); its difficulty labels live in
+  `RatingSummary::DIFFICULTY_LABELS` (one home for both vote buttons and
+  aggregates).
 - **Guess** (`app/models/`) — value object owning the guess-log shape (jsonb, so
   string keys from JSON, symbol keys in tests; it's the one place that normalizes
   both). `#colors`/`#words`, and the **derived** Connections rule: `#correct?` =
@@ -122,6 +131,16 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   nil`) → `signed_in?` false, created-only. `AttemptsController#create` returns a
   server-rendered `play/_achievement` partial (trophies + quip + total/nudge) the
   game injects on game over; the `trophy(tier)` helper renders the fillable SVG.
+- **RatingSummary** (`app/models/`, ADR-0018) — value object aggregating the
+  post-play votes for display. `RatingSummary.for(puzzles)` → `{puzzle_id =>
+  summary}` in **one grouped query** (built for list pages);
+  `.for_puzzle(puzzle)` → one or nil. `#thumbs` = `SUM(quality)` — the enum
+  ints double as weights (yeah 1, hell-yeah 2); `#difficulty_label` =
+  `AVG(difficulty)` rounded back to its label (`DIFFICULTY_LABELS`, incl.
+  `@!#?@!`). Unrated puzzles get **no entry/nil**, so views render-if-present
+  and the cold-start lists stay clean. Rendered by `play/_rating_summary`
+  (`.m-ratemeta`) on archive rows, the jump-in strip, and under the show-page
+  byline (owners see their own).
 - **PlayResult** (`app/models/`) — value object owning the finished-play payload:
   `#cube`, `#share` (composes `EmojiCube` + `ShareText`), `#achievement` (the tier),
   and `#awards_locals` (the `play/_achievement` locals — folds the top-trophy
@@ -152,11 +171,13 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   PATCH and **reveals + wires its Publish button without a reload** (a new puzzle has
   no id at render, so Publish starts `hidden`/unwired); once `complete?`, Publish is
   the loud CTA and Save reads "Keep it unlisted (link only)" (ADR-0008).
-- **HomeController** — the public front door (`GET /`, includes `AnonymousPlayer`).
-  A **launchpad, not a play surface** (ADR-0014): `@puzzles` is a random strip of
-  ≤`STRIP_SIZE` (5) **published, non-`specialized`** puzzles (themed quartets
-  aren't a fair random jump-in), with `@completed_ids` for the signed-in
-  `.m-check` flags. No board, no featured/unplayed logic, no embedded game. Still
+- **HomeController** — the public front door (`GET /`, includes `AnonymousPlayer`
+  + `Creator`). A **launchpad, not a play surface** (ADR-0014): `@puzzles` is a
+  random strip of ≤`STRIP_SIZE` (5) **published** puzzles — themed ones ride
+  along flagged since ADR-0018 (the chip replaced ADR-0010's exclusion), and
+  **your own are excluded** (`not_owned_by`, account or creator cookie — you
+  can't play them, ADR-0015) — with `@completed_ids` for the signed-in
+  `.m-check` flags and `@rating_summaries` for the vote aggregates. No board, no featured/unplayed logic, no embedded game. Still
   mints the `player_token` cookie via `AnonymousPlayer`. The layout suppresses the
   global topbar + footer on home only via the `home_page?` helper — home fronts
   its own nav (the hero's Create sticker + archive link, `aria-label="Primary"`;
@@ -194,9 +215,12 @@ in dev via `letter_opener`; prod reads SMTP from ENV (`SMTP_*`, `MAILER_SENDER`,
   trophies, the rating block) — instead of a fresh board (ADR-0012). The finished
   attempt is looked up by account when signed in, else by `player_token`
   (`PlayController#finished_attempt`). `index` marks completed puzzles with the
-  `.m-check` square + dims the row, **auto-hides your own puzzles** and offers a
-  signed-in filter fold-out (`hide_mine` default on / `hide_completed` default
-  off — plain GET params, nothing persists; `filters_controller` auto-submits).
+  `.m-check` square + dims the row, **auto-hides your own puzzles** — accounts
+  *and* anonymous creator cookies, via `Puzzle.not_owned_by` (ADR-0018) — and
+  offers the filter fold-out to anyone with something to filter (signed in, or
+  holding a `creator_token`; `hide_mine` default on / `hide_completed` default
+  off and signed-in-only — plain GET params, nothing persists;
+  `filters_controller` auto-submits).
 
 ## Gotchas
 

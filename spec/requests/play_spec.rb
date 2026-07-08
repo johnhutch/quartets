@@ -16,6 +16,29 @@ RSpec.describe "Play (public)", type: :request do
       expect(page_text).not_to include("Still cooking")
     end
 
+    it "flags themed puzzles with their tags viewable, leaves classics chip-less" do
+      themed = create(:published_puzzle, title: "Nerds Only", specialized: true)
+      themed.update!(tag_names: ["star wars", "trivia"])
+      create(:published_puzzle, title: "Plain Classic")
+
+      get play_index_path
+
+      expect(response.body.scan(/m-themed"/).size).to eq(1)
+      expect(page_text).to include("Themed")
+      expect(page_text).to include("star-wars")
+    end
+
+    it "shows the rating aggregate only on rated rows" do
+      rated = create(:published_puzzle, title: "Crowd Pleaser")
+      create(:attempt, puzzle: rated, quality: :hell_yeah, difficulty: :pretty_hard)
+      create(:published_puzzle, title: "Unrated One")
+
+      get play_index_path
+
+      expect(response.body.scan(/m-ratemeta"/).size).to eq(1)
+      expect(page_text).to include("Pretty hard")
+    end
+
     it "marks puzzles the logged-in player has already completed (ADR-0009)" do
       user = create(:user)
       sign_in user
@@ -108,6 +131,85 @@ RSpec.describe "Play (public)", type: :request do
       # Still shareable from here — the whole point of visiting your own puzzle.
       expect(response.body).to include('data-action="share#share"')
       expect(response.body).to include(play_url(puzzle.share_token))
+    end
+
+    describe "themed flag on the show page" do
+      it "shows the chip with the tags laid out inline" do
+        puzzle = create(:published_puzzle, title: "Deep Cut", specialized: true)
+        puzzle.update!(tag_names: ["star wars"])
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).to include("m-themed")
+        expect(page_text).to include("Themed")
+        expect(page_text).to include("star-wars")
+      end
+
+      it "shows nothing on a classic puzzle" do
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).not_to include("m-themed")
+      end
+    end
+
+    describe "rating aggregate on the show page" do
+      it "renders thumbs + difficulty under the byline once votes exist" do
+        puzzle = create(:published_puzzle)
+        create(:attempt, puzzle: puzzle, quality: :yeah, difficulty: :cursed)
+        create(:attempt, puzzle: puzzle, quality: :hell_yeah)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).to include("m-ratemeta")
+        expect(page_text).to include("3")        # 1 + 2 weighted thumbs
+        expect(page_text).to include("@!#?@!")
+      end
+
+      it "renders nothing before anyone votes" do
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).not_to include("m-ratemeta")
+      end
+    end
+
+    # The author's description may hint at the trick (or spoil it outright), so
+    # it hides behind a native <details> fold-out with a warning label.
+    describe "description spoiler toggle" do
+      it "offers the fold-out when the puzzle has a description" do
+        puzzle = create(:published_puzzle, description: "Four kinds of Star Wars nonsense")
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).to include("m-description")
+        expect(response.body).to include("View description")
+        expect(response.body).to include("may contain hints or spoilers")
+        expect(response.body).to include("Four kinds of Star Wars nonsense")
+      end
+
+      it "renders nothing without a description" do
+        puzzle = create(:published_puzzle, description: nil)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).not_to include("m-description")
+        expect(response.body).not_to include("View description")
+      end
+
+      it "rides along on the finished-result view too" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle, description: "Spoilery blurb")
+        create(:attempt, puzzle: puzzle, user: user, solved: true)
+
+        get play_path(puzzle.share_token)
+
+        expect(response.body).to include("Spoilery blurb")
+        expect(response.body).to include("View description")
+      end
     end
 
     it "keeps the board playable for a non-owner" do
@@ -278,13 +380,39 @@ RSpec.describe "Play (public)", type: :request do
         expect(page_text).to include("Fresh One")
       end
 
-      it "offers the filter fold-out to signed-in players only" do
+      it "offers the filter fold-out only to visitors with something to filter" do
         get play_index_path
         expect(response.body).to include("m-filters")
 
         sign_out user
-        get play_index_path
+        get play_index_path # no account, no creator cookie → nothing to filter
         expect(response.body).not_to include("m-filters")
+      end
+    end
+
+    # Anonymous authors own via the creator_token cookie (ADR-0005) and can't
+    # play their own puzzles either (ADR-0015) — hide-mine covers them too.
+    context "archive hide-mine for anonymous authors" do
+      it "hides cookie-owned puzzles by default and offers the filter" do
+        post puzzles_path, params: { puzzle: { title: "Scratch" } } # mints my creator cookie
+        create(:published_puzzle, user: nil, creator_token: Puzzle.last.creator_token, title: "Anon Work")
+        create(:published_puzzle, title: "Someone Elses")
+
+        get play_index_path
+
+        expect(page_text).not_to include("Anon Work")
+        expect(page_text).to include("Someone Elses")
+        expect(response.body).to include("m-filters")
+        expect(response.body).not_to include("Hide completed") # completion is account-tracked
+      end
+
+      it "shows them when hide_mine is unchecked" do
+        post puzzles_path, params: { puzzle: { title: "Scratch" } } # mints my creator cookie
+        create(:published_puzzle, user: nil, creator_token: Puzzle.last.creator_token, title: "Anon Work")
+
+        get play_index_path(hide_mine: "0")
+
+        expect(page_text).to include("Anon Work")
       end
     end
 
