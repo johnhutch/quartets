@@ -36,7 +36,7 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body.scan("m-titles__row").size).to eq(HomeController::STRIP_SIZE)
+      expect(response.body.scan("m-browse--strip").size).to eq(HomeController::STRIP_SIZE)
     end
 
     it "only surfaces published puzzles — never unlisted/incomplete ones" do
@@ -58,8 +58,8 @@ RSpec.describe "Home", type: :request do
       get root_path
 
       expect(page_text).to include("Nerds Only")
-      expect(response.body.scan(/m-themed"/).size).to eq(1) # only the themed row
-      expect(page_text).to include("star-wars")             # tags ride in the fold-out
+      expect(response.body.scan(/m-themed--inline/).size).to eq(1) # only the themed row
+      expect(page_text).to include("star-wars")                   # the theme is named inline
     end
 
     # You can't play your own puzzles (ADR-0015), so a jump-in row for one is a
@@ -95,7 +95,7 @@ RSpec.describe "Home", type: :request do
       get root_path
 
       expect(response.body.scan(/m-ratemeta"/).size).to eq(1)
-      expect(page_text).to include("Not bad")
+      expect(page_text).to include("2/4 difficulty") # not_bad → 2nd of 4 on the meter
     end
 
     it "flags the ones a signed-in player already finished, like the archive does" do
@@ -107,8 +107,8 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body.scan(/class="m-check"/).size).to eq(1) # the check square
-      expect(response.body).to include("is-done")                 # the dimmed row
+      expect(response.body.scan(/class="m-browse__done"/).size).to eq(1) # the completed overlay
+      expect(response.body).to include("is-done")                        # the dimmed row
     end
 
     it "does not embed a playable game" do
@@ -132,7 +132,7 @@ RSpec.describe "Home", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(new_puzzle_path)        # Create is always there
-      expect(response.body).not_to include("m-titles__row")    # strip is hidden, no empty list
+      expect(response.body).not_to include("m-browse--strip")  # strip is hidden, no empty list
     end
 
     it "suppresses the global topbar but keeps a Primary nav landmark" do

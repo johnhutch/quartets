@@ -36,6 +36,15 @@ RSpec.describe RatingSummary do
       expect(summary.difficulty_label).to eq("@!#?@!")
     end
 
+    it "reports the difficulty as a 1–4 meter level (enum 0–3 → +1)" do
+      create(:attempt, puzzle: puzzle, difficulty: :pretty_easy) # 0 → 1
+      create(:attempt, puzzle: puzzle, difficulty: :cursed)      # 3 → avg 1.5 → round 2 → 3
+
+      summary = described_class.for([puzzle])[puzzle.id]
+
+      expect(summary.difficulty_level).to eq(3)
+    end
+
     it "handles one vote kind without the other" do
       create(:attempt, puzzle: puzzle, quality: :hell_yeah, difficulty: nil)
 

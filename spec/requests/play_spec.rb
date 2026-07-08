@@ -23,9 +23,9 @@ RSpec.describe "Play (public)", type: :request do
 
       get play_index_path
 
-      expect(response.body.scan(/m-themed"/).size).to eq(1)
+      expect(response.body.scan(/m-themed--inline/).size).to eq(1)
       expect(page_text).to include("Themed")
-      expect(page_text).to include("star-wars")
+      expect(page_text).to include("star-wars") # the theme is named inline, not hidden in a fold-out
     end
 
     it "shows the rating aggregate only on rated rows" do
@@ -36,7 +36,7 @@ RSpec.describe "Play (public)", type: :request do
       get play_index_path
 
       expect(response.body.scan(/m-ratemeta"/).size).to eq(1)
-      expect(page_text).to include("Pretty hard")
+      expect(page_text).to include("3/4 difficulty") # pretty_hard → 3rd of 4 on the meter
     end
 
     it "marks puzzles the logged-in player has already completed (ADR-0009)" do
@@ -51,7 +51,7 @@ RSpec.describe "Play (public)", type: :request do
 
       expect(page_text).to include("Finished it")
       expect(page_text).to include("Not yet")
-      expect(response.body.scan(/class="m-check"/).size).to eq(1) # only the finished one gets the check square
+      expect(response.body.scan(/class="m-browse__done"/).size).to eq(1) # only the finished one gets the completed overlay
     end
   end
 
@@ -163,8 +163,8 @@ RSpec.describe "Play (public)", type: :request do
         get play_path(puzzle.share_token)
 
         expect(response.body).to include("m-ratemeta")
-        expect(page_text).to include("3")        # 1 + 2 weighted thumbs
-        expect(page_text).to include("@!#?@!")
+        expect(page_text).to include("3")            # 1 + 2 weighted thumbs
+        expect(page_text).to include("4/4 difficulty") # cursed → maxed meter
       end
 
       it "renders nothing before anyone votes" do
@@ -358,14 +358,14 @@ RSpec.describe "Play (public)", type: :request do
         expect(page_text).to include("Mine Own")
       end
 
-      it "marks completed puzzles with the check square and dims the row" do
+      it "marks completed puzzles with the completed overlay and dims the row" do
         puzzle = create(:published_puzzle, title: "Done Deal")
         create(:attempt, puzzle: puzzle, user: user, solved: true)
 
         get play_index_path
 
         expect(page_text).to include("Done Deal")
-        expect(response.body).to include("m-check")
+        expect(response.body).to include("m-browse__done")
         expect(response.body).to include("is-done")
       end
 

@@ -48,21 +48,26 @@ RSpec.describe "User pages", type: :request do
       expect(response.body).to include(user_page_path("hutch"))
     end
 
-    it "links archive and jump-in bylines too" do
+    # The browse surfaces (archive + jump-in) show the byline as plain text —
+    # the whole card is the play link, so the /u/:handle link lives only on the
+    # show page.
+    it "shows the author on browse cards but leaves it unlinked" do
       user = create(:user, email: "hutch@example.com")
       create(:published_puzzle, user: user, author_name: "Hutch")
 
       get play_index_path
-      expect(response.body).to include(user_page_path("hutch"))
+      expect(response.body).to include("Hutch")
+      expect(response.body).not_to include(user_page_path("hutch"))
 
       get root_path
-      expect(response.body).to include(user_page_path("hutch"))
+      expect(response.body).to include("Hutch")
+      expect(response.body).not_to include(user_page_path("hutch"))
     end
 
-    it "keeps an anonymous creator's byline plain" do
-      create(:published_puzzle, user: nil, creator_token: "anon", author_name: "Mystery")
+    it "keeps an anonymous creator's show-page byline plain" do
+      puzzle = create(:published_puzzle, user: nil, creator_token: "anon", author_name: "Mystery")
 
-      get play_index_path
+      get play_path(puzzle.share_token)
 
       expect(response.body).to include("Mystery")
       expect(response.body).not_to include("/u/")

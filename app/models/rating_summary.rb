@@ -41,6 +41,13 @@ class RatingSummary
     DIFFICULTY_LABELS.fetch(Attempt.difficulties.key(@difficulty_avg.round))
   end
 
+  # 1–4 for the meter widget (the enum runs 0–3, easiest→hardest).
+  def difficulty_level
+    return nil unless @difficulty_avg
+
+    @difficulty_avg.round + 1
+  end
+
   def any?
     @thumbs.present? || @difficulty_avg.present?
   end

@@ -597,8 +597,7 @@
   color: $color-muted;
   white-space: nowrap;
 
-  &__thumbs,
-  &__difficulty {
+  &__thumbs {
     display: inline-flex;
     align-items: center;
     gap: $space-xs;
@@ -607,6 +606,41 @@
   .m-icon {
     width: 1em;
     height: 1em;
+  }
+}
+
+// Difficulty meter: four segments filling easiest→hardest (yellow→green→blue→
+// purple, the reverse-difficulty rainbow), plus an "x/4 difficulty" readout.
+// Empty segments recede in the inherited (muted) color; lit ones take their
+// palette hue so severity reads by both count and colour.
+.m-difficulty {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+
+  &__meter {
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  &__seg {
+    width: 0.45rem;
+    height: 0.95rem;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    opacity: 0.45; // unfilled segments step back
+  }
+  &__seg.is-on { opacity: 1; }
+  &__seg.is-on:nth-child(1) { background: $color-yellow; border-color: $color-yellow; }
+  &__seg.is-on:nth-child(2) { background: $color-green;  border-color: $color-green; }
+  &__seg.is-on:nth-child(3) { background: $color-blue;   border-color: $color-blue; }
+  &__seg.is-on:nth-child(4) { background: $color-purple; border-color: $color-purple; }
+
+  &__label {
+    font-size: $font-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 }
 

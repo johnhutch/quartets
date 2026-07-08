@@ -317,65 +317,174 @@ body.theme-brutal {
   &--error { background: $color-wrong; color: $brutal-paper; }
 }
 
-// --- Public browse list (boxed cards) ---------------------------------------
-.theme-brutal .m-puzzle-list {
+// --- Browse card (archive + home jump-in) -----------------------------------
+// One clickable card per published puzzle. Title left, meta (rating + theme
+// tags) right, so a row spends width instead of stacking tall; the whole card
+// is the play link. Two framings: --archive (a boxed brutal card that lifts)
+// and --strip (a divided row on the home band that tints + indents). A finished
+// puzzle dims and gets a green pinstripe overlay (.m-browse__done) whose ✓
+// swaps to a "view it" CTA on hover/focus.
+.theme-brutal .m-browse-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
   gap: $space-md;
 
-  // Public browse rows are boxed brutal cards: title + byline stacked on the
-  // left, the completed check square (if any) running the full height flush
-  // right. The box carries no padding of its own — the text block does — so
-  // the check can sit hard against the frame.
-  li:not(.m-puzzle-list__item) {
-    display: flex;
-    align-items: stretch;
-    padding: 0;
+  // Home strip: a divided list flush to the band column, no gaps.
+  &--strip {
+    gap: 0;
+    border-top: 2px solid rgba($brutal-ink, 0.25);
+  }
+}
+
+.theme-brutal .m-browse {
+  position: relative;
+  overflow: hidden; // clips the done overlay's pinstripes to the card
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm $space-md;
+  padding: $space-md;
+  color: $brutal-ink;
+  text-align: left; // reset the strip band's centered text
+  text-decoration: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease, padding 0.08s ease;
+
+  &--archive {
     border: $brutal-border solid $brutal-ink;
     box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
 
-    .m-puzzle-list__text {
-      flex: 1 1 auto;
-      min-width: 0;
-      display: grid;
-      gap: 2px; // title over byline, minimal breathing room
-      justify-items: start;
-      padding: $space-md;
+    &:hover,
+    &:focus-visible {
+      transform: translate(-2px, -2px);
+      box-shadow: calc(#{$brutal-shadow} + 2px) calc(#{$brutal-shadow} + 2px) 0 rgba($brutal-ink, 0.3);
     }
-
-    // Title chrome only on the title link (a DIRECT child of the text block) —
-    // the byline's author link nests inside __author and keeps byline scale.
-    .m-puzzle-list__text > a {
-      font-family: $font-display;
-      font-weight: 700;
-      font-size: $font-lg;
-      text-transform: uppercase;
-      text-decoration: none;
-      overflow-wrap: anywhere;
-      &:hover { text-decoration: underline; }
+    &:active {
+      transform: translate(1px, 1px);
+      box-shadow: 2px 2px 0 rgba($brutal-ink, 0.2);
     }
-
-    // Finished ones step back so the doable ones stand out; the check square
-    // stays at full strength.
-    &.is-done .m-puzzle-list__text { opacity: 0.55; }
   }
 
-  &__author { font-size: $font-sm; font-style: italic; color: $brutal-muted; }
-}
+  &--strip {
+    border-bottom: 2px solid rgba($brutal-ink, 0.25);
 
-// Completed check: a full-height flush-right square (archive boxes + the
-// homepage jump-in rows share it) — green field, white padded ✓.
-.theme-brutal .m-check {
-  flex: none;
-  align-self: stretch;
-  display: grid;
-  place-items: center;
-  min-width: 3.25rem;
-  padding: $space-sm;
-  background: $color-green;
-  color: #fff;
-  font-family: $font-display;
-  font-weight: 700;
-  font-size: $font-lg;
-  border-left: $brutal-border solid $brutal-ink;
+    &:hover,
+    &:focus-visible {
+      background: rgba($brutal-ink, 0.06);
+      padding-left: $space-lg;
+    }
+    &:active { background: rgba($brutal-ink, 0.1); }
+  }
+
+  &:hover .m-browse__title,
+  &:focus-visible .m-browse__title { text-decoration: underline; }
+
+  // Left column: title over its (unlinked) byline.
+  &__head {
+    flex: 1 1 12ch;
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    font-size: clamp(1.15rem, 4vw, 1.6rem);
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+  }
+
+  &__by {
+    font-style: italic;
+    color: $brutal-muted;
+    font-size: $font-sm;
+  }
+
+  // Meta cluster hugs the right edge (rating over theme tags), so the title
+  // owns the width. Drops full-width + left on a narrow phone.
+  &__meta {
+    flex: 0 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: $space-xs;
+    text-align: right;
+    color: $brutal-muted;
+
+    @media (max-width: $bp-stack) {
+      flex: 1 1 100%;
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+
+  // The card carries the whole thing, so the inline theme flag is inert text —
+  // no fold-out, no margin of its own.
+  .m-themed--inline {
+    margin: 0;
+    justify-content: flex-end;
+    @media (max-width: $bp-stack) { justify-content: flex-start; }
+  }
+
+  // Finished puzzles step back; the overlay stays at full strength.
+  &.is-done {
+    .m-browse__title,
+    .m-browse__meta { opacity: 0.4; }
+  }
+
+  // Completed overlay: a translucent green wash + diagonal pinstripes over the
+  // whole card, centered ✓ that swaps to a CTA on hover/focus.
+  &__done {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background:
+      repeating-linear-gradient(-45deg,
+        rgba($color-green, 0.3) 0 9px, transparent 9px 18px),
+      rgba($color-green, 0.14);
+  }
+  &__done-mark,
+  &__done-cta {
+    grid-area: 1 / 1;
+    transition: opacity 0.12s ease;
+  }
+  &__done-mark {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    background: $color-green;
+    color: $color-ink;
+    border: $brutal-border solid $color-ink;
+    border-radius: 50%;
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  &__done-cta {
+    opacity: 0;
+    padding: $space-xs $space-md;
+    background: $color-green;
+    color: $color-ink;
+    border: $brutal-border solid $color-ink;
+    box-shadow: 3px 3px 0 rgba($color-ink, 0.4);
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: $font-sm;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+  }
+  &:hover .m-browse__done-mark,
+  &:focus-visible .m-browse__done-mark { opacity: 0; }
+  &:hover .m-browse__done-cta,
+  &:focus-visible .m-browse__done-cta { opacity: 1; }
 }
 
 // --- Post-play rating (quality + difficulty) ----------------------------------
@@ -598,9 +707,8 @@ body.theme-brutal {
 
 // Byline author links (→ /u/:handle): keep the byline's muted voice, just
 // underlined so they read as links; yellow on hover like everything else.
-.theme-brutal .m-byline a,
-.theme-brutal .m-puzzle-list__author a,
-.theme-brutal .m-titles__by a {
+// (Only the show page's byline now — the browse surfaces dropped the author.)
+.theme-brutal .m-byline a {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -1177,44 +1285,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
     #131313;
   border-bottom: $brutal-border solid $brutal-ink;
 }
-.theme-brutal .m-titles {
-  list-style: none;
-  margin: 0; // spans the band's column, same width as every other section
-  padding: 0;
-  border-top: 2px solid rgba($brutal-ink, 0.25);
-}
-// Rows: title over byline on the left; a completed row dims its text and gets
-// the shared .m-check square running the row's full height, flush right (the
-// row padding lives on the text block so the check can reach the edges).
-.theme-brutal .m-titles__row {
-  display: flex;
-  align-items: stretch;
-  gap: $space-md;
-  border-bottom: 2px solid rgba($brutal-ink, 0.25);
-  text-decoration: none;
-  color: $brutal-ink;
-}
-.theme-brutal .m-titles__text {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: grid;
-  gap: 2px; // minimal breathing room between title and byline
-  justify-items: start;
-  padding: $space-sm 0;
-}
-.theme-brutal .m-titles__row.is-done .m-titles__text { opacity: 0.55; }
-.theme-brutal .m-titles__name {
-  font-family: $font-display;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  font-size: clamp(1.25rem, 4.4vw, 1.85rem);
-  text-decoration: none; // it's the row's link now (the byline carries its own)
-  &:hover { color: $color-yellow; }
-}
-.theme-brutal .m-titles__by { font-style: italic; color: $brutal-muted; font-size: $font-sm; }
-.theme-brutal .m-titles__row:hover { padding-left: $space-sm; transition: padding 0.08s; }
+// The jump-in rows use the shared .m-browse card (--strip framing).
 
 // WHY PLAY HERE — dark band, multicolor head. One line on the rules, then the real
 // pitch, balanced by a heavy graphic: a solved board (the colorful payoff) tilted

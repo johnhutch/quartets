@@ -1,0 +1,29 @@
+<%# One clickable browse card (ADR-0018 redesign). The whole card is the play
+    link — title + byline left, meta (rating + theme tags) right, so rows spend
+    width instead of stacking tall. The byline is plain text here (unlinked) —
+    the linked /u/:handle version lives on the show page, since the whole card
+    is already one anchor. A completed puzzle gets a translucent green pinstripe
+    overlay with a ✓ that swaps to a "View this completed quartet" CTA on
+    hover/focus. Locals: puzzle, summary, done, variant ("archive" | "strip"). %>
+<li>
+  <%= link_to play_path(puzzle.share_token),
+        class: "m-browse m-browse--#{variant}#{' is-done' if done}",
+        "aria-label": (done ? "#{puzzle.title} — played" : nil) do %>
+    <span class="m-browse__head">
+      <span class="m-browse__title"><%= puzzle.title %></span>
+      <% if puzzle.author_display_name.present? %>
+        <span class="m-browse__by">by <%= puzzle.author_display_name %></span>
+      <% end %>
+    </span>
+    <span class="m-browse__meta">
+      <%= render "play/rating_summary", summary: summary %>
+      <%= render "play/themed_flag", puzzle: puzzle %>
+    </span>
+    <% if done %>
+      <span class="m-browse__done" aria-hidden="true">
+        <span class="m-browse__done-mark">✓</span>
+        <span class="m-browse__done-cta">View this completed quartet <%= ne_arrow %></span>
+      </span>
+    <% end %>
+  <% end %>
+</li>
