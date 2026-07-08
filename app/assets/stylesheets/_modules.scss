@@ -237,6 +237,26 @@
   }
 }
 
+// A wrong guess rendered as word-chips, each filled with the word's true
+// category color. Black text clears WCAG AA on all four fills (≥9:1 — see
+// ADR-0017), so no per-color foreground juggling.
+.m-guess-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-xs;
+
+  &__chip {
+    padding: 0.1em 0.45em;
+    font-size: $font-sm;
+    font-weight: 700;
+    color: #000;
+    border-radius: $radius;
+
+    @each $name, $color in $category-colors { &--#{$name} { background: $color; } }
+  }
+}
+
 // --- Play screen --------------------------------------------------------
 .m-game {
   position: relative; // anchor for the floating toast (.m-game__toast)

@@ -35,6 +35,43 @@ The `docker-compose.yml` includes a `cloudflared` service.
 
 Traffic will route securely to your NAS without needing Synology's reverse proxy or opening ports.
 
+## Outbound mail (Resend)
+
+Forgot-password email relays through **Resend** (free tier: 3,000/mo, 100/day —
+forgot-password volume is a rounding error against that). The app is already
+wired: `production.rb` reads `SMTP_*` from the `.env`, and mail silently no-ops
+until `SMTP_ADDRESS` is set. One-time setup:
+
+1. **Sign up** at [resend.com](https://resend.com) (free tier, no card).
+2. **Verify the domain**: Resend dashboard → Domains → Add `playquartets.com`.
+   It hands you DNS records (DKIM TXT/CNAMEs + an SPF record on a bounce
+   subdomain). Add them in **Cloudflare DNS** — set each to **DNS only** (grey
+   cloud), not proxied. Wait for Resend to show "Verified" (usually minutes).
+3. **DMARC** (once, if not already present): add a TXT record in Cloudflare —
+   name `_dmarc`, value `v=DMARC1; p=none;`. Loosest policy; it just makes
+   receivers happier and gives you reports later if you tighten it.
+4. **Mint an API key**: Resend dashboard → API Keys → Create (sending access
+   only is fine). Copy it — it's shown once.
+5. **Fill the NAS `.env`** (`/volume1/docker/quartets/.env`):
+
+   ```
+   SMTP_ADDRESS=smtp.resend.com
+   SMTP_PORT=587
+   SMTP_USERNAME=resend
+   SMTP_PASSWORD=re_xxxxxxxxxxxx   # the API key
+   SMTP_AUTHENTICATION=plain
+   MAILER_SENDER=no-reply@playquartets.com
+   ```
+
+6. **Recreate `web`** so it picks up the env (a plain restart is not enough —
+   env is baked at container create). Container Manager → Project → quartets →
+   Action → Build/Recreate, or via SSH: `sudo docker-compose up -d web`.
+7. **Smoke test**: hit `/users/password/new` on the live site, request a reset
+   for a real account, and check the inbox (and spam folder — first send from a
+   fresh domain sometimes lands there; subsequent ones settle). Every send also
+   shows up in Resend's dashboard → Emails, which is the fastest way to tell
+   "app didn't send" from "receiver binned it".
+
 ## Backups
 
 - **Database:** `docker compose exec db pg_dump -U quartets quartets_production > backup.sql` (cron it via DSM Task Scheduler).

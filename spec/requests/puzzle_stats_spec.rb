@@ -28,6 +28,20 @@ RSpec.describe "Puzzle stats", type: :request do
       expect(response.body).to include("50%") # one solved of two
     end
 
+    it "renders common wrong guesses as color-coded chips, not a comma list" do
+      puzzle = create(:published_puzzle, user: user)
+      create(:attempt, puzzle: puzzle, solved: false, mistakes_count: 4, guesses: [
+        { "words" => %w[CAT DOG OWL ONE], "colors" => %w[blue blue blue green] }
+      ])
+
+      get stats_puzzle_path(puzzle)
+
+      expect(response.body).to include("m-guess-tiles__chip--blue")
+      expect(response.body).to include("m-guess-tiles__chip--green")
+      expect(response.body).to include("CAT")
+      expect(response.body).not_to include("CAT, DOG") # commas are gone
+    end
+
     it "handles a puzzle nobody has played yet" do
       puzzle = create(:published_puzzle, user: user)
       get stats_puzzle_path(puzzle)

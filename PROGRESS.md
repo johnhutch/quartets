@@ -1,7 +1,7 @@
 # Progress
 
 **Last updated:** 2026-07-08
-**Active branch:** develop (uncommitted: the ADR-0018 punch list + rich seeds; `main` is prod/deploy)
+**Active branch:** develop (clean; the ADR-0018 punch list + rich seeds are committed and QA'd; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
 
@@ -18,8 +18,9 @@ is public, anonymous authors own their work via a `creator_token` cookie, signin
 in/up claims it, the Devise flows are on-theme, and the once-deferred D3 landed —
 every account has a stable **`handle`** and a public **`/u/:handle`** page (published
 puzzles + stats), with bylines linked site-wide. The **superuser role + `/admin`**
-(puzzles & users tabs) also exists (ADR-0016). Still open from that thread: the
-dashboard's **at-a-glance aggregate stats table**. Deploy is **live** — push to
+(puzzles & users tabs) also exists (ADR-0016). The once-planned dashboard
+aggregate stats table was **called Good Enough as-is** (per-puzzle Stats links
+cover it — closed 2026-07-08). Deploy is **live** — push to
 `main` builds + ships to GHCR and Watchtower recreates `web` on the NAS, with a
 Caddy front proxy so the restart no longer 502s (ADR-0006 + ADR-0007). Still
 outstanding: real SMTP creds in the NAS `.env` for forgot-password mail.
@@ -518,9 +519,8 @@ is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Known not-done / watch-outs
 
-- **"My puzzles" aggregate stats table** — the dashboard lists puzzles with a
-  per-puzzle `Stats` link; the planned at-a-glance table (completions, *successful*
-  completions, avg mistakes inline per row) is still TODO.
+- ~~"My puzzles" aggregate stats table~~ — called **Good Enough as-is** 2026-07-08;
+  the per-puzzle `Stats` links cover it.
 - **Quick wins, no decisions needed:** richer share payload (cube + title + direct
   link), and tune the 1000ms auto-save debounce on a real phone.
 - **SMTP creds for prod** — forgot-password mail is wired and previews in dev

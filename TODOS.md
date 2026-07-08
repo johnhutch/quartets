@@ -19,10 +19,9 @@ Planned work that has been scoped but not yet started. Read this at session star
 
 - ~~Per-creator public homepage `/u/:handle`~~ **Shipped 2026-07-07 (ADR-0016)** —
   `users.handle` + public page + linked bylines.
-- **"My puzzles" aggregate stats table** — the dashboard already lists puzzles
-  with a per-puzzle `Stats` link; turn that into an at-a-glance table with
-  inline aggregates per row: # of completions, # of *successful* completions, and
-  avg mistakes. (Builds on `puzzles#index` + `PuzzleStats`.)
+- ~~"My puzzles" aggregate stats table~~ **Called Good Enough as-is 2026-07-08** —
+  the dashboard's per-puzzle `Stats` link + play counts cover it; no inline
+  aggregate table needed.
 
 ### Follow-ups from the one-play-per-user work (ADR-0009)
 
@@ -275,7 +274,5 @@ for reference *only*:
 
 1. **Rating aggregates on `/puzzles/:id/stats`** — browse/strip/show shipped
    2026-07-08 (`RatingSummary`); the owner stats page is the remaining slice.
-2. **"My puzzles" aggregate stats table** — needs no new decision; builds on the
-   existing owner-scoped dashboard + `PuzzleStats`.
-3. **Analytics B + C** — now unblocked by the `/admin` shell (ADR-0016); build the
+2. **Analytics B + C** — now unblocked by the `/admin` shell (ADR-0016); build the
    funnels into a third admin tab.
