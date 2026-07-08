@@ -625,7 +625,16 @@ body.theme-brutal {
   font-family: "UnifrakturMaguntia", "Old English Text MT", serif;
   font-weight: 400;
   color: #fff;
-  font-size: clamp(1rem, 5.5vw, 2.25rem); // ~half the old size
+  white-space: nowrap;
+  // Sized to the sampled name (the masthead gag rotates per load): --np-scale is
+  // 1/chars, set inline by the view. Blackletter averages ~0.5em per char, so a
+  // name spans ≈ font-size × chars × 0.5 — the two calc terms solve that against
+  // the wordmark's width (≈92vw on phones, ≈830px at the desktop cap). Short
+  // names hit the 2.25rem ceiling (the old size); long ones shrink to span.
+  font-size: max(
+    min(2.25rem, calc(92vw * var(--np-scale, 0.14) * 2), calc(830px * var(--np-scale, 0.14) * 2)),
+    0.8rem
+  );
   line-height: 1;
   pointer-events: none; // purely decorative; let clicks fall through
   z-index: 2;
