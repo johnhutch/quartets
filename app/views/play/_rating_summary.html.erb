@@ -1,21 +1,10 @@
-<%# Compact vote aggregate (RatingSummary): weighted thumb count + a difficulty
-    meter that fills easiest→hardest with an "x/4 difficulty" readout. Callers
-    pass summary: (nil for unrated — renders nothing, so the cold-start lists
-    stay clean). %>
+<%# Full vote aggregate (RatingSummary): likes + difficulty meter side by side.
+    Used on the show page under the byline; browse cards place the two pieces
+    separately (likes by the byline, meter in the meta). Callers pass summary:
+    (nil for unrated — renders nothing). %>
 <% if summary %>
   <span class="m-ratemeta">
-    <% if summary.thumbs %>
-      <span class="m-ratemeta__thumbs"><%= icon(:thumb) %><%= summary.thumbs %></span>
-    <% end %>
-    <% if summary.difficulty_level %>
-      <span class="m-difficulty" title="<%= summary.difficulty_label %>">
-        <span class="m-difficulty__meter" aria-hidden="true">
-          <% (1..4).each do |i| %>
-            <span class="m-difficulty__seg<%= ' is-on' if i <= summary.difficulty_level %>"></span>
-          <% end %>
-        </span>
-        <span class="m-difficulty__label"><%= summary.difficulty_level %>/4 difficulty</span>
-      </span>
-    <% end %>
+    <%= render "play/likes", summary: summary %>
+    <%= render "play/difficulty_meter", summary: summary %>
   </span>
 <% end %>

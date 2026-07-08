@@ -157,6 +157,7 @@ end
 
 wordsmith = seed_user("wordsmith@example.com", display_name: "The Wordsmith") # prolific author, themed + classic
 casual    = seed_user("casual@example.com")                                   # no display_name — bylines fall to author_name
+gamer     = seed_user("gamer@example.com", display_name: "Puzzle Pug")        # second prolific author, themed + classic
 player    = seed_user("player@example.com", display_name: "Speedrun Sally")   # pure player: no puzzles, all trophies
 
 ANON_CREATOR = "seed-anon-creator" # a logged-out author's cookie token
@@ -243,6 +244,75 @@ seed_puzzle({
 }, user: wordsmith)
 
 seed_puzzle({ title: "Scraps", status: :unlisted, groups: [] }, creator_token: ANON_CREATOR)
+
+# --- More published puzzles — bulk out the archive --------------------------
+# A deeper bench so /play and the homepage strip have real volume: a mix of
+# classic and themed, split across the two prolific authors. Captured in refs so
+# the plays section can rate them and the admin can complete a spread.
+fruit = seed_puzzle({
+  title: "Fruit Basket", author_name: "Puzzle Pug",
+  description: "Grocery-run vocabulary. The purple row isn't produce.",
+  groups: [
+    { color: :yellow, description: "Citrus",       words: %w[Lemon Lime Orange Grapefruit] },
+    { color: :green,  description: "Berries",       words: %w[Strawberry Blueberry Raspberry Blackberry] },
+    { color: :blue,   description: "Tropical fruit", words: %w[Mango Papaya Guava Lychee] },
+    { color: :purple, description: "___ apple",      words: %w[Pine Crab Adam Custard] }
+  ]
+}, user: gamer)
+
+space = seed_puzzle({
+  title: "Space Race", specialized: true, tags: ["space", "science"],
+  description: "Look up. One group orbits the others.",
+  groups: [
+    { color: :yellow, description: "Planets",       words: %w[Mercury Venus Mars Saturn] },
+    { color: :green,  description: "Moons",          words: %w[Europa Titan Phobos Callisto] },
+    { color: :blue,   description: "NASA programs",  words: %w[Apollo Gemini Artemis Voyager] },
+    { color: :purple, description: "___ hole",       words: %w[Black Worm Pot Man] }
+  ]
+}, user: wordsmith)
+
+myth = seed_puzzle({
+  title: "Mythical Creatures", specialized: true, tags: ["mythology", "fantasy"],
+  description: "Bestiary night. Know your undead from your shapeshifters.",
+  groups: [
+    { color: :yellow, description: "Greek monsters",  words: %w[Hydra Medusa Cyclops Minotaur] },
+    { color: :green,  description: "Dragon-kin",       words: %w[Wyvern Drake Basilisk Wyrm] },
+    { color: :blue,   description: "Shapeshifters",    words: %w[Werewolf Kitsune Selkie Skinwalker] },
+    { color: :purple, description: "The undead",       words: %w[Zombie Lich Ghoul Revenant] }
+  ]
+}, user: gamer)
+
+deck = seed_puzzle({
+  title: "Deck of Cards", author_name: "poolboy",
+  groups: [
+    { color: :yellow, description: "Suits",       words: %w[Hearts Spades Clubs Diamonds] },
+    { color: :green,  description: "Face cards",   words: %w[Jack Queen King Joker] },
+    { color: :blue,   description: "Poker hands",  words: %w[Flush Straight Pair Full] },
+    { color: :purple, description: "___ deck",     words: %w[Sun Tape Flight Poop] }
+  ]
+}, user: casual)
+
+board = seed_puzzle({
+  title: "Board Meeting", specialized: true, tags: ["board games"],
+  description: "No spreadsheets. Just tokens, tiles, and tabletop verbs.",
+  groups: [
+    { color: :yellow, description: "Classic boards",   words: %w[Chess Checkers Backgammon Go] },
+    { color: :green,  description: "Monopoly tokens",  words: %w[Thimble Boot Cannon Wheelbarrow] },
+    { color: :blue,   description: "What players do",  words: %w[Roll Draw Trade Bluff] },
+    { color: :purple, description: "Scrabble ___",     words: %w[Board Tile Rack Bag] }
+  ]
+}, user: wordsmith)
+
+condiment = seed_puzzle({
+  title: "Condiment Chaos", author_name: "poolboy",
+  description: "Squeeze bottles at forty paces. Mind the overlap.",
+  groups: [
+    { color: :yellow, description: "Burger squeeze",  words: %w[Ketchup Mustard Relish Mayo] },
+    { color: :green,  description: "Hot sauces",       words: %w[Tabasco Sriracha Cholula Franks] },
+    { color: :blue,   description: "Toast spreads",    words: %w[Butter Jam Nutella Hummus] },
+    { color: :purple, description: "___ sauce",        words: %w[Soy Fish Hot Bbq] }
+  ]
+}, user: casual)
 
 puts "Community puzzles: #{Puzzle.count} total " \
      "(#{Puzzle.published.count} published, #{Puzzle.where(specialized: true).count} themed, " \
@@ -358,6 +428,76 @@ seed_play(game_night, token: "seed-#{player.handle}", user: player, solved: true
   guesses: [right(game_night, :yellow, t: 22_000), right(game_night, :green, t: 51_000),
             right(game_night, :blue, t: 79_000), right(game_night, :purple, t: 96_000)]) # perfect
 
+# The new bench: anonymous plays so ratings, likes, and the difficulty meter
+# have real numbers to render — spread across the 1–4 difficulty range.
+seed_play(fruit, token: "seed-p9", solved: true, quality: :yeah, difficulty: :pretty_easy,
+  guesses: [right(fruit, :yellow, t: 18_000), right(fruit, :green, t: 35_000),
+            right(fruit, :blue, t: 52_000), right(fruit, :purple, t: 64_000)])
+seed_play(fruit, token: "seed-p10", solved: true, quality: :hell_yeah, difficulty: :not_bad,
+  guesses: [wrong(fruit, :blue, :purple, t: 22_000), right(fruit, :yellow, t: 44_000),
+            right(fruit, :green, t: 66_000), right(fruit, :blue, t: 88_000),
+            right(fruit, :purple, t: 99_000)])
+seed_play(space, token: "seed-p11", solved: true, quality: :hell_yeah, difficulty: :pretty_hard,
+  guesses: [wrong(space, :green, :yellow, t: 40_000), right(space, :purple, t: 80_000),
+            right(space, :blue, t: 120_000), right(space, :green, t: 150_000),
+            right(space, :yellow, t: 165_000)])
+seed_play(space, token: "seed-p12", solved: false, difficulty: :cursed,
+  guesses: [wrong(space, :yellow, :green, t: 30_000), wrong(space, :green, :blue, t: 70_000),
+            wrong(space, :blue, :purple, t: 110_000), wrong(space, :purple, :yellow, t: 150_000)])
+seed_play(myth, token: "seed-p13", solved: true, quality: :hell_yeah, difficulty: :cursed,
+  guesses: [right(myth, :purple, t: 70_000), right(myth, :blue, t: 130_000),
+            right(myth, :green, t: 180_000), right(myth, :yellow, t: 210_000)]) # reverse rainbow
+seed_play(myth, token: "seed-p14", solved: true, quality: :yeah, difficulty: :pretty_hard,
+  guesses: [wrong(myth, :green, :blue, t: 50_000), right(myth, :yellow, t: 95_000),
+            right(myth, :blue, t: 140_000), right(myth, :green, t: 180_000),
+            right(myth, :purple, t: 200_000)])
+seed_play(deck, token: "seed-p15", solved: true, quality: :yeah, difficulty: :pretty_easy,
+  guesses: [right(deck, :yellow, t: 14_000), right(deck, :green, t: 29_000),
+            right(deck, :blue, t: 45_000), right(deck, :purple, t: 57_000)])
+seed_play(board, token: "seed-p16", solved: true, quality: :hell_yeah, difficulty: :not_bad,
+  guesses: [right(board, :yellow, t: 26_000), right(board, :blue, t: 52_000),
+            right(board, :green, t: 80_000), right(board, :purple, t: 95_000)])
+seed_play(condiment, token: "seed-p17", solved: true, quality: :yeah, difficulty: :pretty_easy,
+  guesses: [right(condiment, :blue, t: 20_000), right(condiment, :yellow, t: 40_000),
+            right(condiment, :green, t: 60_000), right(condiment, :purple, t: 72_000)])
+
+# The superuser's own play history — a spread of finished puzzles they DON'T own
+# (owners can't play their own, ADR-0015), so /play shows them the completed
+# overlay and "Your stuff" gets a real trophy case. Six solves + one loss.
+if owner
+  seed_play(deep_end, token: "seed-admin", user: owner, solved: true,
+    quality: :yeah, difficulty: :pretty_easy,
+    guesses: [right(deep_end, :yellow, t: 16_000), right(deep_end, :green, t: 33_000),
+              right(deep_end, :blue, t: 49_000), right(deep_end, :purple, t: 60_000)])
+  seed_play(ghost, token: "seed-admin", user: owner, solved: true,
+    quality: :yeah, difficulty: :not_bad,
+    guesses: [right(ghost, :yellow, t: 24_000), right(ghost, :green, t: 52_000),
+              right(ghost, :blue, t: 80_000), right(ghost, :purple, t: 96_000)])
+  seed_play(sesqui, token: "seed-admin", user: owner, solved: true,
+    quality: :hell_yeah, difficulty: :cursed,
+    guesses: [right(sesqui, :blue, t: 70_000), right(sesqui, :yellow, t: 140_000),
+              right(sesqui, :green, t: 200_000), right(sesqui, :purple, t: 230_000)])
+  seed_play(fruit, token: "seed-admin", user: owner, solved: true,
+    quality: :yeah, difficulty: :pretty_easy,
+    guesses: [right(fruit, :yellow, t: 15_000), right(fruit, :green, t: 30_000),
+              right(fruit, :blue, t: 46_000), right(fruit, :purple, t: 58_000)])
+  seed_play(space, token: "seed-admin", user: owner, solved: true,
+    quality: :hell_yeah, difficulty: :pretty_hard,
+    guesses: [wrong(space, :green, :yellow, t: 38_000), right(space, :yellow, t: 74_000),
+              right(space, :green, t: 110_000), right(space, :blue, t: 145_000),
+              right(space, :purple, t: 160_000)])
+  seed_play(myth, token: "seed-admin", user: owner, solved: true,
+    quality: :yeah, difficulty: :pretty_hard,
+    guesses: [right(myth, :yellow, t: 60_000), right(myth, :green, t: 120_000),
+              right(myth, :blue, t: 170_000), right(myth, :purple, t: 195_000)]) # perfect
+  seed_play(board, token: "seed-admin", user: owner, solved: false, difficulty: :not_bad,
+    guesses: [wrong(board, :green, :yellow, t: 35_000), wrong(board, :blue, :purple, t: 70_000),
+              wrong(board, :yellow, :green, t: 105_000), wrong(board, :purple, :blue, t: 140_000)])
+
+  admin_done = owner.attempts.distinct.count(:puzzle_id)
+  puts "Superuser completed #{admin_done} puzzles they don't own (overlay + trophy case)."
+end
+
 puts "Plays: #{Attempt.count} attempts " \
      "(#{Attempt.where(solved: true).count} solved, " \
      "#{Attempt.where.not(achievement: nil).count} with trophies, " \
@@ -374,6 +514,9 @@ around.attempts.find_each { |a| seed_start(around, a.player_token) }
 seed_start(around, "seed-abandon-1")
 seed_start(around, "seed-abandon-2")
 galaxy.attempts.find_each { |a| seed_start(galaxy, a.player_token) }
+[fruit, space, myth, deck, board, condiment].each do |p|
+  p.attempts.find_each { |a| seed_start(p, a.player_token) }
+end
 
 puts "Events: #{Event.count} game_started (#{2} seeded abandons on '#{around.title}')."
 
@@ -381,9 +524,10 @@ puts "Events: #{Event.count} game_started (#{2} seeded abandons on '#{around.tit
 puts <<~NOTE
 
   Dev logins (@example.com accounts share "#{DEV_PASSWORD}"; the superuser uses ADMIN_PASSWORD):
-    #{admin_email} — superuser (/admin), owns the Demo set
+    #{admin_email} — superuser (/admin), owns the Demo set, has completed a spread of others' puzzles
     wordsmith@example.com — themed + classic + unlisted + a draft (display name "The Wordsmith")
     casual@example.com — no display_name; bylines say "poolboy"
+    gamer@example.com — themed + classic ("Puzzle Pug")
     player@example.com — no puzzles, full trophy case ("Speedrun Sally")
   Anonymous creator: cookie token "#{ANON_CREATOR}" owns "Ghost Writer Special" + the "Scraps" draft
   (to browse as them: sign a cookie in the console or just eyeball /play where their work is public).

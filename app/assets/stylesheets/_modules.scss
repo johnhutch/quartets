@@ -596,12 +596,14 @@
   font-size: $font-sm;
   color: $color-muted;
   white-space: nowrap;
+}
 
-  &__thumbs {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-xs;
-  }
+// Likes tally (weighted thumbs). Standalone so it can ride in the ratemeta
+// cluster (show page) or next to a browse card's byline.
+.m-likes {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
 
   .m-icon {
     width: 1em;
