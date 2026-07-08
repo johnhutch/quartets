@@ -1242,6 +1242,9 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 @media (max-width: $bp-stack) {
   .theme-brutal .m-why { grid-template-columns: 1fr; }
   .theme-brutal .m-why__show { margin-top: $space-xl; justify-self: stretch; }
+  // Single column: the notes run the full width their feature-row borders do
+  // (the 30ch cap is for the desktop two-column layout).
+  .theme-brutal .m-why__note { max-width: none; }
   // The board keeps its off-the-right-edge bleed on phones too (the 50%−50vw
   // margin from the base rule still applies).
 }
