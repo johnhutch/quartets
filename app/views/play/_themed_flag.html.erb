@@ -1,22 +1,14 @@
 <%# THEMED flag for specialized puzzles — so people can dodge them or chase
-    them. Two shapes via the `inline_tags` local: list rows get a <details>
-    disclosure (native tap-to-toggle, CSS adds hover for pointer devices) with
-    the tags in the fold-out bubble; the show page lays the tags out inline.
-    Classic puzzles render nothing. Expects `puzzle`. %>
+    them. The chip alone ("Themed") doesn't tell you *what* the theme is, so the
+    tags always ride alongside it inline (`inline_tags`): the browse card + show
+    page both name the theme up front. A span wrapper (not <p>) so it can nest
+    inside the card's whole-row anchor. Classic puzzles render nothing.
+    Expects `puzzle`. %>
 <% if puzzle.specialized? %>
-  <% if local_assigns[:inline_tags] %>
-    <p class="m-themed m-themed--inline">
-      <span class="m-themed__chip">Themed</span>
-      <% puzzle.tags.each do |tag| %>
-        <span class="m-themed__tag"><%= tag.name %></span>
-      <% end %>
-    </p>
-  <% elsif puzzle.tags.any? %>
-    <details class="m-themed">
-      <summary class="m-themed__chip">Themed</summary>
-      <span class="m-themed__bubble"><%= puzzle.tags.map(&:name).join(" · ") %></span>
-    </details>
-  <% else %>
-    <span class="m-themed"><span class="m-themed__chip">Themed</span></span>
-  <% end %>
+  <span class="m-themed m-themed--inline">
+    <span class="m-themed__chip">Themed</span>
+    <% puzzle.tags.each do |tag| %>
+      <span class="m-themed__tag"><%= tag.name %></span>
+    <% end %>
+  </span>
 <% end %>

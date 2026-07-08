@@ -232,6 +232,21 @@ select:focus-visible,
   outline-offset: 2px;
 }
 
+// Screen-reader-only text: visually gone, still announced (skip links, state
+// labels that a sighted user reads from the visuals).
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 // Honour reduced-motion (WCAG 2.3.3 / 2.2.2): flatten the tilt/lift transitions
 // and any animation for users who've asked the OS to ease off. The default
 // brutalist motion is untouched for everyone else.
