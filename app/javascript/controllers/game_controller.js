@@ -396,9 +396,15 @@ export default class extends Controller {
     const group = this.groups[color]
     const row = document.createElement("div")
     row.className = `m-group m-group--${color} m-game__group`
-    row.innerHTML =
-      `<strong class="m-game__group-name">${group.description}</strong>` +
-      `<span class="m-game__group-words">${group.words.join(", ")}</span>`
+    // textContent, not innerHTML — description/words are author-authored and
+    // authoring is public, so interpolating them as HTML is a stored-XSS sink.
+    const name = document.createElement("strong")
+    name.className = "m-game__group-name"
+    name.textContent = group.description
+    const words = document.createElement("span")
+    words.className = "m-game__group-words"
+    words.textContent = group.words.join(", ")
+    row.append(name, words)
     this.solvedTarget.appendChild(row)
   }
 
