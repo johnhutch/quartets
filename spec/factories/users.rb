@@ -6,5 +6,9 @@ FactoryBot.define do
     trait :superuser do
       superuser { true }
     end
+
+    trait :moderator do
+      moderator { true }
+    end
   end
 end

@@ -20,6 +20,23 @@ RSpec.describe "Admin", type: :request do
       get admin_users_path
       expect(response).to have_http_status(:not_found)
     end
+
+    it "lets a moderator into the puzzles tab but not the users tab" do
+      sign_in create(:user, :moderator)
+
+      get admin_puzzles_path
+      expect(response).to have_http_status(:ok)
+
+      get admin_users_path # user admin is superuser-only
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "hides the Users tab from a moderator" do
+      sign_in create(:user, :moderator)
+      get admin_puzzles_path
+      expect(response.body).to include(admin_puzzles_path)
+      expect(response.body).not_to include(admin_users_path)
+    end
   end
 
   describe "landing + tabs" do

@@ -57,6 +57,23 @@ RSpec.describe User, type: :model do
     expect(create(:user)).not_to be_superuser
   end
 
+  describe "roles" do
+    it "is neither superuser nor moderator by default" do
+      user = create(:user)
+      expect(user).not_to be_superuser
+      expect(user).not_to be_moderator
+      expect(user).not_to be_staff
+    end
+
+    it "counts a superuser as staff" do
+      expect(create(:user, :superuser)).to be_staff
+    end
+
+    it "counts a moderator as staff" do
+      expect(create(:user, :moderator)).to be_staff
+    end
+  end
+
   # Display name is optional, but once set it can be changed — never cleared.
   # Blanking it would silently un-byline every puzzle the account owns
   # (Puzzle#author_display_name falls back to per-puzzle names, usually absent

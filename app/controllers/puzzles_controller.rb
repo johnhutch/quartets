@@ -140,17 +140,17 @@ class PuzzlesController < ApplicationController
   private
 
   # Scoped to the requester — by account or creator_token — so one author can
-  # never reach another's work. The superuser passes on everything (the /admin
-  # puzzles tab hands them the same owner-grade action rows).
+  # never reach another's work. Staff (superuser or moderator) pass on everything
+  # for moderation (the /admin puzzles tab hands them owner-grade action rows).
   def set_puzzle
     @puzzle = accessible_puzzles.find(params[:id])
   end
 
   def accessible_puzzles
-    # Superusers reach everything, tombstones included (so they can restore or
-    # hard-delete). Owners get their kept-only scope — a deleted puzzle 404s for
-    # them, which is what gates restore to the admin.
-    user_signed_in? && current_user.superuser? ? Puzzle.with_deleted : owned_puzzles
+    # Staff reach every puzzle, tombstones included (so they can moderate:
+    # unpublish, delete, restore). Owners get their kept-only scope — a deleted
+    # puzzle 404s for them, which is what gates restore to staff.
+    user_signed_in? && current_user.staff? ? Puzzle.with_deleted : owned_puzzles
   end
 
   # Background draft saves flag themselves so we answer quietly instead of

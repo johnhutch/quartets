@@ -1,8 +1,10 @@
-<%# The two admin surfaces, toggled from one landing spot. `active` is :puzzles
-    or :users. %>
+<%# The admin surfaces, toggled from one landing spot. `active` is :puzzles or
+    :users. The Users tab is superuser-only, so moderators only see Puzzles. %>
 <nav class="m-tabs" aria-label="Admin sections">
   <%= link_to "Puzzles", admin_puzzles_path,
         class: "m-tabs__tab#{' is-active' if active == :puzzles}" %>
-  <%= link_to "Users", admin_users_path,
-        class: "m-tabs__tab#{' is-active' if active == :users}" %>
+  <% if current_user.superuser? %>
+    <%= link_to "Users", admin_users_path,
+          class: "m-tabs__tab#{' is-active' if active == :users}" %>
+  <% end %>
 </nav>
