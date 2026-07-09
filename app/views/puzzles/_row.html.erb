@@ -24,6 +24,19 @@
         &middot; <%= puzzle.user&.handle ? link_to(puzzle.user.handle, user_page_path(puzzle.user.handle)) : "anonymous" %>
       <% end %>
     </span>
+    <%# Admin-only funnel line — only the admin tab passes the engagement local. %>
+    <% if (pulse = local_assigns[:engagement]&.[](puzzle.id)) %>
+      <span class="m-puzzle-list__pulse">
+        <% if pulse.starts.positive? %>
+          <%= pluralize(pulse.starts, "start") %>
+          &middot; <%= pulse.abandons %> abandoned (<%= number_to_percentage(pulse.abandon_rate * 100, precision: 0) %>)
+        <% end %>
+        <% if pulse.median_first_group_ms %>
+          <% if pulse.starts.positive? %>&middot;<% end %>
+          first group ~<%= clock_ms(pulse.median_first_group_ms) %>
+        <% end %>
+      </span>
+    <% end %>
   </div>
 
   <%# One filled accent button per row (the encouraged next step), then

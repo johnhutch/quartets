@@ -6,7 +6,7 @@
 
   <ul class="m-puzzle-list m-puzzle-list--dash">
     <%= render partial: "puzzles/row", collection: @puzzles, as: :puzzle,
-          locals: { show_owner: true } %>
+          locals: { show_owner: true, engagement: @engagement } %>
   </ul>
 
   <% if @total_pages > 1 %>

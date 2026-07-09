@@ -28,6 +28,35 @@ RSpec.describe "Puzzle stats", type: :request do
       expect(response.body).to include("50%") # one solved of two
     end
 
+    it "shows solve times, flawless count, trophies, ratings, and solve orders" do
+      puzzle = create(:published_puzzle, user: user)
+      clean_solve = %w[yellow green blue purple].map do |c|
+        { "words" => %w[w x y z], "colors" => [c, c, c, c] }
+      end
+      create(:attempt, puzzle: puzzle, solved: true, mistakes_count: 0,
+                       duration_ms: 222_000, guesses: clean_solve,
+                       quality: :hell_yeah, difficulty: :pretty_hard)
+
+      get stats_puzzle_path(puzzle)
+
+      expect(response.body).to include("Median solve time")
+      expect(response.body).to include("3:42")
+      expect(response.body).to include("Flawless solves")
+      expect(response.body).to include("Perfect") # trophy tally row
+      expect(response.body).to include("m-likes") # thumbs received
+      expect(response.body).to include("3/4 difficulty")
+      expect(response.body).to include("Common solve orders")
+    end
+
+    it "skips the timing rows when no solve carries a duration" do
+      puzzle = create(:published_puzzle, user: user)
+      create(:attempt, puzzle: puzzle, solved: true, mistakes_count: 1)
+
+      get stats_puzzle_path(puzzle)
+
+      expect(response.body).not_to include("Median solve time")
+    end
+
     it "renders common wrong guesses as color-coded chips, not a comma list" do
       puzzle = create(:published_puzzle, user: user)
       create(:attempt, puzzle: puzzle, solved: false, mistakes_count: 4, guesses: [

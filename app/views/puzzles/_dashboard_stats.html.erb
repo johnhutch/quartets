@@ -28,4 +28,20 @@
       <%= link_to "Sign up", new_user_registration_path %> to earn trophies and track your stats across devices.
     </p>
   <% end %>
+
+  <%# Author-side reach — puzzle-scoped, so anonymous authors see it too.
+      Quiet until someone has actually played one of their puzzles. %>
+  <% if (author_stats = local_assigns[:author_stats])&.any? %>
+    <h2 class="m-dash-stats__heading">Out in the world</h2>
+    <dl class="m-statbar">
+      <div class="m-statbar__cell"><dt>Plays</dt><dd><%= author_stats.plays %></dd></div>
+      <div class="m-statbar__cell"><dt>Crowd solve rate</dt><dd><%= number_to_percentage(author_stats.crowd_solve_rate * 100, precision: 0) %></dd></div>
+      <% if author_stats.rating.thumbs %>
+        <div class="m-statbar__cell"><dt>Liked</dt><dd><%= render "play/likes", summary: author_stats.rating %></dd></div>
+      <% end %>
+      <% if author_stats.rating.difficulty_label %>
+        <div class="m-statbar__cell"><dt>Voted difficulty</dt><dd><%= author_stats.rating.difficulty_label %></dd></div>
+      <% end %>
+    </dl>
+  <% end %>
 </section>

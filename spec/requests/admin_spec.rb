@@ -50,6 +50,21 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to include("Delete") # the owner-grade action cluster
     end
 
+    it "shows per-puzzle engagement: starts, abandons, time to first group" do
+      puzzle = create(:published_puzzle, title: "Pulse Check")
+      create(:event, puzzle: puzzle, player_token: "a")
+      create(:event, puzzle: puzzle, player_token: "b")
+      create(:attempt, puzzle: puzzle, player_token: "a", guesses: [
+        { "words" => %w[w x y z], "colors" => %w[blue blue blue blue], "t" => 45_000 }
+      ])
+
+      get admin_puzzles_path
+
+      expect(response.body).to include("2 starts")
+      expect(response.body).to include("1 abandoned (50%)")
+      expect(response.body).to include("first group ~0:45")
+    end
+
     it "paginates past ten puzzles" do
       create_list(:published_puzzle, 11)
 
