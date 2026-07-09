@@ -9,5 +9,6 @@ class Admin::PuzzlesController < Admin::BaseController
     # Funnel numbers (starts vs attempts, first-group time) — superuser-only
     # signal, so it's computed here and passed to the shared row explicitly.
     @engagement = EngagementStats.for(@puzzles)
+    @play_counts = play_counts_for(@puzzles)
   end
 end

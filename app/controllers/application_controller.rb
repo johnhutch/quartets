@@ -31,6 +31,12 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # One grouped query of play counts for a set of puzzles, keyed by puzzle_id, so
+  # list rows can show "N plays" without firing attempts.count per row (N+1).
+  def play_counts_for(puzzles)
+    Attempt.where(puzzle_id: puzzles.map(&:id)).group(:puzzle_id).count
+  end
+
   def configure_devise_params
     devise_parameter_sanitizer.permit(:sign_up, keys: [:display_name])
     devise_parameter_sanitizer.permit(:account_update, keys: [:display_name])

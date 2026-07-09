@@ -15,7 +15,8 @@
 
   <% if @puzzles_total > 0 %>
     <ul class="m-puzzle-list m-puzzle-list--dash">
-      <%= render partial: "row", collection: @puzzles, as: :puzzle %>
+      <%= render partial: "row", collection: @puzzles, as: :puzzle,
+            locals: { play_counts: @play_counts } %>
     </ul>
 
     <% if @total_pages > 1 %>

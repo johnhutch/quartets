@@ -36,6 +36,24 @@ RSpec.describe "User pages", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 
+  it "shows play counts without a query per puzzle (grouped, not N+1)" do
+    def query_count_for(handle)
+      count = 0
+      counter = ->(*, payload) { count += 1 unless payload[:name] == "SCHEMA" }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { get user_page_path(handle) }
+      count
+    end
+
+    one = create(:user, email: "one@example.com")
+    create(:published_puzzle, user: one)
+    many = create(:user, email: "many@example.com")
+    4.times { |i| create(:published_puzzle, user: many, title: "P#{i}") }
+
+    # A per-row attempts.count would grow the query count with the puzzle count;
+    # the grouped count keeps it flat, so 1 puzzle and 4 puzzles cost the same.
+    expect(query_count_for("many")).to eq(query_count_for("one"))
+  end
+
   # Bylines everywhere link back to the creator's page when the puzzle has an
   # account owner; anonymous (cookie-owned) puzzles keep a plain-text byline.
   describe "byline links" do
