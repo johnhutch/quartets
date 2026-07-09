@@ -315,6 +315,19 @@ RSpec.describe "Play (public)", type: :request do
         expect(response.body).to include('data-controller="game"')
       end
 
+      it "opts the interactive board out of the Turbo cache, but not the finished view" do
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token) # fresh board — game JS mutates it
+        expect(response.body).to include('name="turbo-cache-control"')
+
+        user = create(:user)
+        sign_in user
+        create(:attempt, puzzle: puzzle, user: user, solved: true)
+        get play_path(puzzle.share_token) # now the static finished view
+        expect(response.body).not_to include('name="turbo-cache-control"')
+      end
+
       it "shows an author their own puzzle revealed, prior attempts or not" do
         user = create(:user)
         sign_in user

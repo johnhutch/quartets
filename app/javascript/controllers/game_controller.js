@@ -56,6 +56,20 @@ export default class extends Controller {
       })
     })
 
+    // Wipe anything a prior play left in the DOM before rebuilding. render() only
+    // clears the board; a Turbo-restored snapshot can also carry injected solved
+    // rows, the win/lose stamp, and the is-over class. The no-cache meta on the
+    // interactive board should prevent that snapshot, but resetting here means a
+    // stale one can never resurrect a broken hybrid board.
+    if (this.hasSolvedTarget) this.solvedTarget.innerHTML = ""
+    if (this.hasStatusTarget) {
+      this.statusTarget.textContent = ""
+      this.statusTarget.classList.remove("is-visible")
+    }
+    if (this.hasToastTarget) this.toastTarget.classList.remove("is-visible")
+    this.element.classList.remove("is-over")
+    this.element.querySelectorAll(".m-game__share, .m-awards, .m-rating").forEach((n) => n.remove())
+
     this.shuffleCards()
     this.render()
     this.renderMistakes()

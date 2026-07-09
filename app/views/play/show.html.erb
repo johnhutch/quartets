@@ -5,7 +5,15 @@
     block carries the OG/Twitter tags (og:title needs the puzzle title). %>
 <% desc = puzzle_meta_description(@puzzle) %>
 <% content_for :description, desc %>
+<%# The interactive board is the one page the game JS mutates in place (solved
+    rows, win/lose stamp, is-over). Turbo would cache that finished snapshot and
+    restore a broken hybrid board on the back button, so opt this render out of
+    the cache. The server-rendered finished/owner states are static — fine to cache. %>
+<% interactive_board = !@owned_view && !@my_attempt %>
 <% content_for :meta do %>
+  <% if interactive_board %>
+    <meta name="turbo-cache-control" content="no-cache">
+  <% end %>
   <%# Unlisted puzzles stay out of search, but keep the OG/Twitter tags so a
       shared link still unfurls a preview card (ADR-0008). %>
   <% unless @puzzle.published? %>
