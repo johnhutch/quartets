@@ -1019,18 +1019,6 @@ body.theme-brutal {
   &:disabled { opacity: 0.35; cursor: default; }
 }
 
-// --- Draft badge on the dashboard -------------------------------------------
-.theme-brutal .is-draft {
-  font-family: $font-display;
-  font-weight: 700;
-  font-size: $font-sm;
-  text-transform: uppercase;
-  font-style: normal;
-  background: $color-yellow;
-  color: #000;
-  padding: 0 $space-xs;
-  border: 2px solid $brutal-ink;
-}
 
 // --- Site footer ------------------------------------------------------------
 // Thick top rule, display-type links that underline hard and flip to a category

@@ -39,11 +39,12 @@ Rails.application.routes.draw do
   # but-abandoned game from one that was only ever opened.
   post "/p/:share_token/events", to: "events#create", as: :play_events
 
-  # Public homepage — a random featured puzzle, no login. The admin dashboard
-  # lives at /puzzles.
+  # Public homepage — a launchpad with a random jump-in strip of published
+  # puzzles, no login (ADR-0014). Your dashboard lives at /puzzles.
   root "home#show"
 
-  # Living style guide for the brutalist visual system (public, unlinked).
+  # Living style guide for the brutalist visual system. Public but intentionally
+  # unlinked — a dev/design reference, reachable only by typing the URL.
   get "/styleguide", to: "styleguide#show"
 
   # Static info pages — public, login-free. Linked from the site footer.

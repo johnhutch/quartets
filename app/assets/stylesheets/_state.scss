@@ -10,20 +10,8 @@
   color: $color-paper;
 }
 
-// A group that's been solved/revealed — module color already set it, this
-// just locks it in and kills the pointer.
-.is-revealed {
-  pointer-events: none;
-}
-
 // A wrong guess — brief flash before the board resets the selection.
 .is-wrong {
   background: $color-wrong;
   color: $color-paper;
-}
-
-// Draft badge on the dashboard: a puzzle that auto-saved mid-edit.
-.is-draft {
-  color: $color-muted;
-  font-style: italic;
 }
