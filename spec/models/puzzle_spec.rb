@@ -122,7 +122,14 @@ RSpec.describe Puzzle, type: :model do
         expect(puzzle).not_to be_valid
       end
 
-      it "leaves drafts alone — dupes are fine while still typing" do
+      it "rejects a COMPLETE unlisted puzzle with a dup (it's playable by link)" do
+        puzzle = build(:puzzle, :complete, status: :unlisted)
+        puzzle.groups.last.words = puzzle.groups.first.words.first(1) + %w[x y z]
+        expect(puzzle).not_to be_valid
+        expect(puzzle.errors[:groups].join).to match(/same answer/i)
+      end
+
+      it "leaves incomplete drafts alone — dupes are fine while still typing" do
         puzzle = build(:puzzle, status: :unlisted)
         puzzle.groups << build(:group, puzzle: puzzle, color: :blue, words: %w[twin twin])
         expect(puzzle).to be_valid
@@ -187,6 +194,44 @@ RSpec.describe Puzzle, type: :model do
 
     it "defaults a puzzle to not featured" do
       expect(create(:puzzle).featured).to be(false)
+    end
+  end
+
+  describe "soft delete (ADR)" do
+    it "hides soft-deleted puzzles from the default scope, everywhere" do
+      live = create(:published_puzzle)
+      gone = create(:published_puzzle)
+      gone.soft_delete!
+
+      expect(Puzzle.all).to contain_exactly(live)
+      expect(Puzzle.published).to contain_exactly(live)
+      expect(Puzzle.find_by(share_token: gone.share_token)).to be_nil
+    end
+
+    it "still reaches them through with_deleted / only_deleted (admin)" do
+      gone = create(:published_puzzle)
+      gone.soft_delete!
+
+      expect(Puzzle.with_deleted).to include(gone)
+      expect(Puzzle.only_deleted).to contain_exactly(gone)
+      expect(gone.reload).to be_deleted
+    end
+
+    it "restores a tombstoned puzzle back into the live set" do
+      gone = create(:published_puzzle)
+      gone.soft_delete!
+      gone.restore!
+
+      expect(gone).not_to be_deleted
+      expect(Puzzle.all).to include(gone)
+    end
+
+    it "keeps a deleted puzzle's attempts, so players' stats survive" do
+      puzzle = create(:published_puzzle)
+      create(:attempt, puzzle: puzzle, solved: true)
+      puzzle.soft_delete!
+
+      expect(Attempt.where(puzzle_id: puzzle.id).count).to eq(1)
     end
   end
 end

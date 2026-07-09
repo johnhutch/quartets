@@ -41,8 +41,10 @@
     <meta property="og:image:alt" content="Quartets">
     <meta name="twitter:image" content="<%= root_url %>share.png?v=4">
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# PWA manifest — installs the site as a standalone home-screen app. %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <meta name="apple-mobile-web-app-title" content="Quartets">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">

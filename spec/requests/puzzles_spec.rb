@@ -241,9 +241,19 @@ RSpec.describe "Puzzles", type: :request do
     end
 
     describe "DELETE /puzzles/:id" do
-      it "removes my puzzle" do
+      it "hard-deletes an unplayed puzzle" do
         puzzle = create(:puzzle, user: user)
-        expect { delete puzzle_path(puzzle) }.to change(Puzzle, :count).by(-1)
+        expect { delete puzzle_path(puzzle) }.to change(Puzzle.with_deleted, :count).by(-1)
+      end
+
+      it "soft-deletes a played puzzle so players keep their stats" do
+        puzzle = create(:published_puzzle, user: user)
+        create(:attempt, puzzle: puzzle, solved: true)
+
+        expect { delete puzzle_path(puzzle) }.not_to change(Puzzle.with_deleted, :count)
+        expect(puzzle.reload).to be_deleted
+        expect(Puzzle.all).not_to include(puzzle) # gone from every live surface
+        expect(Attempt.where(puzzle_id: puzzle.id).count).to eq(1) # play preserved
       end
     end
 

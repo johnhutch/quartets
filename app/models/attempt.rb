@@ -37,7 +37,7 @@ class Attempt < ApplicationRecord
 
   # The recorded guesses as Guess value objects (the raw jsonb stays on #guesses).
   def guess_log
-    guesses.map { |raw| Guess.new(raw) }
+    Array(guesses).map { |raw| Guess.new(raw) } # Array() guards a persisted NULL
   end
 
   # The colors solved, in the order they were cracked (the solve order). Drives the

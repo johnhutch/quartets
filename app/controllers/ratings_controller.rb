@@ -4,6 +4,9 @@
 class RatingsController < ApplicationController
   include AnonymousPlayer
 
+  # Public write — capped so votes can't be scripted en masse.
+  rate_limit to: 30, within: 1.minute, only: :update, store: RATE_LIMIT_STORE
+
   def update
     puzzle = Puzzle.find_by(share_token: params[:share_token])
     return head :not_found unless puzzle&.published?
