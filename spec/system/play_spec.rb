@@ -63,6 +63,21 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(page).to have_no_button("Shuffle")
   end
 
+  it "renders a solved group's author text as plain text, never as HTML (XSS)" do
+    # Authoring is public, so a malicious author could stash a script in a
+    # category name; cracking that group must not execute it in a player's browser.
+    puzzle.groups.find_by(color: "blue")
+          .update!(description: "<img src=x onerror=\"window.__xss=true\">")
+
+    visit play_path(puzzle.share_token)
+    solve(answers[:blue])
+
+    expect(page).to have_css(".m-game__group-name",
+                             text: /<img src=x onerror=/i) # inert text, not an element
+    expect(page).to have_no_css(".m-game__group-name img")
+    expect(page.evaluate_script("window.__xss")).to be_nil
+  end
+
   it "ends the game after four mistakes" do
     visit play_path(puzzle.share_token)
 
