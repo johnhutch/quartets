@@ -56,6 +56,9 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
+      # Error monitoring (Sentry). Blank = off; the app runs fine without it.
+      # GIT_SHA is baked into the image at build time, so it isn't set here.
+      SENTRY_DSN: ${SENTRY_DSN:-}
     # Puma directly on port 3000 (Caddy fronts it — no Thruster). Matches the
     # image's default CMD now; kept explicit as documentation.
     command: ["./bin/rails", "server"]
