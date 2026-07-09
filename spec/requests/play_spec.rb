@@ -290,9 +290,12 @@ RSpec.describe "Play (public)", type: :request do
       it "gates an anonymous player who finished it, keyed by the player_token (ADR-0012)" do
         puzzle = create(:published_puzzle)
         # An anonymous game-over records the attempt and sets the player_token cookie.
+        # Real words — the server derives solved/colors from the puzzle now.
         post play_attempts_path(puzzle.share_token), as: :json, params: { attempt: {
-          solved: true, mistakes_count: 0,
-          guesses: [{ words: %w[a b c d], colors: %w[purple purple purple purple] }]
+          guesses: [
+            { words: %w[cat dog owl fox] }, { words: %w[one two three four] },
+            { words: %w[mercury venus mars earth] }, { words: %w[piano drums bass flute] }
+          ]
         } }
 
         get play_path(puzzle.share_token) # same cookie jar
