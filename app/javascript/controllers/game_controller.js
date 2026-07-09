@@ -452,7 +452,10 @@ export default class extends Controller {
   // Slap a big tilted stamp on the board at game over — the payoff moment.
   renderEndStamp(won) {
     if (!this.hasStatusTarget) return
-    clearTimeout(this.statusTimer) // cancel any pending toast fade
+    // Cancelling the toast's fade timer would freeze a just-shown "one away"
+    // toast over the header forever, so hide it here too.
+    clearTimeout(this.statusTimer)
+    if (this.hasToastTarget) this.toastTarget.classList.remove("is-visible")
     this.statusTarget.innerHTML = ""
     const stamp = document.createElement("span")
     stamp.className = won ? "m-stamp m-stamp--win" : "m-stamp m-stamp--lose"

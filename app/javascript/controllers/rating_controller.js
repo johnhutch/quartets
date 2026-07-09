@@ -12,11 +12,17 @@ export default class extends Controller {
     const button = event.currentTarget
     const token = document.querySelector('meta[name="csrf-token"]')?.content
 
-    const response = await fetch(this.urlValue, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
-      body: JSON.stringify({ [field]: choice })
-    })
+    let response
+    try {
+      response = await fetch(this.urlValue, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+        body: JSON.stringify({ [field]: choice }),
+        credentials: "same-origin"
+      })
+    } catch {
+      return // network hiccup — best-effort, leave the buttons unlit
+    }
     if (!response.ok) return
 
     this.element.querySelectorAll(`[data-rating-field-param="${field}"]`).forEach((option) => {
