@@ -37,7 +37,15 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          # Bake the commit into the image so Sentry can tag which deploy an error
+          # came from (Dockerfile reads GIT_SHA → ENV → the Sentry initializer).
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+          # Tag both :latest (what Watchtower chases) and the commit SHA, so every
+          # build leaves a durable, addressable image to roll back to.
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

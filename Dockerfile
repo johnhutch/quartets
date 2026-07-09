@@ -60,6 +60,11 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 # Final stage for app image
 FROM base
 
+# The commit this image was built from, baked in so Sentry can tag which deploy
+# introduced an error (the deploy workflow passes --build-arg GIT_SHA).
+ARG GIT_SHA=""
+ENV GIT_SHA=$GIT_SHA
+
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
@@ -72,6 +77,7 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+# Caddy fronts the app (TLS + proxying) in our deploy, so we run Puma directly —
+# no Thruster. The compose file already overrides this, but keep the image honest.
+EXPOSE 3000
+CMD ["./bin/rails", "server"]

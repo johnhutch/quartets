@@ -6,10 +6,14 @@
 # tied to the player's cookie token. Best-effort: the game ignores the response.
 class EventsController < ApplicationController
   include AnonymousPlayer
+  include Creator # owns? — an owner's own play shouldn't skew the started funnel
+
+  # Beacon endpoint, public and login-free — cap it so it can't be flooded.
+  rate_limit to: 30, within: 1.minute, only: :create, store: RATE_LIMIT_STORE
 
   def create
     puzzle = Puzzle.find_by(share_token: params[:share_token])
-    return head :not_found unless Playability.new(puzzle).playable?
+    return head :not_found unless Playability.new(puzzle, owner: puzzle && owns?(puzzle)).playable?
 
     puzzle.events.create!(
       event_type: :game_started,

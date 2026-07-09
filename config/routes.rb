@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     member do
       patch :publish
       patch :unpublish
+      patch :restore # superuser un-tombstones a soft-deleted puzzle
       get :stats
       get :export
     end
@@ -38,11 +39,12 @@ Rails.application.routes.draw do
   # but-abandoned game from one that was only ever opened.
   post "/p/:share_token/events", to: "events#create", as: :play_events
 
-  # Public homepage — a random featured puzzle, no login. The admin dashboard
-  # lives at /puzzles.
+  # Public homepage — a launchpad with a random jump-in strip of published
+  # puzzles, no login (ADR-0014). Your dashboard lives at /puzzles.
   root "home#show"
 
-  # Living style guide for the brutalist visual system (public, unlinked).
+  # Living style guide for the brutalist visual system. Public but intentionally
+  # unlinked — a dev/design reference, reachable only by typing the URL.
   get "/styleguide", to: "styleguide#show"
 
   # Static info pages — public, login-free. Linked from the site footer.
@@ -53,9 +55,9 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  # PWA manifest so the site installs as a standalone home-screen app (linked in
+  # the layout head). No service worker — we're not doing offline/caching.
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
   # Defines the root path route ("/")
   # root "posts#index"

@@ -29,6 +29,28 @@ class Puzzle < ApplicationRecord
   # Hand-picked for the homepage rotation. Curated, not "everything published."
   scope :featured, -> { where(featured: true) }
 
+  # Soft delete (ADR): deleting a *played* puzzle would vaporize every player's
+  # attempts — and with them their trophies and stats. So a played puzzle is
+  # tombstoned (deleted_at set) instead of destroyed; unplayed ones still hard
+  # delete (see PuzzlesController#destroy). The default scope hides tombstones
+  # from every surface at once (play-by-token included → 404); admin reaches them
+  # through with_deleted/only_deleted.
+  default_scope { where(deleted_at: nil) }
+  scope :with_deleted, -> { unscope(where: :deleted_at) }
+  scope :only_deleted, -> { with_deleted.where.not(deleted_at: nil) }
+
+  def soft_delete!
+    update_column(:deleted_at, Time.current) # skip validations — a draft can't publish-validate
+  end
+
+  def restore!
+    update_column(:deleted_at, nil)
+  end
+
+  def deleted?
+    deleted_at.present?
+  end
+
   # Everything NOT owned by this requester — by account when signed in, else by
   # the anonymous creator_token cookie (mirrors Creator#owns?). Owners can't
   # play their own puzzles (ADR-0015), so play surfaces filter them out here.
@@ -56,7 +78,11 @@ class Puzzle < ApplicationRecord
 
   validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
-  validate :no_duplicate_answers, if: :published?
+  # Gated on complete?, not published?: a complete puzzle is playable by anyone
+  # with the link once it's unlisted (ADR-0008), and the game keys tiles by word
+  # text — a repeat renders a broken, unwinnable board. Incomplete drafts stay
+  # lenient (dupes are fine while you're still typing).
+  validate :no_duplicate_answers, if: :complete?
 
   # The byline name every display surface uses: the owner's account-wide
   # display_name when set (renaming there renames every byline at once), else
