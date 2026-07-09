@@ -27,6 +27,14 @@ class User < ApplicationRecord
   validates :display_name, presence: true,
             if: -> { display_name_changed? && display_name_was.present? }
 
+  # Roles (both boolean columns, default false; bless from the console —
+  # `user.update!(moderator: true)`). Superuser is the full /admin (puzzles +
+  # users); moderator is puzzle moderation only (no user admin). "Staff" is the
+  # union — what gates the puzzles tab and the puzzle-moderation bypass.
+  def staff?
+    superuser? || moderator?
+  end
+
   # Retry once on the handle-uniqueness race: two concurrent signups with the
   # same email local part both clear assign_handle's exists? check, and the loser
   # hits the unique index. Re-mint with random entropy instead of a 500 on signup.

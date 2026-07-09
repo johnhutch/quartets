@@ -2,6 +2,8 @@
 # created, and puzzles solved. Counts come from two grouped queries over the
 # page's users — no N+1, no counter caches.
 class Admin::UsersController < Admin::BaseController
+  before_action :require_superuser # user admin is superuser-only; moderators are puzzles-only
+
   def index
     @users = paginate(User.order(created_at: :desc))
     ids = @users.map(&:id)

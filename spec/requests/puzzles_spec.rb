@@ -265,4 +265,24 @@ RSpec.describe "Puzzles", type: :request do
       end
     end
   end
+
+  describe "moderator puzzle controls" do
+    it "lets a moderator unpublish and soft-delete anyone's puzzle" do
+      sign_in create(:user, :moderator)
+      puzzle = create(:published_puzzle) # someone else's
+      create(:attempt, puzzle: puzzle) # played → soft-delete
+
+      patch unpublish_puzzle_path(puzzle)
+      expect(puzzle.reload).to be_unlisted
+
+      delete puzzle_path(puzzle)
+      expect(puzzle.reload).to be_deleted
+    end
+
+    it "still can't reach the user admin (puzzle powers only)" do
+      sign_in create(:user, :moderator)
+      get admin_users_path
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end

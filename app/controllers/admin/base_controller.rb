@@ -1,11 +1,16 @@
-# Everything under /admin is superuser-only. Everyone else gets a 404, not a
-# 403 — the area shouldn't advertise its existence.
+# /admin is staff-only (superuser or moderator). Everyone else gets a 404, not a
+# 403 — the area shouldn't advertise its existence. The users tab tightens this
+# to superuser-only (Admin::UsersController); the puzzles tab is open to both.
 class Admin::BaseController < ApplicationController
-  before_action :require_superuser
+  before_action :require_staff
 
   PER_PAGE = 10
 
   private
+
+  def require_staff
+    head :not_found unless user_signed_in? && current_user.staff?
+  end
 
   def require_superuser
     head :not_found unless user_signed_in? && current_user.superuser?
