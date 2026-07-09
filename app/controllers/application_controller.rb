@@ -1,4 +1,14 @@
 class ApplicationController < ActionController::Base
+  # Rate-limit counters live in the shared app cache (solid_cache in prod) so they
+  # hold across Puma workers. We delegate to Rails.cache at request time instead of
+  # letting rate_limit capture the store at class-load: the test env's null_store
+  # never counts, so specs can swap Rails.cache for a real store to exercise limits.
+  RATE_LIMIT_STORE = Object.new.tap do |store|
+    def store.increment(name, amount = 1, **options)
+      Rails.cache.increment(name, amount, **options)
+    end
+  end
+
   # Anonymous authors' puzzles get claimed onto their account the moment they
   # authenticate (ADR-0005).
   include ClaimsPuzzles

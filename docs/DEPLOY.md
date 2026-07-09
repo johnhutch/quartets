@@ -72,6 +72,26 @@ until `SMTP_ADDRESS` is set. One-time setup:
    shows up in Resend's dashboard → Emails, which is the fastest way to tell
    "app didn't send" from "receiver binned it".
 
+## Rate limiting & the real client IP
+
+The public write endpoints (attempts, events, ratings, puzzle-create) and the tag
+autocomplete are rate-limited by `request.remote_ip` (see the `rate_limit` calls in
+those controllers; counters live in solid_cache). Behind the tunnel the request
+chain is `cloudflared → caddy → web`, so Rails must be told to trust those hops or
+`remote_ip` resolves to Caddy's container IP and every visitor shares one bucket.
+
+- Caddy's `reverse_proxy` sets `X-Forwarded-For` automatically (it does).
+- Rails' default trusted-proxy list covers private ranges (the Docker network is
+  `172.16/12`), so `remote_ip` already peels back to the IP cloudflared forwards.
+- Cloudflare forwards the true client IP in `CF-Connecting-IP`; `X-Forwarded-For`
+  from cloudflared carries it too, which is what Rails reads.
+
+Verify after deploy: `docker compose logs web` on a couple of requests from
+different networks and confirm the logged IPs differ (not all Caddy's). If they
+don't, add Cloudflare's ranges via `config.action_dispatch.trusted_proxies` in
+`production.rb`. The limits are loose enough that a shared office/NAT IP won't trip
+them in normal play.
+
 ## Backups
 
 - **Database:** `docker compose exec db pg_dump -U quartets quartets_production > backup.sql` (cron it via DSM Task Scheduler).

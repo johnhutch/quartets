@@ -5,6 +5,10 @@ class AttemptsController < ApplicationController
   include AnonymousPlayer
   include Creator # owns? — owners can't record plays on their own puzzles
 
+  # Public, login-free write — cap it so a script can't flood stats. Loose enough
+  # that no real player ever trips it (keyed by IP; behind Cloudflare, see DEPLOY).
+  rate_limit to: 30, within: 1.minute, only: :create, store: RATE_LIMIT_STORE
+
   def create
     # The same play gate as play#show (ADR-0008): any complete puzzle records,
     # listed or not; incomplete or unknown → 404 (nothing to play). Owners get
