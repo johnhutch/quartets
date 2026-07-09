@@ -60,6 +60,11 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 # Final stage for app image
 FROM base
 
+# The commit this image was built from, baked in so Sentry can tag which deploy
+# introduced an error (the deploy workflow passes --build-arg GIT_SHA).
+ARG GIT_SHA=""
+ENV GIT_SHA=$GIT_SHA
+
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash

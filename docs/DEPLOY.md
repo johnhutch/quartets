@@ -25,6 +25,31 @@ GitHub Actions will build the new image and push it to GHCR. Within 5 minutes, W
 
 *(Note: If your GitHub repository is private, you will need to generate a GitHub Personal Access Token (classic) with `read:packages` permission and add it to your `.env` file as `GITHUB_TOKEN` along with your username as `GITHUB_ACTOR`, so Watchtower has permission to pull the image.)*
 
+## Error monitoring (Sentry)
+
+Production exceptions report to **Sentry** so a 500 storm after a launch/promotion
+doesn't go unnoticed. It's **off until you set a DSN** — the app runs fine without
+it, and dev/test never phone home (`config/initializers/sentry.rb` gates on
+`SENTRY_DSN`). **No PII is sent**: `send_default_pii` stays false, so request
+bodies, cookies, headers, and user IPs stay on the box — you get stack traces and
+code context, not user data. One-time setup:
+
+1. **Sign up** at [sentry.io](https://sentry.io) (free tier: 5k errors/mo). Create
+   a project → platform **Rails**. Copy the **DSN** it shows.
+2. **Set it in the NAS `.env`**: `SENTRY_DSN=https://…ingest.sentry.io/…`
+3. **Recreate `web`** so it picks up the env (a restart isn't enough — env is
+   baked at container create): Container Manager → Build/Recreate, or SSH
+   `sudo docker-compose up -d web`.
+4. **Verify**: trigger a test error (Sentry's project setup page has a snippet, or
+   hit a deliberately broken route once) and confirm it lands in the dashboard.
+5. **Alerts**: in Sentry → Alerts, set a rule (e.g. "notify on a new issue type")
+   to email you, or add a Slack/Discord integration. The free tier includes email
+   alerting out of the box.
+
+Release tracking is automatic: the deploy workflow bakes the commit SHA into the
+image (`--build-arg GIT_SHA`), so each error is tagged with the deploy that
+shipped it — handy for "which push broke this."
+
 ## Rolling back a bad deploy
 
 Every build pushes two tags to GHCR: `:latest` (which Watchtower auto-deploys)
