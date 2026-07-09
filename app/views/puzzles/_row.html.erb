@@ -16,7 +16,8 @@
       <% if puzzle.deleted? %>
         Deleted
       <% elsif puzzle.published? %>
-        Published &middot; <%= pluralize(puzzle.attempts.count, "play") %>
+        <% plays = local_assigns[:play_counts] ? local_assigns[:play_counts].fetch(puzzle.id, 0) : puzzle.attempts.count %>
+        Published &middot; <%= pluralize(plays, "play") %>
       <% elsif puzzle.complete? %>
         Unlisted &middot; link only
       <% else %>

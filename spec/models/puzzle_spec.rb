@@ -122,7 +122,14 @@ RSpec.describe Puzzle, type: :model do
         expect(puzzle).not_to be_valid
       end
 
-      it "leaves drafts alone — dupes are fine while still typing" do
+      it "rejects a COMPLETE unlisted puzzle with a dup (it's playable by link)" do
+        puzzle = build(:puzzle, :complete, status: :unlisted)
+        puzzle.groups.last.words = puzzle.groups.first.words.first(1) + %w[x y z]
+        expect(puzzle).not_to be_valid
+        expect(puzzle.errors[:groups].join).to match(/same answer/i)
+      end
+
+      it "leaves incomplete drafts alone — dupes are fine while still typing" do
         puzzle = build(:puzzle, status: :unlisted)
         puzzle.groups << build(:group, puzzle: puzzle, color: :blue, words: %w[twin twin])
         expect(puzzle).to be_valid

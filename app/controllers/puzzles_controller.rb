@@ -20,6 +20,7 @@ class PuzzlesController < ApplicationController
     @total_pages = [(@puzzles_total / PER_PAGE.to_f).ceil, 1].max
     @page = params[:page].to_i.clamp(1, @total_pages)
     @puzzles = scope.offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
+    @play_counts = play_counts_for(@puzzles)
     # Trophy case + play stats for the "Your stuff" top block (ADR-0011). Account-
     # scoped: an anonymous author only gets the created count + a sign-up nudge.
     @stats = PlayerStats.new(attempts: (current_user.attempts if user_signed_in?),

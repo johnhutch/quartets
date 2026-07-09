@@ -78,7 +78,11 @@ class Puzzle < ApplicationRecord
 
   validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
-  validate :no_duplicate_answers, if: :published?
+  # Gated on complete?, not published?: a complete puzzle is playable by anyone
+  # with the link once it's unlisted (ADR-0008), and the game keys tiles by word
+  # text — a repeat renders a broken, unwinnable board. Incomplete drafts stay
+  # lenient (dupes are fine while you're still typing).
+  validate :no_duplicate_answers, if: :complete?
 
   # The byline name every display surface uses: the owner's account-wide
   # display_name when set (renaming there renames every byline at once), else
