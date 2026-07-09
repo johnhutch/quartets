@@ -109,6 +109,30 @@ RSpec.describe "Puzzles", type: :request do
         expect(response.body).not_to match(/you've made so far/i) # claim CTA is anon-only
       end
 
+      it "shows how my puzzles are doing out in the world (plays, crowd solve rate, ratings)" do
+        mine = create(:published_puzzle, user: user)
+        create(:attempt, puzzle: mine, solved: true,  quality: :hell_yeah, difficulty: :not_bad)
+        create(:attempt, puzzle: mine, solved: false)
+
+        get puzzles_path
+
+        text = Nokogiri::HTML(response.body).text
+        expect(text).to include("Out in the world")
+        expect(text).to include("Plays")
+        expect(text).to include("Crowd solve rate")
+        expect(text).to include("50%")
+        expect(response.body).to include("m-likes") # thumbs received
+        expect(text).to include("Not bad")          # voted difficulty label
+      end
+
+      it "keeps the author block quiet while nobody's played my puzzles" do
+        create(:puzzle, user: user, title: "Fresh")
+
+        get puzzles_path
+
+        expect(response.body).not_to include("Out in the world")
+      end
+
       it "tags an incomplete puzzle 'Incomplete' and offers 'Finish' (the editor), no Publish" do
         puzzle = create(:puzzle, user: user, title: "WIP", status: :unlisted) # no groups
 

@@ -742,6 +742,17 @@ body.theme-brutal {
     color: $brutal-muted;
   }
 
+  // Admin-only funnel line under the status (starts · abandons · first group).
+  // Full-width so it always takes its own line inside the flex head.
+  .m-puzzle-list__pulse {
+    display: block;
+    width: 100%;
+    font-family: $font-display;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    color: $brutal-muted;
+  }
+
   // Quiet caps text-links for the secondary actions.
   .m-puzzle-list__link,
   .m-puzzle-list__unpublish,

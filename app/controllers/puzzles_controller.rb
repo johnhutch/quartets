@@ -19,11 +19,15 @@ class PuzzlesController < ApplicationController
     # scoped: an anonymous author only gets the created count + a sign-up nudge.
     @stats = PlayerStats.new(attempts: (current_user.attempts if user_signed_in?),
                              created: @puzzles_total)
+    # Author-side reach: how all their puzzles are doing out in the world.
+    # Puzzle-scoped (not account-scoped), so anonymous authors get it too.
+    @author_stats = AuthorStats.for(owned_puzzles)
   end
 
   # Author analytics for one puzzle — how it's playing out in the wild.
   def stats
     @stats = PuzzleStats.new(@puzzle.attempts)
+    @rating = RatingSummary.for_puzzle(@puzzle)
   end
 
   # Download the puzzle as portable JSON (stable schema — see PuzzleExport).

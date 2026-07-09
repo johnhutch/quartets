@@ -65,6 +65,21 @@ is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
+- **Stats expansion — owner page, dashboard, admin (item 3 of the launch punch
+  list).** `PuzzleStats` grew median/fastest solve time (`duration_ms`),
+  flawless count, cumulative trophy tallies, and **common solve orders**
+  (full 4-color paths, rendered as category-color chips); the owner stats page
+  gained those sections plus the **`RatingSummary` block** (thumbs + difficulty
+  meter — closes the TODOS "stats-page slice"). The dashboard got an **"Out in
+  the world"** author bar (new `AuthorStats`: plays, crowd solve rate, thumbs,
+  voted difficulty across all your puzzles — puzzle-scoped, so anonymous authors
+  see it too). Superuser-only: the admin puzzles tab rows carry a funnel line
+  (new `EngagementStats`: distinct starts vs attempts → abandons + rate, median
+  time-to-first-group off the guess-log `t`). New `clock_ms` helper. Earlier the
+  same day: **common wrong guesses render as category-colored chips**
+  (word+color pairs through `common_wrong_guesses`, `.m-guess-tiles`; black text
+  ≥9:1 on all four fills). 395 green; phone-width screenshots verified.
+
 - **Seeds now replicate the prod experience (dev-only layer).** `db/seeds.rb`
   grew a development-gated community-fixture layer on top of the env-agnostic
   superuser + Demo set: a cast of owners (named account, handle-less account,

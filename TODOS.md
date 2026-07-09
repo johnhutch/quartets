@@ -118,10 +118,10 @@ recorded (below); the rest is read-side display work, buildable whenever.
 - **Post-play ratings.** `attempts.quality` (yeah/hell_yeah) + `attempts.difficulty`
   (pretty_easy…cursed), voted from the game-over/revisit rating block (published
   puzzles only). **Display shipped 2026-07-08** on browse rows, the jump-in strip,
-  and the show page (`RatingSummary`: weighted thumbs + averaged difficulty label).
-  Still TODO: fold the aggregates into `/puzzles/:id/stats` (owner view); the
-  *voted* difficulty also feeds the ADR-0010 "difficulty from stats" idea, which
-  no longer needs to be inferred-only.
+  the show page, and (2026-07-08, second pass) the owner stats page
+  (`RatingSummary`: weighted thumbs + averaged difficulty label). The *voted*
+  difficulty also feeds the ADR-0010 "difficulty from stats" idea, which no
+  longer needs to be inferred-only.
 
 **Display — TODO (future, no frontend yet):**
 - **Surface the timing + funnel stats.** Player-facing: solve duration, time-to-
@@ -272,7 +272,6 @@ for reference *only*:
 
 ## Suggested order
 
-1. **Rating aggregates on `/puzzles/:id/stats`** — browse/strip/show shipped
-   2026-07-08 (`RatingSummary`); the owner stats page is the remaining slice.
-2. **Analytics B + C** — now unblocked by the `/admin` shell (ADR-0016); build the
-   funnels into a third admin tab.
+1. **Analytics B + C** — now unblocked by the `/admin` shell (ADR-0016); build the
+   funnels into a third admin tab. (A first slice exists: `EngagementStats`
+   starts/abandons/first-group on the admin puzzles tab, 2026-07-08.)

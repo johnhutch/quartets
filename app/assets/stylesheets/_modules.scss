@@ -163,6 +163,14 @@
   display: grid;
   gap: $space-md;
   margin-bottom: $space-lg;
+
+  &__heading {
+    margin: 0;
+    text-align: center;
+    font-size: $font-sm;
+    color: $color-muted;
+    text-transform: uppercase;
+  }
 }
 
 .m-trophy-case {

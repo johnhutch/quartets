@@ -14,6 +14,12 @@ module ApplicationHelper
     "A Connections-style puzzle (but better)#{by}. Play it free on Quartets."
   end
 
+  # Milliseconds → a "3:42" clock readout (solve times are minutes, not hours).
+  def clock_ms(ms)
+    total = ms / 1000
+    "#{total / 60}:#{format('%02d', total % 60)}"
+  end
+
   # Renders text as a multicolor ribbon (see Multicolor) — for the wordmark and
   # big display headings under the brutalist theme. Each color run is a span the
   # theme paints; spaces ride along inside their run.

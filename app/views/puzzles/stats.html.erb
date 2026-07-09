@@ -19,7 +19,68 @@
         <span>Solved</span>
         <span><%= @stats.solved_count %> (<%= number_to_percentage(@stats.solve_rate * 100, precision: 0) %>)</span>
       </div>
+      <div class="m-stats__row">
+        <span>Flawless solves</span>
+        <span><%= @stats.flawless_count %></span>
+      </div>
+      <% if @stats.median_solve_ms %>
+        <div class="m-stats__row">
+          <span>Median solve time</span>
+          <span><%= clock_ms(@stats.median_solve_ms) %></span>
+        </div>
+        <div class="m-stats__row">
+          <span>Fastest solve</span>
+          <span><%= clock_ms(@stats.fastest_solve_ms) %></span>
+        </div>
+      <% end %>
     </div>
+
+    <% if @rating %>
+      <h2>Player ratings</h2>
+      <div class="m-stats">
+        <% if @rating.thumbs %>
+          <div class="m-stats__row">
+            <span>Was it a good one?</span>
+            <span><%= render "play/likes", summary: @rating %></span>
+          </div>
+        <% end %>
+        <% if @rating.difficulty_level %>
+          <div class="m-stats__row">
+            <span>Voted difficulty</span>
+            <span><%= render "play/difficulty_meter", summary: @rating %></span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @stats.trophy_counts.values.any?(&:positive?) %>
+      <h2>Trophies earned here</h2>
+      <div class="m-stats">
+        <% @stats.trophy_counts.each do |tier, count| %>
+          <div class="m-stats__row">
+            <span><%= t("quartets.trophies.#{tier}") %></span>
+            <span><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% orders = @stats.common_solve_orders %>
+    <% if orders.any? %>
+      <h2>Common solve orders</h2>
+      <div class="m-stats">
+        <% orders.each do |order| %>
+          <div class="m-stats__row">
+            <span class="m-guess-tiles">
+              <% order[:colors].each do |color| %>
+                <span class="m-guess-tiles__chip m-guess-tiles__chip--<%= color %>"><%= color %></span>
+              <% end %>
+            </span>
+            <span>×<%= order[:count] %></span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
 
     <h2>Mistakes per attempt</h2>
     <div class="m-stats">

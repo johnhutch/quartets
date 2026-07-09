@@ -7,7 +7,7 @@
     <%= render "claim_cta", count: @puzzles_total %>
   <% end %>
 
-  <%= render "dashboard_stats", stats: @stats %>
+  <%= render "dashboard_stats", stats: @stats, author_stats: @author_stats %>
 
   <div class="m-dashboard-actions">
     <%= link_to "+ New quartet", new_puzzle_path, class: "m-btn m-btn--pop" %>

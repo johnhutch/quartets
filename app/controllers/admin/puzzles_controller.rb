@@ -4,5 +4,8 @@
 class Admin::PuzzlesController < Admin::BaseController
   def index
     @puzzles = paginate(Puzzle.includes(:user).order(updated_at: :desc))
+    # Funnel numbers (starts vs attempts, first-group time) — superuser-only
+    # signal, so it's computed here and passed to the shared row explicitly.
+    @engagement = EngagementStats.for(@puzzles)
   end
 end
