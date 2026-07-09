@@ -82,6 +82,11 @@ precise meaning, use it; if it's there to sound current, cut it.
 
 ## Current state
 
-Rails scaffold generated, Postgres + Sass wired, SMACSS structure built and
-compiling. No models, controllers, or game UI yet. Next steps and full sequence:
-[`docs/PLAN.md`](docs/PLAN.md).
+The app is **built and deployed** — authoring, publishing, the full Stimulus
+game, stats, ratings, trophies, accounts/handles, and the superuser admin all
+ship; it runs in production on the Synology via GHCR + Watchtower. Don't trust
+this paragraph for specifics — the live picture (current focus, shipped log,
+watch-outs) lives in **PROGRESS.md**, which the SessionStart hook injects every
+session. Planned work is in **TODOS.md**; the *why* behind decisions is in
+**DECISIONS.md** (ADRs). `docs/PLAN.md` is the original build sequence, kept for
+history.

@@ -552,7 +552,8 @@ STRIP_SIZE, still mints `player_token`); `navigation_spec` + `pages_spec` move t
 topbar/footer assertions to `/play`, since those are no longer site-wide. A future
 daily-featured puzzle needs a *new* home slot decided, not a drop-in replacement.
 The toggleable theme-skins idea (`8bit`/`broadsheet`) is scoped in
-[`docs/THEMES.md`](docs/THEMES.md) but deliberately **not** an ADR until built.
+`docs/THEMES.md` on the `docs/theme-skins-plan` branch (not yet merged to
+main/develop) but deliberately **not** an ADR until built.
 
 ---
 

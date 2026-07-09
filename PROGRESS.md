@@ -65,6 +65,32 @@ is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
+- **Site-wide review pass — nine fix batches (`code-review` branch).** A
+  five-lane Fable review (domain, controllers/security, views/perf, JS, cruft)
+  surfaced two critical bugs, a security/integrity cluster, and a pile of
+  medium/low items; all actioned. **Critical:** stored XSS in the game's
+  solved-row render (author text hit `innerHTML` — now `textContent`); homepage
+  strip showed rating badges for a *different* random 5 puzzles (RANDOM()
+  relation re-rolled as a subquery — `RatingSummary.for` now keys off concrete
+  ids). **Security/integrity:** the public attempts endpoint trusted the client
+  wholesale (forgeable trophies/stats) — new `PlayRecording` rebuilds the play
+  from the puzzle, trusting only the words grouped; Rails 8 `rate_limit` on all
+  public write endpoints; `turbo-cache-control` no-cache stops the back button
+  resurrecting a finished board. **Medium:** hybrid **soft-delete** (ADR-0019 —
+  played puzzles tombstone, unplayed hard-delete, admin restore); list-page
+  N+1s (grouped `play_counts_for`); tag writes moved to `after_save` (were
+  committing on failed saves + spawning junk Tag rows); dup-answer validation
+  gated on `complete?` not `published?`; the signed-in creator-cookie ping-pong;
+  the `RecordNotUnique` 500 on duplicate attempt POSTs. **Low/polish:** autosave
+  disconnect-flush + double-create guard, toast/share/clipboard papercuts,
+  `/play` pagination + `(status, created_at)` index, single-query `PlayerStats`,
+  handle-race retry, NULL-`guesses` hardening. **Cruft:** deleted the Obsidian
+  import chain, `hello_controller`, dead CSS, disabled-module Devise views,
+  `bin/ci`; dropped jbuilder/image_processing/thruster; SHA-tagged deploy images
+  + rollback runbook; enabled the password-change notification; fixed the
+  CLAUDE.md "no models yet" lie. Also **SMTP via Resend** wired (docs + env) and
+  the **PWA manifest** shipped (installable home-screen app). Green throughout.
+
 - **Stats expansion — owner page, dashboard, admin (item 3 of the launch punch
   list).** `PuzzleStats` grew median/fastest solve time (`duration_ms`),
   flawless count, cumulative trophy tallies, and **common solve orders**

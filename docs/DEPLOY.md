@@ -25,6 +25,29 @@ GitHub Actions will build the new image and push it to GHCR. Within 5 minutes, W
 
 *(Note: If your GitHub repository is private, you will need to generate a GitHub Personal Access Token (classic) with `read:packages` permission and add it to your `.env` file as `GITHUB_TOKEN` along with your username as `GITHUB_ACTOR`, so Watchtower has permission to pull the image.)*
 
+## Rolling back a bad deploy
+
+Every build pushes two tags to GHCR: `:latest` (which Watchtower auto-deploys)
+and `:sha-<commit>` (a durable, addressable image for each commit). To roll back
+to a known-good commit without waiting for a revert to build:
+
+1. Find the last-good SHA — GitHub → the repo's Actions/commits, or `git log`.
+2. On the NAS, pin `web` to it. Easiest via SSH in the project dir:
+   ```
+   docker compose pull       # ensure the SHA tag is present locally
+   docker tag ghcr.io/johnhutch/quartets:sha-<good> ghcr.io/johnhutch/quartets:latest
+   docker compose up -d web
+   ```
+   Watchtower won't fight you — it only redeploys when the *remote* `:latest`
+   digest changes, and you haven't pushed a new one.
+3. Recover forward once the fix is ready: merge to `main`, which pushes a new
+   `:latest`, and Watchtower picks it up within its 5-minute poll.
+
+For a longer pin (skip auto-updates entirely while you investigate), set
+`image: ghcr.io/johnhutch/quartets:sha-<good>` in `docker-compose.yml` and
+`docker compose up -d web`; revert to `:latest` when you're ready to resume
+auto-deploys.
+
 ## Expose it (HTTPS via Cloudflare)
 
 The `docker-compose.yml` includes a `cloudflared` service. 

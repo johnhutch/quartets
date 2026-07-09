@@ -43,9 +43,6 @@
 
 # additions after rails default
 
-# Ignore application configuration
-/config/application.yml
-
 .DS_Store
 .claude/settings.local.json
 .idea/
