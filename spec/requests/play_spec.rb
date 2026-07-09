@@ -16,6 +16,15 @@ RSpec.describe "Play (public)", type: :request do
       expect(page_text).not_to include("Still cooking")
     end
 
+    it "paginates the archive past a page of puzzles" do
+      create_list(:published_puzzle, PlayController::PER_PAGE + 1)
+
+      get play_index_path
+
+      expect(response.body.scan("m-browse__head").size).to eq(PlayController::PER_PAGE)
+      expect(response.body).to include("Page 1 of 2")
+    end
+
     it "flags themed puzzles with their tags viewable, leaves classics chip-less" do
       themed = create(:published_puzzle, title: "Nerds Only", specialized: true)
       themed.update!(tag_names: ["star wars", "trivia"])
@@ -290,9 +299,12 @@ RSpec.describe "Play (public)", type: :request do
       it "gates an anonymous player who finished it, keyed by the player_token (ADR-0012)" do
         puzzle = create(:published_puzzle)
         # An anonymous game-over records the attempt and sets the player_token cookie.
+        # Real words — the server derives solved/colors from the puzzle now.
         post play_attempts_path(puzzle.share_token), as: :json, params: { attempt: {
-          solved: true, mistakes_count: 0,
-          guesses: [{ words: %w[a b c d], colors: %w[purple purple purple purple] }]
+          guesses: [
+            { words: %w[cat dog owl fox] }, { words: %w[one two three four] },
+            { words: %w[mercury venus mars earth] }, { words: %w[piano drums bass flute] }
+          ]
         } }
 
         get play_path(puzzle.share_token) # same cookie jar
@@ -310,6 +322,19 @@ RSpec.describe "Play (public)", type: :request do
         sign_in create(:user)
         get play_path(puzzle.share_token)
         expect(response.body).to include('data-controller="game"')
+      end
+
+      it "opts the interactive board out of the Turbo cache, but not the finished view" do
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token) # fresh board — game JS mutates it
+        expect(response.body).to include('name="turbo-cache-control"')
+
+        user = create(:user)
+        sign_in user
+        create(:attempt, puzzle: puzzle, user: user, solved: true)
+        get play_path(puzzle.share_token) # now the static finished view
+        expect(response.body).not_to include('name="turbo-cache-control"')
       end
 
       it "shows an author their own puzzle revealed, prior attempts or not" do

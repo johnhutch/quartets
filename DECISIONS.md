@@ -552,7 +552,8 @@ STRIP_SIZE, still mints `player_token`); `navigation_spec` + `pages_spec` move t
 topbar/footer assertions to `/play`, since those are no longer site-wide. A future
 daily-featured puzzle needs a *new* home slot decided, not a drop-in replacement.
 The toggleable theme-skins idea (`8bit`/`broadsheet`) is scoped in
-[`docs/THEMES.md`](docs/THEMES.md) but deliberately **not** an ADR until built.
+`docs/THEMES.md` on the `docs/theme-skins-plan` branch (not yet merged to
+main/develop) but deliberately **not** an ADR until built.
 
 ---
 
@@ -681,6 +682,40 @@ own discovery surface" pressure from ADR-0010 is partly relieved, though tag
 chips/filters remain unbuilt. Rating aggregates shipped alongside
 (`RatingSummary`: SUM(quality) as weighted thumbs since the enum ints are the
 weights, AVG(difficulty) rounded to its label; unrated puzzles render nothing).
+
+---
+
+## 0019 — Soft-delete played puzzles (hybrid); hard-delete unplayed
+
+**Date:** 2026-07-09
+**Status:** accepted
+
+**Context.** `Puzzle has_many :attempts, dependent: :destroy` meant deleting a
+puzzle — one click, and `User has_many :puzzles, dependent: :destroy` on account
+deletion — vaporized every *other* player's attempts on it, silently dropping
+their trophy counts and played/solved stats. The system already cares about this
+in the other direction (`User has_many :attempts, dependent: :nullify`, "so the
+play still counts in the puzzle's aggregate stats"), so the cascade was an
+oversight, not a considered trade-off. Surfaced in the 2026-07 review.
+
+**Decision.** A **hybrid**: a puzzle with recorded attempts is **tombstoned**
+(a `deleted_at` timestamp) instead of destroyed, so its attempts — and the
+trophies/stats derived from them — survive; a puzzle with **no** attempts (an
+abandoned draft, the common case) still hard-deletes to keep the table clean.
+A `default_scope { where(deleted_at: nil) }` hides tombstones from every surface
+at once (play-by-`share_token` included → 404), so no per-query changes were
+needed. Superusers reach them via `with_deleted`/`only_deleted`; the admin
+puzzles tab lists them flagged "Deleted" with a **Restore** action.
+`accessible_puzzles` hands superusers `with_deleted` and owners their kept-only
+scope, so a normal owner can't even find a tombstone (404) — that's what gates
+restore to the admin.
+
+**Consequence.** Deleting a played puzzle is now reversible and non-destructive
+to players. `default_scope` carries the usual footgun (it's the base for all
+queries) — mitigated by keeping it a plain `deleted_at IS NULL` and reaching
+around it explicitly (`with_deleted`) in the one place that needs to. No UI to
+let owners see/restore their own tombstones yet (admin-only); revisit if authors
+ask. Hard vs soft is decided in `PuzzlesController#destroy` off `attempts.exists?`.
 
 ---
 

@@ -15,13 +15,38 @@ export default class extends Controller {
     this.timer = null
     this.saving = false
     this.dirty = false
+    // Already a PATCH on the edit page (record exists); a new form starts as POST
+    // and flips in becomeEditable. Only the POST→create window needs the guard.
+    this.persisted = this.method === "PATCH"
+    this.inFlight = null   // the current save() promise, so submit can await it
     this.setStatus("idle")
     this.refresh()
   }
 
   disconnect() {
-    clearTimeout(this.timer)
     clearTimeout(this.hideTimer)
+    // A pending debounce on navigation = up to debounceValue ms of unsaved
+    // keystrokes — the exact iOS-back-button loss this controller exists to stop.
+    // Flush it with a keepalive fetch that survives the page teardown.
+    if (this.timer) {
+      clearTimeout(this.timer)
+      this.flush()
+    }
+  }
+
+  // Best-effort final save on teardown. keepalive lets it outlive the page; we
+  // don't await or handle the response (the page is going away).
+  flush() {
+    if (this.saving) return
+    const body = new FormData(this.element)
+    body.append("autosave", "1")
+    fetch(this.element.action, {
+      method: this.method,
+      body,
+      headers: { "X-CSRF-Token": this.csrfToken, Accept: "application/json" },
+      credentials: "same-origin",
+      keepalive: true
+    }).catch(() => {})
   }
 
   // Wire to the form's input/change events.
@@ -30,6 +55,19 @@ export default class extends Controller {
     this.refresh()
     clearTimeout(this.timer)
     this.timer = setTimeout(() => this.save(), this.debounceValue)
+  }
+
+  // Wire to the form's submit. Before the record exists, a manual Save/Publish
+  // can fire a second create alongside the in-flight/pending autosave → duplicate
+  // drafts. Hold the submit, let exactly one save finish (which flips the form to
+  // PATCH), then submit for real as an update.
+  async onSubmit(event) {
+    if (this.persisted) return // already a PATCH — no create to race
+
+    event.preventDefault()
+    clearTimeout(this.timer)
+    await (this.inFlight || this.save())
+    this.element.requestSubmit(event.submitter)
   }
 
   // Keep the save button ("Save" → "Keep it unlisted (link only)") and the publish
@@ -68,13 +106,18 @@ export default class extends Controller {
            filled(title)
   }
 
-  async save() {
+  save() {
     // Coalesce: if a save is already in flight, remember to run once more after.
     if (this.saving) {
       this.dirty = true
-      return
+      return this.inFlight
     }
 
+    this.inFlight = this.performSave()
+    return this.inFlight
+  }
+
+  async performSave() {
     this.saving = true
     this.dirty = false
     this.setStatus("saving")
@@ -92,6 +135,10 @@ export default class extends Controller {
       })
 
       if (!response.ok) throw new Error(`save failed: ${response.status}`)
+
+      // If the user navigated away while this was in flight, the form is gone —
+      // don't rewrite the new page's URL (replaceState) or touch its DOM.
+      if (!this.element.isConnected) return
 
       // First save just minted the record — switch to updating it in place so
       // the next keystroke PATCHes instead of creating a duplicate.
@@ -128,6 +175,7 @@ export default class extends Controller {
       this.setStatus("error")
     } finally {
       this.saving = false
+      this.inFlight = null
       if (this.dirty) this.save() // changes landed mid-flight; flush them
     }
   }
@@ -137,6 +185,7 @@ export default class extends Controller {
   becomeEditable(actionUrl, browserUrl) {
     this.element.action = actionUrl
     this.methodField.value = "patch"
+    this.persisted = true // no more create races — subsequent saves are updates
     window.history.replaceState({}, "", browserUrl)
   }
 

@@ -5,6 +5,10 @@ class AttemptsController < ApplicationController
   include AnonymousPlayer
   include Creator # owns? — owners can't record plays on their own puzzles
 
+  # Public, login-free write — cap it so a script can't flood stats. Loose enough
+  # that no real player ever trips it (keyed by IP; behind Cloudflare, see DEPLOY).
+  rate_limit to: 30, within: 1.minute, only: :create, store: RATE_LIMIT_STORE
+
   def create
     # The same play gate as play#show (ADR-0008): any complete puzzle records,
     # listed or not; incomplete or unknown → 404 (nothing to play). Owners get
@@ -13,13 +17,20 @@ class AttemptsController < ApplicationController
     puzzle = Puzzle.find_by(share_token: params[:share_token])
     return head :not_found unless Playability.new(puzzle, owner: puzzle && owns?(puzzle)).playable?
 
+    # Rebuild the play from the puzzle, not the client: solved/mistakes/colors are
+    # all derived server-side, so a forged POST can't mint trophies or poison stats
+    # (the endpoint is public and login-free). A log that isn't real puzzle words
+    # is rejected, not sanitized.
+    recording = PlayRecording.new(puzzle, attempt_params[:guesses], duration_ms: attempt_params[:duration_ms])
+    return head :unprocessable_content unless recording.valid?
+
     # One recorded play per logged-in user (ADR-0009): a repeat POST just returns
     # their existing result instead of stacking duplicate attempts. Anonymous
     # plays are unchanged (player_token only).
-    base = attempt_params.merge(player_token: current_player_token)
+    base = recording.attempt_attributes.merge(player_token: current_player_token)
     attempt =
       if user_signed_in?
-        puzzle.attempts.find_by(user: current_user) || puzzle.attempts.create!(base.merge(user: current_user))
+        puzzle.attempts.find_by(user: current_user) || create_for(puzzle, base.merge(user: current_user))
       else
         puzzle.attempts.create!(base)
       end
@@ -43,10 +54,21 @@ class AttemptsController < ApplicationController
 
   private
 
+  # The signed-in path races the partial unique (user_id, puzzle_id) index: two
+  # near-simultaneous POSTs both miss the find_by, and the loser's insert raises
+  # RecordNotUnique (which RecordInvalid doesn't cover). Re-find on the collision
+  # so a double-fire returns the existing result instead of 500ing.
+  def create_for(puzzle, attributes)
+    puzzle.attempts.create!(attributes)
+  rescue ActiveRecord::RecordNotUnique
+    puzzle.attempts.find_by!(user: attributes[:user])
+  end
+
   def attempt_params
+    # solved/mistakes_count/colors are intentionally NOT permitted — the server
+    # derives them from the puzzle (see PlayRecording). Only the ordered word
+    # groups and timing come from the client.
     params.require(:attempt).permit(
-      :solved,
-      :mistakes_count,
       :duration_ms,
       # Each guess also carries `t` — ms since the game clock started — for
       # per-guess timing (the Guess value object reads it back).

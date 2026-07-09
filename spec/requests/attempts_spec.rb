@@ -4,6 +4,20 @@ require "rails_helper"
 # player's signed cookie token, no account needed. Any *complete* puzzle records,
 # matching the play gate (ADR-0008) — incomplete ones (nothing to play) 404.
 RSpec.describe "Attempts", type: :request do
+  # The published_puzzle factory's real answers — the server validates submitted
+  # guesses against these and derives colors/solved/mistakes from them.
+  ANSWERS = {
+    blue:   %w[cat dog owl fox],
+    green:  %w[one two three four],
+    yellow: %w[mercury venus mars earth],
+    purple: %w[piano drums bass flute]
+  }.freeze
+
+  # A full winning log: each group cracked, in the given color order.
+  def winning_guesses(order)
+    order.map { |color| { words: ANSWERS.fetch(color.to_sym) } }
+  end
+
   describe "POST /p/:share_token/attempts" do
     it "records a finished play, tied to the puzzle" do
       puzzle = create(:published_puzzle)
@@ -11,11 +25,9 @@ RSpec.describe "Attempts", type: :request do
       expect {
         post play_attempts_path(puzzle.share_token), params: {
           attempt: {
-            solved: true,
-            mistakes_count: 1,
             guesses: [
-              { words: %w[cat dog owl fox], colors: %w[blue blue blue blue] },
-              { words: %w[cat dog owl one], colors: %w[blue blue blue green] }
+              { words: %w[cat dog owl one] },      # wrong — spans blue + green
+              *winning_guesses(%i[blue green yellow purple])
             ]
           }
         }, as: :json
@@ -24,11 +36,27 @@ RSpec.describe "Attempts", type: :request do
       attempt = Attempt.last
       expect(response).to have_http_status(:created)
       expect(attempt.puzzle).to eq(puzzle)
-      expect(attempt).to be_solved
-      expect(attempt.mistakes_count).to eq(1)
+      expect(attempt).to be_solved                      # derived, not asserted by client
+      expect(attempt.mistakes_count).to eq(1)           # derived from the one wrong guess
       expect(attempt.player_token).to be_present
-      expect(attempt.guesses.first["words"]).to eq(%w[cat dog owl fox])
-      expect(attempt.guesses.first["colors"]).to eq(%w[blue blue blue blue])
+      expect(attempt.guesses.first["words"]).to eq(%w[cat dog owl one])
+      expect(attempt.guesses.first["colors"]).to eq(%w[blue blue blue green]) # server-derived
+    end
+
+    it "ignores a client that lies about solving — colors come from the puzzle" do
+      puzzle = create(:published_puzzle)
+
+      post play_attempts_path(puzzle.share_token), params: {
+        attempt: {
+          solved: true, mistakes_count: 0, # client claims a flawless win…
+          guesses: [{ words: %w[cat dog owl one], colors: %w[blue blue blue blue] }] # …on a wrong guess
+        }
+      }, as: :json
+
+      attempt = Attempt.last
+      expect(attempt).not_to be_solved
+      expect(attempt.achievement).to be_nil # no forged trophy
+      expect(attempt.guesses.first["colors"]).to eq(%w[blue blue blue green])
     end
 
     # Owners never play their own puzzles (Playability) — a POST from the owner
@@ -52,11 +80,9 @@ RSpec.describe "Attempts", type: :request do
 
       post play_attempts_path(puzzle.share_token), params: {
         attempt: {
-          solved: true,
-          mistakes_count: 1,
           guesses: [
-            { words: %w[a b c d], colors: %w[blue blue blue blue] },
-            { words: %w[a b c e], colors: %w[blue blue blue green] }
+            { words: %w[cat dog owl fox] }, # all blue
+            { words: %w[cat dog owl one] }  # blue blue blue green
           ]
         }
       }, as: :json
@@ -69,10 +95,8 @@ RSpec.describe "Attempts", type: :request do
 
       post play_attempts_path(puzzle.share_token), params: {
         attempt: {
-          solved: true,
-          mistakes_count: 0,
           duration_ms: 18_500,
-          guesses: [{ words: %w[a b c d], colors: %w[blue blue blue blue], t: 4200 }]
+          guesses: [{ words: %w[cat dog owl fox], t: 4200 }]
         }
       }, as: :json
 
@@ -86,8 +110,7 @@ RSpec.describe "Attempts", type: :request do
       puzzle = create(:published_puzzle)
 
       post play_attempts_path(puzzle.share_token), params: {
-        attempt: { solved: true, mistakes_count: 0,
-                   guesses: [{ words: %w[a b c d], colors: %w[blue blue blue blue] }] }
+        attempt: { guesses: [{ words: %w[cat dog owl fox] }] }
       }, as: :json
 
       attempt = Attempt.last
@@ -100,11 +123,7 @@ RSpec.describe "Attempts", type: :request do
       puzzle = create(:published_puzzle, title: "Capital Cities")
 
       post play_attempts_path(puzzle.share_token), params: {
-        attempt: {
-          solved: true,
-          mistakes_count: 0,
-          guesses: [{ words: %w[a b c d], colors: %w[blue blue blue blue] }]
-        }
+        attempt: { guesses: [{ words: %w[cat dog owl fox] }] }
       }, as: :json
 
       share = response.parsed_body["share"]
@@ -114,10 +133,10 @@ RSpec.describe "Attempts", type: :request do
     end
 
     # ADR-0011: a flawless win earns a trophy; the response carries the tier and a
-    # pre-rendered awards block (trophies + quip) the game injects.
+    # pre-rendered awards block (trophies + quip) the game injects. The order is the
+    # solve order (drives the tier); each group is cracked with its real words.
     def flawless_win(order)
-      { solved: true, mistakes_count: 0,
-        guesses: order.map { |c| { correct: true, words: %w[a b c d], colors: [c, c, c, c] } } }
+      { guesses: winning_guesses(order) }
     end
 
     it "returns the earned tier and an awards block on a flawless win" do
@@ -203,11 +222,12 @@ RSpec.describe "Attempts", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
-    it "rejects an impossible mistake count" do
+    it "rejects a guess log with words that aren't in the puzzle (forgery/junk)" do
       puzzle = create(:published_puzzle)
 
-      post play_attempts_path(puzzle.share_token),
-           params: { attempt: { solved: false, mistakes_count: 99 } }, as: :json
+      post play_attempts_path(puzzle.share_token), params: {
+        attempt: { guesses: [{ words: %w[haxx spam junk lol] }] }
+      }, as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
     end

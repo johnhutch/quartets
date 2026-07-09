@@ -65,6 +65,19 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to include("first group ~0:45")
     end
 
+    it "lists tombstoned puzzles and restores them" do
+      gone = create(:published_puzzle, title: "Tombstoned")
+      create(:attempt, puzzle: gone)
+      gone.soft_delete!
+
+      get admin_puzzles_path
+      expect(response.body).to include("Tombstoned")
+      expect(response.body).to include("Deleted")
+
+      patch restore_puzzle_path(gone)
+      expect(gone.reload).not_to be_deleted
+    end
+
     it "paginates past ten puzzles" do
       create_list(:published_puzzle, 11)
 

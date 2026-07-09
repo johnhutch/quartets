@@ -27,13 +27,19 @@ export default class extends Controller {
 
   async copy() {
     const sink = this.hasLabelTarget ? this.labelTarget : this.element
-    const original = sink.textContent
+    // Capture the real label once, and clear any pending restore, so a fast
+    // second tap doesn't snapshot "Copied!" and leave it stuck.
+    if (this.restoreTimer) clearTimeout(this.restoreTimer)
+    else this.originalLabel = sink.textContent
     try {
       await navigator.clipboard.writeText(this.urlValue)
       sink.textContent = "Copied!"
     } catch {
       sink.textContent = "Press ⌘/Ctrl-C"
     }
-    setTimeout(() => { sink.textContent = original }, 2000)
+    this.restoreTimer = setTimeout(() => {
+      sink.textContent = this.originalLabel
+      this.restoreTimer = null
+    }, 2000)
   }
 }
