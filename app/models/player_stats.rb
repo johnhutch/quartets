@@ -17,11 +17,11 @@ class PlayerStats
   end
 
   def played
-    @attempts.count
+    totals[:played]
   end
 
   def solved
-    @attempts.where(solved: true).count
+    totals[:solved]
   end
 
   # Fraction 0.0–1.0; the view turns it into a percentage.
@@ -31,8 +31,24 @@ class PlayerStats
     solved.fdiv(played)
   end
 
-  # Cumulative trophy counts (a reverse rainbow also counts as a perfect).
+  # Cumulative trophy counts (a reverse rainbow also counts as a perfect). One
+  # grouped query, rolled up in Ruby, instead of a COUNT per tier.
   def trophies
-    TIERS.index_with { |tier| @attempts.at_least(tier).count }
+    levels = Attempt.achievements
+    counts = @attempts.where.not(achievement: nil).group(:achievement).count
+    TIERS.index_with do |tier|
+      floor = levels.fetch(tier.to_s)
+      counts.sum { |achievement, n| levels.fetch(achievement.to_s) >= floor ? n : 0 }
+    end
+  end
+
+  private
+
+  # played + solved in one round trip (was two separate COUNTs, re-run by solve_rate).
+  def totals
+    @totals ||= begin
+      played, solved = @attempts.pick(Arel.sql("COUNT(*)"), Arel.sql("COUNT(*) FILTER (WHERE solved)"))
+      { played: played.to_i, solved: solved.to_i }
+    end
   end
 end

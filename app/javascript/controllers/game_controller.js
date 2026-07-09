@@ -56,6 +56,20 @@ export default class extends Controller {
       })
     })
 
+    // Wipe anything a prior play left in the DOM before rebuilding. render() only
+    // clears the board; a Turbo-restored snapshot can also carry injected solved
+    // rows, the win/lose stamp, and the is-over class. The no-cache meta on the
+    // interactive board should prevent that snapshot, but resetting here means a
+    // stale one can never resurrect a broken hybrid board.
+    if (this.hasSolvedTarget) this.solvedTarget.innerHTML = ""
+    if (this.hasStatusTarget) {
+      this.statusTarget.textContent = ""
+      this.statusTarget.classList.remove("is-visible")
+    }
+    if (this.hasToastTarget) this.toastTarget.classList.remove("is-visible")
+    this.element.classList.remove("is-over")
+    this.element.querySelectorAll(".m-game__share, .m-awards, .m-rating").forEach((n) => n.remove())
+
     this.shuffleCards()
     this.render()
     this.renderMistakes()
@@ -396,9 +410,15 @@ export default class extends Controller {
     const group = this.groups[color]
     const row = document.createElement("div")
     row.className = `m-group m-group--${color} m-game__group`
-    row.innerHTML =
-      `<strong class="m-game__group-name">${group.description}</strong>` +
-      `<span class="m-game__group-words">${group.words.join(", ")}</span>`
+    // textContent, not innerHTML — description/words are author-authored and
+    // authoring is public, so interpolating them as HTML is a stored-XSS sink.
+    const name = document.createElement("strong")
+    name.className = "m-game__group-name"
+    name.textContent = group.description
+    const words = document.createElement("span")
+    words.className = "m-game__group-words"
+    words.textContent = group.words.join(", ")
+    row.append(name, words)
     this.solvedTarget.appendChild(row)
   }
 
@@ -432,7 +452,10 @@ export default class extends Controller {
   // Slap a big tilted stamp on the board at game over — the payoff moment.
   renderEndStamp(won) {
     if (!this.hasStatusTarget) return
-    clearTimeout(this.statusTimer) // cancel any pending toast fade
+    // Cancelling the toast's fade timer would freeze a just-shown "one away"
+    // toast over the header forever, so hide it here too.
+    clearTimeout(this.statusTimer)
+    if (this.hasToastTarget) this.toastTarget.classList.remove("is-visible")
     this.statusTarget.innerHTML = ""
     const stamp = document.createElement("span")
     stamp.className = won ? "m-stamp m-stamp--win" : "m-stamp m-stamp--lose"

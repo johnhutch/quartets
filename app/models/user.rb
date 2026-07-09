@@ -27,6 +27,18 @@ class User < ApplicationRecord
   validates :display_name, presence: true,
             if: -> { display_name_changed? && display_name_was.present? }
 
+  # Retry once on the handle-uniqueness race: two concurrent signups with the
+  # same email local part both clear assign_handle's exists? check, and the loser
+  # hits the unique index. Re-mint with random entropy instead of a 500 on signup.
+  def save(**options)
+    super
+  rescue ActiveRecord::RecordNotUnique => e
+    raise unless e.message.include?("handle")
+
+    self.handle = "#{handle}-#{SecureRandom.hex(2)}"
+    super
+  end
+
   private
 
   def assign_handle

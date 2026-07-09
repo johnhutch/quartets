@@ -13,8 +13,11 @@
           (puzzle.complete? ? play_path(puzzle.share_token) : edit_puzzle_path(puzzle)),
           class: "m-puzzle-list__title" %>
     <span class="m-puzzle-list__status">
-      <% if puzzle.published? %>
-        Published &middot; <%= pluralize(puzzle.attempts.count, "play") %>
+      <% if puzzle.deleted? %>
+        Deleted
+      <% elsif puzzle.published? %>
+        <% plays = local_assigns[:play_counts] ? local_assigns[:play_counts].fetch(puzzle.id, 0) : puzzle.attempts.count %>
+        Published &middot; <%= pluralize(plays, "play") %>
       <% elsif puzzle.complete? %>
         Unlisted &middot; link only
       <% else %>
@@ -42,7 +45,12 @@
   <%# One filled accent button per row (the encouraged next step), then
       quiet secondary links, then the danger group pushed to the right. %>
   <div class="m-puzzle-list__actions">
-    <% if puzzle.published? %>
+    <% if puzzle.deleted? %>
+      <%# Admin-only (tombstones surface only on the admin tab). Bring it back. %>
+      <%= button_to restore_puzzle_path(puzzle), method: :patch, class: "m-btn m-btn--sm m-btn--go" do %>
+        <%= icon(:eye) %><span>Restore</span>
+      <% end %>
+    <% elsif puzzle.published? %>
       <%= tag.button type: "button", class: "m-btn m-btn--sm",
             data: { controller: "share", share_url_value: play_url(puzzle.share_token),
                     action: "share#share" } do %>

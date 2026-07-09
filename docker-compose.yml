@@ -56,7 +56,11 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
-    # Bypass Thruster and run Puma directly on its default port 3000.
+      # Error monitoring (Sentry). Blank = off; the app runs fine without it.
+      # GIT_SHA is baked into the image at build time, so it isn't set here.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    # Puma directly on port 3000 (Caddy fronts it — no Thruster). Matches the
+    # image's default CMD now; kept explicit as documentation.
     command: ["./bin/rails", "server"]
     # The Cloudflare Tunnel reaches it at web:3000 over the compose network.
     # The host-port mapping is just for direct LAN access / debugging.

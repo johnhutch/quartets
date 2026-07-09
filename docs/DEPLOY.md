@@ -25,6 +25,54 @@ GitHub Actions will build the new image and push it to GHCR. Within 5 minutes, W
 
 *(Note: If your GitHub repository is private, you will need to generate a GitHub Personal Access Token (classic) with `read:packages` permission and add it to your `.env` file as `GITHUB_TOKEN` along with your username as `GITHUB_ACTOR`, so Watchtower has permission to pull the image.)*
 
+## Error monitoring (Sentry)
+
+Production exceptions report to **Sentry** so a 500 storm after a launch/promotion
+doesn't go unnoticed. It's **off until you set a DSN** — the app runs fine without
+it, and dev/test never phone home (`config/initializers/sentry.rb` gates on
+`SENTRY_DSN`). **No PII is sent**: `send_default_pii` stays false, so request
+bodies, cookies, headers, and user IPs stay on the box — you get stack traces and
+code context, not user data. One-time setup:
+
+1. **Sign up** at [sentry.io](https://sentry.io) (free tier: 5k errors/mo). Create
+   a project → platform **Rails**. Copy the **DSN** it shows.
+2. **Set it in the NAS `.env`**: `SENTRY_DSN=https://…ingest.sentry.io/…`
+3. **Recreate `web`** so it picks up the env (a restart isn't enough — env is
+   baked at container create): Container Manager → Build/Recreate, or SSH
+   `sudo docker-compose up -d web`.
+4. **Verify**: trigger a test error (Sentry's project setup page has a snippet, or
+   hit a deliberately broken route once) and confirm it lands in the dashboard.
+5. **Alerts**: in Sentry → Alerts, set a rule (e.g. "notify on a new issue type")
+   to email you, or add a Slack/Discord integration. The free tier includes email
+   alerting out of the box.
+
+Release tracking is automatic: the deploy workflow bakes the commit SHA into the
+image (`--build-arg GIT_SHA`), so each error is tagged with the deploy that
+shipped it — handy for "which push broke this."
+
+## Rolling back a bad deploy
+
+Every build pushes two tags to GHCR: `:latest` (which Watchtower auto-deploys)
+and `:sha-<commit>` (a durable, addressable image for each commit). To roll back
+to a known-good commit without waiting for a revert to build:
+
+1. Find the last-good SHA — GitHub → the repo's Actions/commits, or `git log`.
+2. On the NAS, pin `web` to it. Easiest via SSH in the project dir:
+   ```
+   docker compose pull       # ensure the SHA tag is present locally
+   docker tag ghcr.io/johnhutch/quartets:sha-<good> ghcr.io/johnhutch/quartets:latest
+   docker compose up -d web
+   ```
+   Watchtower won't fight you — it only redeploys when the *remote* `:latest`
+   digest changes, and you haven't pushed a new one.
+3. Recover forward once the fix is ready: merge to `main`, which pushes a new
+   `:latest`, and Watchtower picks it up within its 5-minute poll.
+
+For a longer pin (skip auto-updates entirely while you investigate), set
+`image: ghcr.io/johnhutch/quartets:sha-<good>` in `docker-compose.yml` and
+`docker compose up -d web`; revert to `:latest` when you're ready to resume
+auto-deploys.
+
 ## Expose it (HTTPS via Cloudflare)
 
 The `docker-compose.yml` includes a `cloudflared` service. 
@@ -71,6 +119,26 @@ until `SMTP_ADDRESS` is set. One-time setup:
    fresh domain sometimes lands there; subsequent ones settle). Every send also
    shows up in Resend's dashboard → Emails, which is the fastest way to tell
    "app didn't send" from "receiver binned it".
+
+## Rate limiting & the real client IP
+
+The public write endpoints (attempts, events, ratings, puzzle-create) and the tag
+autocomplete are rate-limited by `request.remote_ip` (see the `rate_limit` calls in
+those controllers; counters live in solid_cache). Behind the tunnel the request
+chain is `cloudflared → caddy → web`, so Rails must be told to trust those hops or
+`remote_ip` resolves to Caddy's container IP and every visitor shares one bucket.
+
+- Caddy's `reverse_proxy` sets `X-Forwarded-For` automatically (it does).
+- Rails' default trusted-proxy list covers private ranges (the Docker network is
+  `172.16/12`), so `remote_ip` already peels back to the IP cloudflared forwards.
+- Cloudflare forwards the true client IP in `CF-Connecting-IP`; `X-Forwarded-For`
+  from cloudflared carries it too, which is what Rails reads.
+
+Verify after deploy: `docker compose logs web` on a couple of requests from
+different networks and confirm the logged IPs differ (not all Caddy's). If they
+don't, add Cloudflare's ranges via `config.action_dispatch.trusted_proxies` in
+`production.rb`. The limits are loose enough that a shared office/NAT IP won't trip
+them in normal play.
 
 ## Backups
 

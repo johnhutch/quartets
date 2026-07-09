@@ -17,7 +17,10 @@ class RatingSummary
   attr_reader :thumbs
 
   def self.for(puzzles)
-    Attempt.where(puzzle: puzzles)
+    # Key off concrete ids, not the relation: passing a relation lets AR embed it
+    # as a subquery, and a RANDOM()-ordered one (the homepage strip) re-rolls when
+    # re-run — so the aggregate would be for a different set than the view shows.
+    Attempt.where(puzzle_id: puzzles.map(&:id))
            .group(:puzzle_id)
            .pluck(:puzzle_id, Arel.sql("SUM(quality)"), Arel.sql("AVG(difficulty)"))
            .each_with_object({}) do |(puzzle_id, thumbs, difficulty_avg), summaries|
