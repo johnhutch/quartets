@@ -23,7 +23,9 @@ Rails.application.routes.draw do
   # (404 to everyone else — the area doesn't exist unless you're the superuser).
   namespace :admin do
     root "puzzles#index"
-    resources :puzzles, only: :index
+    resources :puzzles, only: :index do
+      member { patch :dismiss_reports } # mark a puzzle's flags handled (it's fine)
+    end
     resources :users, only: :index
   end
 
@@ -38,6 +40,8 @@ Rails.application.routes.draw do
   # And beacons game_started here on the first tile tap, so we can tell a started-
   # but-abandoned game from one that was only ever opened.
   post "/p/:share_token/events", to: "events#create", as: :play_events
+  # Flag a puzzle for staff review (spam/offensive/broken).
+  post "/p/:share_token/reports", to: "reports#create", as: :play_reports
 
   # Public homepage — a launchpad with a random jump-in strip of published
   # puzzles, no login (ADR-0014). Your dashboard lives at /puzzles.

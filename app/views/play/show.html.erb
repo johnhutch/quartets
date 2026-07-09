@@ -101,5 +101,17 @@
 
   <% unless owns?(@puzzle) %>
     <p class="m-play-back"><%= link_to "Play the Archive #{ne_arrow}", play_index_path, class: "m-sticker m-play-archive" %></p>
+
+    <%# Quiet report affordance — you can't report your own. Folds out an optional
+        "what's wrong" note; a bare submit works too. %>
+    <details class="m-report">
+      <summary class="m-report__toggle">Report this quartet</summary>
+      <%= form_with url: play_reports_path(@puzzle.share_token), method: :post, class: "m-report__form" do %>
+        <label class="m-report__label" for="report_reason">What's wrong with it? (optional)</label>
+        <textarea id="report_reason" name="reason" rows="2" maxlength="300"
+                  class="m-report__reason" placeholder="Spam, offensive, broken…"></textarea>
+        <button type="submit" class="m-btn m-btn--sm">Report</button>
+      <% end %>
+    </details>
   <% end %>
 </div>

@@ -1,0 +1,9 @@
+A puzzle just got flagged for review.
+
+Puzzle: <%= @puzzle.title.presence || "Untitled" %>
+By: <%= @puzzle.author_display_name.presence || "anonymous" %>
+<% if @report.reason.present? -%>
+Reason: <%= @report.reason %>
+<% end -%>
+
+Review it: <%= admin_puzzles_url %>

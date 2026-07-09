@@ -799,6 +799,41 @@
 // the game controls above it.
 .m-play-back { margin-top: $space-xl; text-align: center; }
 
+// Quiet "report this quartet" fold-out under the board. Small, muted, out of the
+// way — you have to go looking for it.
+.m-report {
+  margin-top: $space-lg;
+  text-align: center;
+  font-size: $font-sm;
+
+  &__toggle {
+    color: $color-muted;
+    cursor: pointer;
+  }
+
+  &__form {
+    display: inline-grid;
+    gap: $space-xs;
+    margin-top: $space-sm;
+    max-width: 22rem;
+    text-align: left;
+  }
+
+  &__label { color: $color-muted; }
+  &__reason { width: 100%; }
+}
+
+// Admin flag badge + the flagged-count banner at the top of the puzzles tab.
+.m-puzzle-list__flag { color: $color-wrong; font-weight: 700; }
+
+.m-flag-banner {
+  padding: $space-sm $space-md;
+  margin-bottom: $space-md;
+  border: 2px solid $color-wrong;
+  border-radius: $radius;
+  font-weight: 700;
+}
+
 // Form submit row: centered, content-width buttons (Save draft + Publish) with
 // breathing room between them.
 .m-form__submit {

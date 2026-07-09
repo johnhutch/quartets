@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_030000) do
     t.index ["share_token"], name: "index_puzzles_on_share_token", unique: true
     t.index ["status", "created_at"], name: "index_puzzles_on_status_and_created_at"
     t.index ["user_id"], name: "index_puzzles_on_user_id"
+  end
+
+  create_table "reports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "puzzle_id", null: false
+    t.text "reason"
+    t.string "reporter_token", null: false
+    t.boolean "resolved", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["puzzle_id", "reporter_token"], name: "index_reports_on_puzzle_id_and_reporter_token", unique: true
+    t.index ["puzzle_id"], name: "index_reports_on_puzzle_id"
+    t.index ["resolved"], name: "index_reports_on_resolved"
+    t.index ["user_id"], name: "index_reports_on_user_id"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -264,6 +278,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_030000) do
   add_foreign_key "events", "puzzles"
   add_foreign_key "events", "users"
   add_foreign_key "groups", "puzzles"
+  add_foreign_key "reports", "puzzles"
+  add_foreign_key "reports", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
