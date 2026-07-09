@@ -3,8 +3,13 @@ class PuzzlesController < ApplicationController
 
   # Creation is public (ADR-0005) — no authenticate_user!. Ownership is by
   # account when signed in, else by the creator_token cookie we mint here.
-  before_action :ensure_creator_token
+  before_action :ensure_creator_token, unless: :user_signed_in?
   before_action :set_puzzle, only: %i[edit update publish unpublish destroy stats export]
+
+  # Creation is public, so cap new-puzzle POSTs — generous (autosave mints one
+  # record then PATCHes, so a real authoring session is a single create) but
+  # enough to stop a script spawning puzzles. Autosave PATCHes aren't limited.
+  rate_limit to: 10, within: 15.minutes, only: :create, store: RATE_LIMIT_STORE
 
   PER_PAGE = 10
 
