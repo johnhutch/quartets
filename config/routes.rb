@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     member do
       patch :publish
       patch :unpublish
+      patch :restore # superuser un-tombstones a soft-deleted puzzle
       get :stats
       get :export
     end
