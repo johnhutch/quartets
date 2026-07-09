@@ -5,6 +5,8 @@ class PlayController < ApplicationController
   include AnonymousPlayer
   include Creator # for owns? — the owner gets a share prompt on their own puzzle
 
+  PER_PAGE = 24
+
   def index
     # Which of these the signed-in player has already finished, for the check.
     @completed_ids = user_signed_in? ? current_user.attempts.distinct.pluck(:puzzle_id).to_set : Set.new
@@ -19,9 +21,16 @@ class PlayController < ApplicationController
     scope = Puzzle.published.includes(:user, :tags).order(created_at: :desc)
     scope = scope.not_owned_by(user: current_user, creator_token: current_creator_token) if @hide_mine
     scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
-    @puzzles = scope
-    # One grouped query for the whole page's vote aggregates (keyed by id;
-    # unrated puzzles get no entry and render nothing).
+
+    # Paginate so the archive doesn't load + aggregate the whole catalog per hit
+    # as it grows (the NAS is a slow box). Plain offset, same as the dashboard.
+    total = scope.count
+    @total_pages = [(total / PER_PAGE.to_f).ceil, 1].max
+    @page = params[:page].to_i.clamp(1, @total_pages)
+    @puzzles = scope.offset((@page - 1) * PER_PAGE).limit(PER_PAGE).load
+
+    # One grouped query for the page's vote aggregates (keyed by id; unrated
+    # puzzles get no entry and render nothing).
     @rating_summaries = RatingSummary.for(@puzzles)
   end
 

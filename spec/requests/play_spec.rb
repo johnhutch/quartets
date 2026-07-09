@@ -16,6 +16,15 @@ RSpec.describe "Play (public)", type: :request do
       expect(page_text).not_to include("Still cooking")
     end
 
+    it "paginates the archive past a page of puzzles" do
+      create_list(:published_puzzle, PlayController::PER_PAGE + 1)
+
+      get play_index_path
+
+      expect(response.body.scan("m-browse__head").size).to eq(PlayController::PER_PAGE)
+      expect(response.body).to include("Page 1 of 2")
+    end
+
     it "flags themed puzzles with their tags viewable, leaves classics chip-less" do
       themed = create(:published_puzzle, title: "Nerds Only", specialized: true)
       themed.update!(tag_names: ["star wars", "trivia"])

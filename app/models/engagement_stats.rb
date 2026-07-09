@@ -31,7 +31,7 @@ class EngagementStats
   # The elapsed ms of the first correct guess in a raw guess log (nil when the
   # attempt never cracked a group, or predates per-guess timing).
   def self.first_group_ms(raw_guesses)
-    guess = raw_guesses.map { |raw| Guess.new(raw) }.find(&:correct?)
+    guess = Array(raw_guesses).map { |raw| Guess.new(raw) }.find(&:correct?) # Array() guards a plucked NULL
     [guess&.elapsed_ms].compact
   end
 
