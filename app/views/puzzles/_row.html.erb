@@ -26,6 +26,10 @@
       <% if show_owner %>
         &middot; <%= puzzle.user&.handle ? link_to(puzzle.user.handle, user_page_path(puzzle.user.handle)) : "anonymous" %>
       <% end %>
+      <%# Flag badge — only the admin tab passes report_counts. %>
+      <% if (flags = local_assigns[:report_counts]&.fetch(puzzle.id, 0)).to_i.positive? %>
+        &middot; <span class="m-puzzle-list__flag">⚠ <%= pluralize(flags, "report") %></span>
+      <% end %>
     </span>
     <%# Admin-only funnel line — only the admin tab passes the engagement local. %>
     <% if (pulse = local_assigns[:engagement]&.[](puzzle.id)) %>
@@ -77,6 +81,11 @@
     <% end %>
 
     <span class="m-puzzle-list__danger">
+      <%# Clear a puzzle's flags when they turned out to be nothing (admin only). %>
+      <% if local_assigns[:report_counts]&.fetch(puzzle.id, 0).to_i.positive? %>
+        <%= link_to "Dismiss reports", dismiss_reports_admin_puzzle_path(puzzle),
+              class: "m-puzzle-list__link", data: { turbo_method: :patch } %>
+      <% end %>
       <% if puzzle.published? %>
         <%= link_to "Make unlisted", unpublish_puzzle_path(puzzle), class: "m-puzzle-list__unpublish",
               data: { turbo_method: :patch,

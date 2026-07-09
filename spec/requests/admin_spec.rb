@@ -67,6 +67,27 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to include("Delete") # the owner-grade action cluster
     end
 
+    it "surfaces flagged puzzles with a count and dismisses them" do
+      puzzle = create(:published_puzzle, title: "Flagged One")
+      create(:report, puzzle: puzzle, reporter_token: "a")
+      create(:report, puzzle: puzzle, reporter_token: "b")
+
+      get admin_puzzles_path
+      expect(response.body).to include("2 reports") # badge on the row
+      expect(response.body).to match(/1 quartet flagged/i) # top banner
+
+      # Filtered view shows only flagged puzzles.
+      create(:published_puzzle, title: "Clean One")
+      get admin_puzzles_path(flagged: 1)
+      expect(response.body).to include("Flagged One")
+      expect(response.body).not_to include("Clean One")
+
+      # Dismissing clears the flags (the puzzle itself stays).
+      patch dismiss_reports_admin_puzzle_path(puzzle)
+      expect(puzzle.reports.unresolved).to be_empty
+      expect(puzzle.reload).not_to be_deleted
+    end
+
     it "shows per-puzzle engagement: starts, abandons, time to first group" do
       puzzle = create(:published_puzzle, title: "Pulse Check")
       create(:event, puzzle: puzzle, player_token: "a")

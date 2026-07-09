@@ -4,9 +4,21 @@
   <h1><%= multicolor("Admin") %></h1>
   <%= render "admin/tabs", active: :puzzles %>
 
+  <% if @flagged_total.positive? %>
+    <p class="m-flag-banner">
+      <%= pluralize(@flagged_total, "quartet") %> flagged for review.
+      <% if params[:flagged].present? %>
+        <%= link_to "Show all", admin_puzzles_path %>
+      <% else %>
+        <%= link_to "Review flagged", admin_puzzles_path(flagged: 1) %>
+      <% end %>
+    </p>
+  <% end %>
+
   <ul class="m-puzzle-list m-puzzle-list--dash">
     <%= render partial: "puzzles/row", collection: @puzzles, as: :puzzle,
-          locals: { show_owner: true, engagement: @engagement, play_counts: @play_counts } %>
+          locals: { show_owner: true, engagement: @engagement, play_counts: @play_counts,
+                    report_counts: @report_counts } %>
   </ul>
 
   <% if @total_pages > 1 %>

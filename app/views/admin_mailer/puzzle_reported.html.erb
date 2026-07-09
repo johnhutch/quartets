@@ -1,0 +1,11 @@
+<p>A puzzle just got flagged for review.</p>
+
+<ul>
+  <li><strong>Puzzle:</strong> <%= @puzzle.title.presence || "Untitled" %></li>
+  <li><strong>By:</strong> <%= @puzzle.author_display_name.presence || "anonymous" %></li>
+  <% if @report.reason.present? %>
+    <li><strong>Reason:</strong> <%= @report.reason %></li>
+  <% end %>
+</ul>
+
+<p><%= link_to "Review it in the admin", admin_puzzles_url %></p>

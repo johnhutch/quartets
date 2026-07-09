@@ -6,6 +6,10 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable, :recoverable,
          :rememberable, :validatable, :trackable
 
+  # Superusers + moderators — the recipients of report alerts, and who can reach
+  # the admin puzzles tab.
+  scope :staff, -> { where(superuser: true).or(where(moderator: true)) }
+
   has_many :puzzles, dependent: :destroy
   # Plays the account has recorded. Nullify on delete so the play still counts in
   # the puzzle's aggregate stats — it just goes back to anonymous (ADR-0009).

@@ -17,6 +17,7 @@ class Puzzle < ApplicationRecord
   has_many :groups, -> { order(:position) }, dependent: :destroy, inverse_of: :puzzle
   has_many :attempts, dependent: :destroy
   has_many :events, dependent: :destroy
+  has_many :reports, dependent: :destroy
   accepts_nested_attributes_for :groups
 
   # Visibility, not lifecycle (ADR-0008). `unlisted` (default) = not on the site
