@@ -4,7 +4,7 @@ class PuzzlesController < ApplicationController
   # Creation is public (ADR-0005) — no authenticate_user!. Ownership is by
   # account when signed in, else by the creator_token cookie we mint here.
   before_action :ensure_creator_token, unless: :user_signed_in?
-  before_action :set_puzzle, only: %i[edit update publish unpublish destroy stats export]
+  before_action :set_puzzle, only: %i[edit update publish unpublish destroy restore stats export]
 
   # Creation is public, so cap new-puzzle POSTs — generous (autosave mints one
   # record then PATCHes, so a real authoring session is a single create) but
@@ -116,8 +116,24 @@ class PuzzlesController < ApplicationController
   end
 
   def destroy
-    @puzzle.destroy
-    redirect_to puzzles_path, notice: "Puzzle deleted."
+    # Hybrid (ADR): a played puzzle is tombstoned so its attempts — and every
+    # player's trophies/stats derived from them — survive; an unplayed one (an
+    # abandoned draft, mostly) hard-deletes to keep the table clean.
+    if @puzzle.attempts.exists?
+      @puzzle.soft_delete!
+      redirect_to puzzles_path, notice: "Puzzle deleted. Players' stats are kept."
+    else
+      @puzzle.destroy
+      redirect_to puzzles_path, notice: "Puzzle deleted."
+    end
+  end
+
+  # Superuser-only in practice: a normal owner's scope is kept-only, so their
+  # set_puzzle can't even find a tombstoned puzzle (404). The admin's
+  # accessible_puzzles is with_deleted, so this reaches a deleted one.
+  def restore
+    @puzzle.restore!
+    redirect_back fallback_location: admin_puzzles_path, notice: "Puzzle restored."
   end
 
   private
@@ -130,7 +146,10 @@ class PuzzlesController < ApplicationController
   end
 
   def accessible_puzzles
-    user_signed_in? && current_user.superuser? ? Puzzle.all : owned_puzzles
+    # Superusers reach everything, tombstones included (so they can restore or
+    # hard-delete). Owners get their kept-only scope — a deleted puzzle 404s for
+    # them, which is what gates restore to the admin.
+    user_signed_in? && current_user.superuser? ? Puzzle.with_deleted : owned_puzzles
   end
 
   # Background draft saves flag themselves so we answer quietly instead of
