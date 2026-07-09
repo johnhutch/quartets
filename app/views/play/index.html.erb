@@ -40,6 +40,18 @@
               done: @completed_ids.include?(puzzle.id) %>
       <% end %>
     </ul>
+
+    <% if @total_pages > 1 %>
+      <nav class="m-pagination">
+        <% if @page > 1 %>
+          <%= link_to "← Prev", request.query_parameters.merge(page: @page - 1), class: "m-pagination__step" %>
+        <% end %>
+        <span class="m-pagination__at">Page <%= @page %> of <%= @total_pages %></span>
+        <% if @page < @total_pages %>
+          <%= link_to "Next →", request.query_parameters.merge(page: @page + 1), class: "m-pagination__step" %>
+        <% end %>
+      </nav>
+    <% end %>
   <% else %>
     <p>No puzzles published yet. Check back soon.</p>
   <% end %>
