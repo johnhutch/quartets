@@ -99,6 +99,21 @@ RSpec.describe "Home", type: :request do
       expect(page_text).to include("2/4 difficulty")  # not_bad → 2nd of 4 on the meter
     end
 
+    it "computes ratings for the puzzles actually shown, not a second random draw" do
+      # With more published puzzles than the strip holds, the strip's RANDOM()
+      # draw and the rating aggregate must agree. If the summaries are computed
+      # from an independent roll, most shown rows lose their badge. Every puzzle
+      # is rated, so after the fix all STRIP_SIZE shown rows carry a meter.
+      (HomeController::STRIP_SIZE + 3).times do |i|
+        p = create(:published_puzzle, title: "Rated #{i}")
+        create(:attempt, puzzle: p, quality: :yeah, difficulty: :not_bad)
+      end
+
+      get root_path
+
+      expect(response.body.scan(/class="m-difficulty"/).size).to eq(HomeController::STRIP_SIZE)
+    end
+
     it "flags the ones a signed-in player already finished, like the archive does" do
       user = create(:user)
       sign_in user
