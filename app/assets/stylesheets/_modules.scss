@@ -799,6 +799,13 @@
 // the game controls above it.
 .m-play-back { margin-top: $space-xl; text-align: center; }
 
+// Quiet top-left "how to play" escape hatch on the play page.
+.m-howto {
+  margin: 0 0 $space-sm;
+  font-size: $font-sm;
+  a { color: $color-muted; }
+}
+
 // Quiet "report this quartet" fold-out under the board. Small, muted, out of the
 // way — you have to go looking for it.
 .m-report {

@@ -26,6 +26,10 @@
 <% end %>
 
 <div class="l-container">
+  <%# Quiet escape hatch for anyone who's never played Connections — top-left,
+      out of the way. %>
+  <p class="m-howto"><%= link_to "How to play", how_to_play_path %></p>
+
   <% if owns?(@puzzle) && @puzzle.unlisted? %>
     <aside class="m-publish-prompt">
       <p class="m-publish-prompt__text">Looking good! Share the link with anyone, or publish it to the site.</p>
