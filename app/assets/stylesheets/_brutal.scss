@@ -586,6 +586,18 @@ body.theme-brutal {
   }
 }
 
+// The role picker in the admin users table — a hard-edged select on the theme.
+.theme-brutal .m-admin-role {
+  font-family: $font-display;
+  text-transform: uppercase;
+  font-size: $font-sm;
+  padding: $space-xs $space-sm;
+  background: $brutal-paper;
+  color: $brutal-ink;
+  border: 2px solid $brutal-ink;
+  border-radius: 0;
+}
+
 // --- Archive filter fold-out (signed-in only) --------------------------------
 .theme-brutal .m-filters {
   margin-bottom: $space-lg;

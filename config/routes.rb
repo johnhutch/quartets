@@ -26,7 +26,7 @@ Rails.application.routes.draw do
     resources :puzzles, only: :index do
       member { patch :dismiss_reports } # mark a puzzle's flags handled (it's fine)
     end
-    resources :users, only: :index
+    resources :users, only: %i[index update] # update = change a user's role
   end
 
   # Public play surface — no login. Browse published puzzles, open one by its

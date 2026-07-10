@@ -11,6 +11,7 @@
         <th>Last login</th>
         <th>Created</th>
         <th>Solved</th>
+        <th>Role</th>
       </tr>
     </thead>
     <tbody>
@@ -23,6 +24,20 @@
           <td><%= user.current_sign_in_at ? "#{time_ago_in_words(user.current_sign_in_at)} ago" : "never" %></td>
           <td><%= @created_counts.fetch(user.id, 0) %></td>
           <td><%= @solved_counts.fetch(user.id, 0) %></td>
+          <td>
+            <%# Auto-submitting role picker. You can't change your own role, so it's
+                shown inert — keeps the last superuser from stranding the site. %>
+            <% if user == current_user %>
+              <span class="m-admin-table__sub"><%= user.role.to_s.capitalize %> (you)</span>
+            <% else %>
+              <%= form_with url: admin_user_path(user), method: :patch,
+                    data: { controller: "filters" } do %>
+                <%= select_tag "user[role]",
+                      options_for_select(User::ROLES.map { |r| [r.capitalize, r] }, user.role.to_s),
+                      class: "m-admin-role", data: { action: "change->filters#apply" } %>
+              <% end %>
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>

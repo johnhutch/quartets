@@ -126,6 +126,42 @@ RSpec.describe "Admin", type: :request do
     end
   end
 
+  describe "changing roles" do
+    before { sign_in superuser }
+
+    it "promotes a member to moderator and back" do
+      user = create(:user, email: "someone@example.com")
+
+      patch admin_user_path(user), params: { user: { role: "moderator" } }
+      expect(user.reload.role).to eq(:moderator)
+
+      patch admin_user_path(user), params: { user: { role: "member" } }
+      expect(user.reload.role).to eq(:member)
+    end
+
+    it "won't let a superuser change their own role (self-lockout guard)" do
+      patch admin_user_path(superuser), params: { user: { role: "member" } }
+      expect(superuser.reload).to be_superuser
+      expect(response).to redirect_to(admin_users_path)
+    end
+
+    it "404s a moderator trying to change roles (superuser-only)" do
+      sign_in create(:user, :moderator)
+      target = create(:user)
+      patch admin_user_path(target), params: { user: { role: "superuser" } }
+      expect(response).to have_http_status(:not_found)
+      expect(target.reload).not_to be_staff
+    end
+
+    it "renders a role picker per user, inert for yourself" do
+      create(:user, email: "other@example.com")
+      get admin_users_path
+
+      expect(response.body).to include('name="user[role]"') # a picker for the other user
+      expect(response.body).to include("(you)")             # own row is inert
+    end
+  end
+
   describe "users tab" do
     before { sign_in superuser }
 

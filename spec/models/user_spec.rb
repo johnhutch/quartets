@@ -72,6 +72,29 @@ RSpec.describe User, type: :model do
     it "counts a moderator as staff" do
       expect(create(:user, :moderator)).to be_staff
     end
+
+    describe "#role / #role=" do
+      it "reads the current tier" do
+        expect(create(:user).role).to eq(:member)
+        expect(create(:user, :moderator).role).to eq(:moderator)
+        expect(create(:user, :superuser).role).to eq(:superuser)
+      end
+
+      it "sets the underlying booleans from a role name" do
+        user = create(:user)
+
+        user.update!(role: "moderator")
+        expect(user).to be_moderator
+        expect(user).not_to be_superuser
+
+        user.update!(role: "superuser")
+        expect(user).to be_superuser
+        expect(user).not_to be_moderator # superuser already implies staff
+
+        user.update!(role: "member")
+        expect(user).not_to be_staff
+      end
+    end
   end
 
   # Display name is optional, but once set it can be changed — never cleared.

@@ -114,8 +114,9 @@ guide. See PROGRESS + ADR-0020.
 - **Admin: tag + user management** — the `/admin` shell shipped (ADR-0016:
   superuser role, all-puzzles tab with owner-grade actions, users list). Still
   unbuilt: a **tag admin** (edit/merge/delete tags to clean spelling divergence —
-  key for the tags cold-start) and user *management* beyond the read-only list
-  (e.g. delete/superuser toggles from the UI).
+  key for the tags cold-start). **Role management shipped 2026-07-09** — a
+  member/moderator/superuser picker in the users tab (ADR-0020). Still unbuilt:
+  deleting a user account from the UI.
 - **Bulk "Export my puzzles" (CSV)** — export is now a *separate* function: an
   "Export my puzzles" link at the **bottom of Your Puzzles** downloads **all** of
   the owner's puzzles as one CSV. Per-puzzle export is gone from the UI (the

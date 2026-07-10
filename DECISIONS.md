@@ -748,10 +748,12 @@ deletes/unpublishes, and the reports ride along via `dependent: :destroy`).
 **Consequence.** Trusted non-owners can moderate content without account access,
 and bad puzzles get surfaced by the crowd instead of festering. Notification is
 email-only by choice — Discord was floated and rejected. Reporting is rate-limited
-(10/hour) since "report" is itself an abuse vector. Deliberately *not* built:
-role-granting UI (console is fine for a handful of mods), report categories/reasons
-taxonomy (free-text is enough), and auto-hiding heavily-flagged puzzles (manual
-review only — no brigading-driven takedowns).
+(10/hour) since "report" is itself an abuse vector. A **role picker** in the admin users
+tab (superuser-only) sets member/moderator/superuser via a single `User#role`
+setter over the two booleans, with a self-lockout guard (you can't change your own
+role — the last superuser can't strand the site). Deliberately *not* built: report
+categories/reasons taxonomy (free-text is enough), and auto-hiding heavily-flagged
+puzzles (manual review only — no brigading-driven takedowns).
 
 ---
 
