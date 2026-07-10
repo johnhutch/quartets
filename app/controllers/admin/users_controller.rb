@@ -11,4 +11,19 @@ class Admin::UsersController < Admin::BaseController
     @solved_counts = Attempt.where(user_id: ids, solved: true)
                             .group(:user_id).distinct.count(:puzzle_id)
   end
+
+  # Change a user's role (member / moderator / superuser). Superuser-only via the
+  # inherited require_superuser gate.
+  def update
+    user = User.find(params[:id])
+
+    # Guard the self-lockout: a superuser can't demote themselves (another
+    # superuser has to), so the last one can't accidentally strand the site.
+    if user == current_user
+      return redirect_to admin_users_path, alert: "You can't change your own role."
+    end
+
+    user.update!(role: params.require(:user)[:role])
+    redirect_to admin_users_path, notice: "#{user.handle} is now #{user.role}."
+  end
 end

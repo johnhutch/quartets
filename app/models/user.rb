@@ -39,6 +39,24 @@ class User < ApplicationRecord
     superuser? || moderator?
   end
 
+  # A single tier for the admin role dropdown, over the two underlying booleans.
+  ROLES = %w[member moderator superuser].freeze
+
+  def role
+    return :superuser if superuser?
+    return :moderator if moderator?
+
+    :member
+  end
+
+  def role=(value)
+    case value.to_s
+    when "superuser" then assign_attributes(superuser: true, moderator: false)
+    when "moderator" then assign_attributes(superuser: false, moderator: true)
+    else assign_attributes(superuser: false, moderator: false)
+    end
+  end
+
   # Retry once on the handle-uniqueness race: two concurrent signups with the
   # same email local part both clear assign_handle's exists? check, and the loser
   # hits the unique index. Re-mint with random entropy instead of a 500 on signup.
