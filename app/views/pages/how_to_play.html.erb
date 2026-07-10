@@ -1,0 +1,57 @@
+<% content_for :title, "How to play" %>
+<% content_for :description, "How to play Quartets: find the four hidden groups of four in a grid of sixteen words. Four mistakes and you're out." %>
+
+<div class="l-container">
+  <h1><%= multicolor("How to play") %></h1>
+
+  <p class="m-lede">
+    Sixteen words. Four secret groups of four. Find them all before you run out of
+    mistakes. That's the whole game — the fun is in how sneaky the groups get.
+  </p>
+
+  <h2>The basics</h2>
+  <ul>
+    <li>You get a grid of <strong>16 words</strong>. They split into <strong>4 groups
+      of 4</strong> — words that share something.</li>
+    <li>Tap four words you think belong together, then hit <strong>Submit</strong>.</li>
+    <li>Get all four right and the group locks in, color and all.</li>
+    <li>Get it wrong and you burn a mistake. <strong>Four mistakes and the game's
+      over</strong> — the answers reveal themselves.</li>
+  </ul>
+
+  <h2>The catch</h2>
+  <p>
+    A good Quartet is built to trip you up. Some words look like they fit one group
+    but really belong to another — the obvious four are usually a trap. If a group
+    feels too easy, it probably is. Save your riskiest guess for last, once the safe
+    words are gone.
+  </p>
+
+  <h2>Colors, easiest to hardest</h2>
+  <p>
+    Each group has a color, and they run from gentlest to nastiest:
+  </p>
+  <ul>
+    <li><strong>Yellow</strong> — the warm-up.</li>
+    <li><strong>Green</strong> — a little thought.</li>
+    <li><strong>Blue</strong> — now you're working.</li>
+    <li><strong>Purple</strong> — the twist. Wordplay, hidden connections, the "oh,
+      <em>come on</em>" group.</li>
+  </ul>
+
+  <h2>Tips</h2>
+  <ul>
+    <li>Start with what you're <em>sure</em> of. Locking in one group thins the herd.</li>
+    <li>Watch for words that could fit two groups — that overlap is the whole point.</li>
+    <li>Shuffle the board if you're stuck; a new arrangement shakes loose new ideas.</li>
+    <li>When it's over you get an emoji cube of how it went. Share it. Make your
+      friends jealous, or watch them fail too.</li>
+  </ul>
+
+  <p>
+    That's it. <%= link_to "Go play one", play_index_path %>, or
+    <%= link_to "make your own", new_puzzle_path %>.
+  </p>
+
+  <p><%= link_to "← Back", root_path %></p>
+</div>

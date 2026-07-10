@@ -3,4 +3,10 @@
 class PagesController < ApplicationController
   def privacy
   end
+
+  def how_to_play
+  end
+
+  def making_quartets
+  end
 end

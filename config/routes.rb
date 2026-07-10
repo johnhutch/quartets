@@ -53,6 +53,8 @@ Rails.application.routes.draw do
 
   # Static info pages — public, login-free. Linked from the site footer.
   get "/privacy", to: "pages#privacy", as: :privacy
+  get "/how-to-play", to: "pages#how_to_play", as: :how_to_play
+  get "/making-quartets", to: "pages#making_quartets", as: :making_quartets
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
