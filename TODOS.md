@@ -60,12 +60,39 @@ yet. To build (data + form already exist):
 - **Difficulty from stats** (ADR-0010) — a future job deriving difficulty from
   completion success/failure rates (maybe reputation-weighted); not authored.
 
+### Community (from the 2026-07-09 audit)
+
+- **Follow a creator + notifications** — the community loop the audit called for:
+  follow creators, and get notified ("someone played your puzzle," "a creator you
+  follow posted"). Foundation exists (handles, `/u/:handle`, linked bylines). The
+  author loves it but **blocked on a better email/notification solution first** —
+  don't build the notify half on the current best-effort SMTP. Discord webhook was
+  floated and **rejected** (author dislikes Discord); email is the channel when the
+  email story is solid.
+- **Authoring validation nudges** — warn an author when a puzzle looks unfair
+  before publish. **Two tiers:** (1) a *heuristic* pass with no LLM — flag when the
+  same word (case/space-normalized) appears in two groups' answer sets, or when a
+  word is a trivial substring/dupe; cheap, ships anytime. (2) the *smart* version —
+  "these two categories overlap semantically, a solver could reasonably put X in
+  either" — genuinely needs an LLM call at publish time. Author was unsure how to
+  do it without an LLM; tier 1 is the answer for a first cut.
+
+**Shipped 2026-07-09 (community audit follow-through):** moderator role (puzzle
+powers, no user admin), puzzle **reporting** (flag → email staff → admin triage
+queue), **how-to-play** page + top-left link, and the **"making a good quartet"**
+guide. See PROGRESS + ADR-0020.
+
 ### Bigger features (scoped, not started)
 
-- **Daily auto-featured puzzle** — pick ONE puzzle to feature on the front page
-  for the whole day, for all users; it cycles automatically each day (no manual
-  curation). Add a `last_featured` (date) column to puzzles. Selection picks the
-  first match in this order:
+- **Daily auto-featured puzzle ("Puzzle of the Day")** — a from-the-start goal,
+  reaffirmed in the 2026-07-09 community audit as the single biggest retention +
+  first-impression lever (recreates the NYT daily ritual + a shared cube + unlocks
+  streaks). **Gated on corpus size, not effort:** the author explicitly won't
+  hand-make one a day, so selection must be *algorithmic* and there must be enough
+  good published puzzles to draw from — hold until there's a critical mass. Pick
+  ONE puzzle to feature front-page for the whole day, cycling automatically. Add a
+  `last_featured` (date) column (the existing `featured` boolean stays for manual
+  curation). Selection picks the first match in this order:
   1. the never-featured puzzle with the most completions;
   2. the never-featured puzzle with the most views;
   3. a never-featured puzzle with a **positive upvote score**;

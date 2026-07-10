@@ -65,6 +65,25 @@ is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
+- **Community tools — moderation, reporting, onboarding (ADR-0020).** Follow-through
+  on the 2026-07-09 community audit (for a possible r/nytconnections launch). New
+  **moderator role**: a lighter admin (puzzle powers — unpublish/delete/restore via
+  the /admin puzzles tab — but no user admin; the Users tab 404s them and its link
+  hides). `User#staff?` = superuser or moderator is the union; bless via
+  `user.update!(moderator: true)`. **Puzzle reporting**: a quiet "Report this
+  quartet" fold-out on the play page (optional reason) files one deduped `Report`
+  per reporter and emails all staff (`AdminMailer`, best-effort, deliver_later); the
+  admin puzzles tab grew a flagged-count banner, a `?flagged=1` triage view, a ⚠
+  report badge per row, and a "Dismiss reports" action (a real takedown just
+  deletes/unpublishes). **Onboarding content** in the author's voice: a
+  **how-to-play** page (quiet top-left link on the board + footer) and a **"making a
+  good quartet"** guide (be fair, one true group per word, build the trap on
+  purpose, ramp difficulty — the editorial nudge that keeps UGC quality up), linked
+  from the authoring form + footer. Deferred (see TODOS): Puzzle of the Day
+  (corpus-gated), follow-a-creator + notifications (blocked on a better email
+  story), authoring validation nudges (heuristic tier vs LLM tier). Earlier the same
+  day: **Sentry** error monitoring (PII-scrubbed, DSN-gated, SHA-tagged releases).
+
 - **Site-wide review pass — nine fix batches (`code-review` branch).** A
   five-lane Fable review (domain, controllers/security, views/perf, JS, cruft)
   surfaced two critical bugs, a security/integrity cluster, and a pile of

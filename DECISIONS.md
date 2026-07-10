@@ -719,6 +719,42 @@ ask. Hard vs soft is decided in `PuzzlesController#destroy` off `attempts.exists
 
 ---
 
+## 0020 — Moderator role + puzzle reporting (moderation for a public launch)
+
+**Date:** 2026-07-09
+**Status:** accepted
+
+**Context.** Authoring is public and anonymous (ADR-0005). Fine at private scale;
+a liability the moment the site gets promoted (e.g. r/nytconnections) — someone
+will publish spam or something offensive, and there was no way for players to
+surface it and no role short of full superuser to police it. The 2026-07-09
+community audit flagged this as the closest thing to a launch blocker.
+
+**Decision.** Two pieces. **A moderator role**: a second boolean on `users`
+alongside `superuser`. Moderators get the /admin *puzzles* tab and the same
+puzzle-moderation bypass (unpublish, delete/restore any puzzle) but **no user
+admin** — the Users tab 404s them and its nav link doesn't render.
+`User#staff? = superuser? || moderator?` is the union that gates the shared
+surfaces; `User.staff` scopes the report-alert recipients. Blessing is
+console-only (`user.update!(moderator: true)`) — no UI to grant roles yet.
+**Reporting**: a quiet fold-out on the play page files a `Report` (one per
+reporter per puzzle, unique-indexed, optional reason). A new flag emails every
+staff member (`AdminMailer#puzzle_reported`, `deliver_later`, best-effort like all
+our mail). The admin puzzles tab surfaces flags: a count banner, a `?flagged=1`
+triage view, a per-row badge, and a **Dismiss reports** action (mark handled
+without touching the puzzle — for false alarms; a real takedown just
+deletes/unpublishes, and the reports ride along via `dependent: :destroy`).
+
+**Consequence.** Trusted non-owners can moderate content without account access,
+and bad puzzles get surfaced by the crowd instead of festering. Notification is
+email-only by choice — Discord was floated and rejected. Reporting is rate-limited
+(10/hour) since "report" is itself an abuse vector. Deliberately *not* built:
+role-granting UI (console is fine for a handful of mods), report categories/reasons
+taxonomy (free-text is enough), and auto-hiding heavily-flagged puzzles (manual
+review only — no brigading-driven takedowns).
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.
