@@ -1,5 +1,7 @@
 class PuzzlesController < ApplicationController
   include Creator
+  include AnonymousPlayer # player_token, for the authoring-funnel event
+  include RecordsEvents
 
   # Creation is public (ADR-0005) — no authenticate_user!. Ownership is by
   # account when signed in, else by the creator_token cookie we mint here.
@@ -48,6 +50,7 @@ class PuzzlesController < ApplicationController
   def new
     @puzzle = owned_puzzles.build
     ensure_four_groups
+    record_event(:authoring_opened) # funnel: reached the create form
   end
 
   def create
