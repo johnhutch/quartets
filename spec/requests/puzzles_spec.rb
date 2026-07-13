@@ -306,5 +306,26 @@ RSpec.describe "Puzzles", type: :request do
       expect(puzzle.reload.tag_names).to include("fixed-by-admin")
       expect(puzzle).to be_published # stayed live — no unpublish dance
     end
+
+    it "returns to where the editor was opened from after saving" do
+      sign_in create(:user, :superuser)
+      puzzle = create(:published_puzzle)
+
+      # Opened the editor from the puzzle's play page…
+      get edit_puzzle_path(puzzle), headers: { "HTTP_REFERER" => play_url(puzzle.share_token) }
+      patch puzzle_path(puzzle), params: { puzzle: { tag_names: ["x"] } }
+
+      expect(response).to redirect_to(play_path(puzzle.share_token)) # …land back there
+    end
+
+    it "ignores an off-site referer (no open redirect)" do
+      sign_in create(:user, :superuser)
+      puzzle = create(:published_puzzle)
+
+      get edit_puzzle_path(puzzle), headers: { "HTTP_REFERER" => "https://evil.example/phish" }
+      patch puzzle_path(puzzle), params: { puzzle: { tag_names: ["x"] } }
+
+      expect(response).to redirect_to(puzzles_path) # fell back, didn't leave the site
+    end
   end
 end

@@ -51,6 +51,9 @@ class PuzzlesController < ApplicationController
     @puzzle = owned_puzzles.build
     ensure_four_groups
     record_event(:authoring_opened) # funnel: reached the create form
+    # A fresh authoring session (which saves via the create→edit autosave flow,
+    # never hitting #edit) shouldn't inherit a stale return target from a prior edit.
+    session.delete(:edit_return_to)
   end
 
   def create
@@ -78,6 +81,11 @@ class PuzzlesController < ApplicationController
 
   def edit
     ensure_four_groups
+    # Remember where the editor was opened from, so a manual save returns there —
+    # e.g. staff editing someone's puzzle from the play page land back on it, not
+    # on "Your stuff". Captured here (not from the save request, whose referer is
+    # the edit page itself). Sanitized to a same-host path — never an open redirect.
+    session[:edit_return_to] = safe_return_path(request.referer)
   end
 
   def update
@@ -87,8 +95,8 @@ class PuzzlesController < ApplicationController
       if autosave?
         head :no_content
       else
-        # A manual save drops the author back on their dashboard.
-        redirect_to puzzles_path
+        # A manual save returns you to where the editor was opened (else dashboard).
+        redirect_to(session.delete(:edit_return_to).presence || puzzles_path)
       end
     else
       ensure_four_groups
@@ -166,6 +174,20 @@ class PuzzlesController < ApplicationController
   # redirecting with a flash.
   def autosave?
     params[:autosave].present?
+  end
+
+  # A referer reduced to a same-host relative path (with query), or nil — so the
+  # post-edit redirect can only ever land on one of our own pages.
+  def safe_return_path(url)
+    return if url.blank?
+
+    uri = URI.parse(url)
+    return if uri.host.present? && uri.host != request.host
+    return unless uri.path.to_s.start_with?("/") && !uri.path.to_s.start_with?("//")
+
+    [uri.path, uri.query].compact.join("?")
+  rescue URI::InvalidURIError
+    nil
   end
 
   def puzzle_params
