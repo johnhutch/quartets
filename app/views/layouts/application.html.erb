@@ -92,6 +92,9 @@
         <span class="l-topbar__auth">
           <% if user_signed_in? %>
             <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
+            <% if current_user.staff? %>
+              <%= link_to "Admin", admin_root_path, class: "l-topbar__btn" %>
+            <% end %>
             <%= link_to "Your stuff", puzzles_path, class: "l-topbar__btn" %>
           <% else %>
             <%= link_to "Log in", new_user_session_path, class: "l-topbar__btn" %>
@@ -115,6 +118,9 @@
           <%= link_to "Play More #{ne_arrow}", play_index_path, class: "l-nav__link" %>
           <% if user_signed_in? %>
             <%= link_to "Your stuff", puzzles_path, class: "l-nav__link" %>
+            <% if current_user.staff? %>
+              <%= link_to "Admin", admin_root_path, class: "l-nav__link" %>
+            <% end %>
             <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-nav__link" %>
           <% else %>
             <%= link_to "Log in", new_user_session_path, class: "l-nav__link" %>
