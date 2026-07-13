@@ -757,6 +757,44 @@ puzzles (manual review only — no brigading-driven takedowns).
 
 ---
 
+## 0021 — Analytics stays 100% first-party (keep the privacy promise)
+
+**Date:** 2026-07-13
+**Status:** accepted (supersedes the stream-C `exception_notification` call and the
+open stream-A tool-pick in the TODOS analytics plan)
+
+**Context.** Launch needs measurement — traffic, referrers (incl. an AI/GEO
+segment), and product funnels — but the privacy page publicly promises "no
+analytics, no pixels, no third parties" and the footer brags we "never creep on
+you." Most analytics tools (even cookieless ones like Cloudflare Web Analytics'
+beacon or self-hosted Umami) add a client-side script and would make that promise
+false. The prior plan left the traffic tool-pick open and had named
+`exception_notification` for errors.
+
+**Decision.** Measure **entirely first-party and server-side — zero client script,
+no cookies, no third party** — so the promise stays literally true (chosen over
+prettier third-party dashboards). **Stream A (traffic):** a `Visit` log written by
+a site-wide `after_action` (path + referrer + UA, **no IP, no cookie**), bots
+flagged by a shared `BotDetector`, referrers classified at write time by
+`ReferrerSource` (the `ai` slice is the GEO payoff); `TrafficStats` reads it.
+**Stream B (funnels):** the `Event` model (server-side captures via `RecordsEvents`,
+human-gated) + `FunnelStats`, strictly **nested** so conversion can't read >100%.
+**Stream C (errors):** already **Sentry** (item 5, PII-scrubbed) — which reverses
+this plan's earlier "exception_notification, full stop": Sentry's grouping/alerting/
+release-tracking won, and PII scrubbing resolved the third-party worry (it carries
+stack traces, not user data). All three surface in a superuser-only `/admin`
+analytics tab.
+
+**Consequence.** The privacy copy needs **no softening** — it's accurate. The
+trade-off is thinner dashboards than a dedicated tool (no per-visitor journeys,
+no heatmaps) — fine for this site's needs. Cloudflare's **edge** analytics (network
+level, zero client footprint) stays available free as a supplement. `Visit`/`Event`
+rows accumulate unbounded until a later Solid Queue prune job (>90d). SEO/AEO
+groundwork (sitemap, JSON-LD, canonicals) shipped alongside; full launch plan in
+`docs/LAUNCH.md`.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

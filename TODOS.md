@@ -208,54 +208,42 @@ recorded (below); the rest is read-side display work, buildable whenever.
   different lifecycles (claim-on-auth lives only in `Creator`). Candidates 1–3 from
   that review shipped this session.
 
-### Analytics (privacy-first — see the analytics grill)
+### Analytics — SHIPPED first-party (2026-07-13, ADR-0021)
 
-Three streams: **A traffic** (referrers/sessions/uniques, incl. AI-referral
-segmentation for GEO), **B product funnels** (create→publish, play→complete,
-anon→signup), **C error tracking**. Bot/crawler measurement is a cross-cutting
-concern. **Sequencing:** the superuser role + `/admin` shell that gated B and C
-**shipped (ADR-0016)** — both are now unblocked; A tool-pick still open.
+All three streams landed **fully first-party** — no client script, no cookies, no
+third party — so the "no analytics, no pixels, no third parties" privacy promise
+stays literally true (the deciding call: keep the promise over prettier
+dashboards). Surfaced in the superuser-only **`/admin` analytics tab**.
 
-- **B — product funnels (designed, build as one chunk post-superuser).** Tight
-  **`Event`** model, enum-constrained to `puzzle_opened` / `game_started` /
-  `authoring_opened`, keyed by `player_token` (+ optional `user_id`, `puzzle_id`,
-  `occurred_at`); **not** a generic firehose, and **`Attempt` stays untouched**.
-  *Capture:* server-side one-liners for `puzzle_opened` (`play#show`) and
-  `authoring_opened` (`puzzles#new`); one `game_started` **beacon** from
-  `game_controller` (only way to catch mid-game abandons — nothing else hits the
-  server between open and game-over). **Best-effort inline** writes, gated by a
-  **shared human/bot UA classifier** (humans → `Event`, bots → bot log).
-  *Funnels:* `opened → started → finished` joined on `player_token`,
-  **time-windowed ~30 min at read time** (no session id); completion from
-  `Attempt`, author steps from `Puzzle` timestamps/status, signup = a source tag.
-  *View:* a **`FunnelStats`** value object (mirrors `PuzzleStats`/`PlayerStats`)
-  folded into the **superuser dashboard**, gated by the superuser role; site-wide
-  first, per-puzzle strip into `/puzzles/:id/stats` later. *Retention:* store raw,
-  compute on read, add a prune job (Solid Queue, >90d) later.
-- **C — error tracking (decided): `exception_notification` gem, full stop.**
-  Fully first-party, zero added infra, no SaaS (rejected GlitchTip self-host =
-  too much for the box; rejected Sentry/AppSignal/Honeybadger SaaS = third party).
-  Email to `ADMIN_EMAIL` (SMTP already being wired); enable **`error_grouping`** so
-  repeats don't flood the inbox; rely on `config.filter_parameters` for PII. If
-  the gem ever bitrots, fall back to Rails 8's native `Rails.error` reporter +
-  subscriber — **not** a SaaS.
-- **Bot/crawler measurement (decided):** lean on **Cloudflare's free bot/AI-crawler
-  analytics now** (zero infra, already fronts us) + a **first-party Rails
-  middleware logging bot UA + path to Postgres** as the durable record (same
-  pattern as `Attempt`; the UA classifier is shared with stream B's capture).
-  Backburnered: **enable Caddy JSON access logs** at the origin (Caddyfile has no
-  `log` directive today) and parse them (GoAccess or ship to DB) — note real client
-  IP arrives via `CF-Connecting-IP`, UA is preserved.
-- **`llms.txt`** — serve it (cheap), but the file itself may get ~zero hits early;
-  the realer signal is AI-crawler UAs (`GPTBot`/`ClaudeBot`/`PerplexityBot`/`CCBot`/
-  live `*-User` fetchers) hitting actual pages. Measure via the bot logging above.
-- **A — traffic analytics (tool-pick open).** Cookieless/no-banner, small-box
-  friendly: Cloudflare's free Web Analytics (zero infra) vs self-hosted Umami
-  (needs Postgres, which we have) vs GoatCounter (featherweight). GEO requirement:
-  must expose referrers cleanly with an AI/LLM segment. Grill not yet done.
-- **GEO/AEO** — folds into A (AI-referral segmentation) + an optional later DIY
-  prompt-monitor (hit LLM APIs with a small prompt set, grep for our domain, log to
-  Postgres). Game-site ROI is modest; don't build a heavyweight GEO platform.
+- **A — traffic (shipped).** Server-side `Visit` log (path + referrer + UA, **no
+  IP, no cookie**) via a site-wide `after_action`; bots flagged by the shared
+  `BotDetector`. `ReferrerSource` classifies each referrer at write time
+  (direct/ai/search/social/**ai**) — the `ai` slice is the GEO payoff.
+  `TrafficStats` rolls it up. *(Superseded the earlier tool-pick — Cloudflare Web
+  Analytics / Umami / GoatCounter all add a client footprint we chose to avoid.
+  Cloudflare's **edge** analytics stays available free as a zero-footprint
+  supplement.)*
+- **B — product funnels (shipped).** `Event` enum grew `puzzle_opened` /
+  `authoring_opened` beside `game_started`; captured server-side best-effort
+  (`RecordsEvents` concern, human-gated by `BotDetector`). `FunnelStats` — strictly
+  **nested** (each stage ⊆ the prior, so conversion can't read >100% during the
+  capture-ramp) — folds into the analytics tab. *Later:* per-puzzle funnel strip
+  into `/puzzles/:id/stats`; a Solid Queue prune job for Visit/Event rows >90d.
+- **C — error tracking (shipped, Sentry — supersedes the old plan).** Item-5
+  chose **Sentry** (PII-scrubbed, DSN-gated, SHA-tagged releases), *not*
+  `exception_notification`. The earlier "exception_notification, full stop" note
+  was reversed — Sentry's grouping/alerting/release-tracking won out and PII
+  scrubbing resolved the third-party concern. See ADR-0020-adjacent item-5 work.
+- **Bot/crawler measurement (shipped as part of A):** the `bot` flag on `Visit`
+  gives a first-party crawler count; Cloudflare's free bot analytics is the
+  zero-infra supplement. *Backburnered:* Caddy JSON access logs at the origin.
+- **`llms.txt`** — still TODO (cheap); realer signal is AI-crawler UAs hitting
+  pages, now measurable via the `Visit` bot log.
+- **GEO/AEO measurement** — the `ai` referrer segment (stream A) covers inbound;
+  an optional later DIY citation-monitor (run a prompt set through LLM APIs weekly,
+  grep for our domain) is the outbound half. Game-site ROI is modest; don't build a
+  heavyweight platform. SEO/AEO groundwork (sitemap, JSON-LD, canonicals) shipped
+  2026-07-13 — see the launch plan in `docs/LAUNCH.md`.
 
 ### Ops
 

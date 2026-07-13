@@ -65,6 +65,22 @@ is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
+- **Launch prep: SEO/AEO groundwork + first-party analytics (ADR-0021).** Item 7.
+  **SEO:** dynamic `/sitemap.xml` (published puzzles + static pages + profiles,
+  referenced from robots.txt), sitewide canonical tags (query-stripped), and
+  JSON-LD structured data (WebSite sitewide, Game per puzzle, FAQPage on
+  how-to-play, HowTo on the guide — with `<`-escaping so titles can't break the
+  script tag). **Analytics — 100% first-party, no client script/cookies/third
+  party, so the privacy promise stays literally true:** stream A traffic (`Visit`
+  log — path+referrer+UA, no IP/cookie — via a site-wide after_action, bots flagged
+  by the shared `BotDetector`, referrers classified by `ReferrerSource` with the
+  `ai` GEO slice; `TrafficStats`), stream B funnels (`Event` grew
+  puzzle_opened/authoring_opened; `RecordsEvents` concern; `FunnelStats` strictly
+  nested so conversion can't exceed 100%). Both surface in a new superuser-only
+  **`/admin` analytics tab** (7/30/90-day window). Stream C was already Sentry
+  (item 5). Full launch plan + pre-launch punch list + marketing in
+  `docs/LAUNCH.md`. 468 green.
+
 - **Community tools — moderation, reporting, onboarding (ADR-0020).** Follow-through
   on the 2026-07-09 community audit (for a possible r/nytconnections launch). New
   **moderator role**: a lighter admin (puzzle powers — unpublish/delete/restore via
