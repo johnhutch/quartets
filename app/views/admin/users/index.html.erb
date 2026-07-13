@@ -18,7 +18,7 @@
       <% @users.each do |user| %>
         <tr>
           <td>
-            <%= link_to user.handle, user_page_path(user.handle) %>
+            <%= link_to user.name, user_page_path(user.handle) %>
             <span class="m-admin-table__sub"><%= user.email %></span>
           </td>
           <td><%= user.current_sign_in_at ? "#{time_ago_in_words(user.current_sign_in_at)} ago" : "never" %></td>

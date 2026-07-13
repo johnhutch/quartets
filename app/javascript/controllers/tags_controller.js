@@ -9,13 +9,27 @@ import { Controller } from "@hotwired/stimulus"
 //   data-controller="tags" data-tags-suggest-url-value="/tags"
 export default class extends Controller {
   static targets = ["input", "menu", "chips"]
-  static values = { suggestUrl: String }
+  static values = { suggestUrl: String, limit: { type: Number, default: 3 } }
 
   connect() {
     this.selected = new Set(this.chipNames())
     this.items = []
     this.active = -1
     this.seq = 0
+    this.basePlaceholder = this.inputTarget.getAttribute("placeholder") || ""
+    this.reflectLimit()
+  }
+
+  atLimit() {
+    return this.selected.size >= this.limitValue
+  }
+
+  // Disable the input at the cap so no more tags can be typed/added.
+  reflectLimit() {
+    const full = this.atLimit()
+    this.inputTarget.disabled = full
+    this.inputTarget.setAttribute("placeholder", full ? `${this.limitValue} tags max` : this.basePlaceholder)
+    if (full) this.close()
   }
 
   chipNames() {
@@ -106,7 +120,7 @@ export default class extends Controller {
   }
 
   add(name) {
-    if (!name || this.selected.has(name)) return
+    if (!name || this.selected.has(name) || this.atLimit()) return
     this.selected.add(name)
 
     const li = document.createElement("li")
@@ -149,6 +163,7 @@ export default class extends Controller {
   // form one happened (it autosaves on `input`), or the autosave controller never
   // sees the tag edit and it's lost on the next navigation.
   notifyChange() {
+    this.reflectLimit()
     this.element.dispatchEvent(new Event("input", { bubbles: true }))
   }
 

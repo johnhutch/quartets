@@ -43,6 +43,23 @@ RSpec.describe "Puzzle tagging", type: :model do
     expect(puzzle.reload.tag_names).to contain_exactly("star-wars", "bluey")
   end
 
+  it "caps a puzzle at three tags" do
+    puzzle = build(:puzzle)
+
+    puzzle.tag_names = %w[a b c]
+    expect(puzzle).to be_valid
+
+    puzzle.tag_names = %w[a b c d]
+    expect(puzzle).not_to be_valid
+    expect(puzzle.errors[:base].join).to match(/at most 3 tags/i)
+  end
+
+  it "counts deduped/normalized names toward the limit, not raw input" do
+    puzzle = build(:puzzle)
+    puzzle.tag_names = ["Star Wars", "star wars", "star-wars", "Bluey"] # → 2 distinct
+    expect(puzzle).to be_valid
+  end
+
   it "reflects the pending names before save (for form re-render)" do
     puzzle = create(:puzzle)
     puzzle.tag_names = ["Star Wars", "  ", "Bluey"]

@@ -3,6 +3,10 @@
 module Taggable
   extend ActiveSupport::Concern
 
+  # A handful of tags keeps discovery meaningful — a puzzle tagged with everything
+  # is tagged with nothing.
+  TAG_LIMIT = 3
+
   included do
     has_many :taggings, as: :taggable, dependent: :destroy
     has_many :tags, through: :taggings
@@ -11,6 +15,7 @@ module Taggable
     # the tag change, and failed (public, anonymous) saves spam the global Tag
     # table with junk rows. Buffered here, synced only on a successful save.
     after_save :sync_pending_tags, if: :pending_tags?
+    validate :tags_within_limit
   end
 
   # Buffers raw names (an array, or a comma/newline string); nothing hits the DB
@@ -28,6 +33,10 @@ module Taggable
   end
 
   private
+
+  def tags_within_limit
+    errors.add(:base, "A puzzle can have at most #{TAG_LIMIT} tags.") if tag_names.size > TAG_LIMIT
+  end
 
   def pending_tags?
     !@pending_tag_names.nil?
