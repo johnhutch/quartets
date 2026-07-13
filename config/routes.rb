@@ -47,6 +47,9 @@ Rails.application.routes.draw do
   # puzzles, no login (ADR-0014). Your dashboard lives at /puzzles.
   root "home#show"
 
+  # XML sitemap for search + AI-citation crawlers (public/indexable URLs only).
+  get "/sitemap.xml", to: "sitemap#index", defaults: { format: "xml" }, as: :sitemap
+
   # Living style guide for the brutalist visual system. Public but intentionally
   # unlinked — a dev/design reference, reachable only by typing the URL.
   get "/styleguide", to: "styleguide#show"

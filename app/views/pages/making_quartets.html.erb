@@ -1,6 +1,23 @@
 <% content_for :title, "Making a good Quartet" %>
 <% content_for :description, "What separates a great Connections-style puzzle from a frustrating one — the rules of thumb for building a Quartet worth playing." %>
 
+<%# HowTo schema — a step-by-step AI engines can extract as a guide. %>
+<% content_for :structured_data do %>
+  <%= json_ld({
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to make a good Connections-style puzzle",
+    description: "The rules of thumb for building a fair, satisfying Quartet.",
+    step: [
+      { "@type": "HowToStep", name: "Be fair", text: "Make it hard to solve but obvious in hindsight — trap people with wordplay, not obscurity." },
+      { "@type": "HowToStep", name: "One true group per word", text: "Every word should belong to exactly one group, even if it looks like it could fit elsewhere." },
+      { "@type": "HowToStep", name: "Build the trap on purpose", text: "Lay out an obvious-looking group where one word actually belongs somewhere else." },
+      { "@type": "HowToStep", name: "Ramp the difficulty", text: "Yellow easiest, then green, blue, and purple as the showpiece twist." },
+      { "@type": "HowToStep", name: "Keep categories tight", text: "The connection should be specific enough that the four words are the only four that fit." }
+    ]
+  }) %>
+<% end %>
+
 <div class="l-container">
   <h1><%= multicolor("Making a good Quartet") %></h1>
 
