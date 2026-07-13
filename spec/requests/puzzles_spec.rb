@@ -296,5 +296,15 @@ RSpec.describe "Puzzles", type: :request do
       get admin_users_path
       expect(response).to have_http_status(:not_found)
     end
+
+    it "edits another author's published puzzle tags without unpublishing it" do
+      sign_in create(:user, :superuser)
+      puzzle = create(:published_puzzle) # someone else's, live on the site
+
+      patch puzzle_path(puzzle), params: { puzzle: { tag_names: ["fixed-by-admin"] } }
+
+      expect(puzzle.reload.tag_names).to include("fixed-by-admin")
+      expect(puzzle).to be_published # stayed live — no unpublish dance
+    end
   end
 end

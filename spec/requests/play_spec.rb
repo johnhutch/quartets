@@ -352,6 +352,31 @@ RSpec.describe "Play (public)", type: :request do
       end
     end
 
+    context "staff edit affordance" do
+      it "shows staff an Edit button on someone else's puzzle" do
+        puzzle = create(:published_puzzle) # not the viewer's
+
+        sign_in create(:user, :superuser)
+        get play_path(puzzle.share_token)
+        expect(response.body).to include(edit_puzzle_path(puzzle))
+
+        sign_in create(:user, :moderator)
+        get play_path(puzzle.share_token)
+        expect(response.body).to include(edit_puzzle_path(puzzle))
+      end
+
+      it "hides it from regular players and logged-out visitors" do
+        puzzle = create(:published_puzzle)
+
+        get play_path(puzzle.share_token)
+        expect(response.body).not_to include(edit_puzzle_path(puzzle))
+
+        sign_in create(:user)
+        get play_path(puzzle.share_token)
+        expect(response.body).not_to include(edit_puzzle_path(puzzle))
+      end
+    end
+
     context "archive filters (GET /play, signed in)" do
       let(:user) { create(:user) }
       before { sign_in user }
