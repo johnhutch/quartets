@@ -9,17 +9,20 @@ class FunnelStats
   end
 
   # --- Play funnel: opened → started → finished ---
+  # Strictly nested: each stage is the set of players who reached the PRIOR stage
+  # AND this one. That's the real funnel definition, and it guarantees the counts
+  # can't invert (no >100% conversion) while the three signals accumulate at
+  # different rates — e.g. right after opened-capture ships and started has history.
   def opened
-    distinct_players(Event.puzzle_opened)
+    opened_tokens.size
   end
 
   def started
-    distinct_players(Event.game_started)
+    started_tokens.size
   end
 
-  # Every recorded Attempt is a finished play (they're only written at game-over).
   def finished
-    Attempt.where(created_at: @since..).distinct.count(:player_token)
+    finished_tokens.size
   end
 
   def start_rate
@@ -40,6 +43,24 @@ class FunnelStats
   end
 
   private
+
+  def opened_tokens
+    @opened_tokens ||= tokens(Event.puzzle_opened)
+  end
+
+  def started_tokens
+    @started_tokens ||= tokens(Event.game_started) & opened_tokens
+  end
+
+  # Every recorded Attempt is a finished play (only written at game-over).
+  def finished_tokens
+    @finished_tokens ||=
+      Attempt.where(created_at: @since..).distinct.pluck(:player_token).to_set & started_tokens
+  end
+
+  def tokens(event_scope)
+    event_scope.where(occurred_at: @since..).distinct.pluck(:player_token).to_set
+  end
 
   def distinct_players(scope)
     scope.where(occurred_at: @since..).distinct.count(:player_token)

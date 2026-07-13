@@ -162,6 +162,27 @@ RSpec.describe "Admin", type: :request do
     end
   end
 
+  describe "analytics tab" do
+    it "shows traffic + funnels to a superuser" do
+      sign_in superuser
+      Visit.create!(path: "/play", referrer: "https://chatgpt.com/", bot: false)
+      create(:event, event_type: :puzzle_opened, player_token: "p")
+
+      get admin_analytics_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Human page views")
+      expect(response.body).to include("AI answer engines")
+      expect(response.body).to include("Play funnel")
+    end
+
+    it "404s a moderator (analytics is superuser-only)" do
+      sign_in create(:user, :moderator)
+      get admin_analytics_path
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "users tab" do
     before { sign_in superuser }
 

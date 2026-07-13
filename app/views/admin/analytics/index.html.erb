@@ -1,0 +1,53 @@
+<% content_for :title, "Admin · Analytics" %>
+
+<div class="l-container">
+  <h1><%= multicolor("Admin") %></h1>
+  <%= render "admin/tabs", active: :analytics %>
+
+  <nav class="m-tabs" aria-label="Time range">
+    <% Admin::AnalyticsController::PERIODS.each_value do |d| %>
+      <%= link_to "#{d} days", admin_analytics_path(days: d),
+            class: "m-tabs__tab#{' is-active' if @days == d}" %>
+    <% end %>
+  </nav>
+
+  <h2>Traffic</h2>
+  <div class="m-stats">
+    <div class="m-stats__row"><span>Human page views</span><span><%= @traffic.human_views %></span></div>
+    <div class="m-stats__row"><span>Bot / crawler hits</span><span><%= @traffic.bot_hits %></span></div>
+  </div>
+
+  <h3>Where humans came from</h3>
+  <div class="m-stats">
+    <% @traffic.sources.each do |source, count| %>
+      <div class="m-stats__row">
+        <span><%= source == "ai" ? "AI answer engines" : source.capitalize %></span>
+        <span><%= count %></span>
+      </div>
+    <% end %>
+  </div>
+
+  <h2>Play funnel</h2>
+  <div class="m-stats">
+    <div class="m-stats__row"><span>Opened a puzzle</span><span><%= @funnel.opened %></span></div>
+    <div class="m-stats__row">
+      <span>Started a game</span>
+      <span><%= @funnel.started %> (<%= number_to_percentage(@funnel.start_rate * 100, precision: 0) %>)</span>
+    </div>
+    <div class="m-stats__row">
+      <span>Finished</span>
+      <span><%= @funnel.finished %> (<%= number_to_percentage(@funnel.finish_rate * 100, precision: 0) %>)</span>
+    </div>
+  </div>
+
+  <h2>Create funnel</h2>
+  <div class="m-stats">
+    <div class="m-stats__row"><span>Opened the create form</span><span><%= @funnel.authoring_opened %></span></div>
+    <div class="m-stats__row"><span>Published a quartet</span><span><%= @funnel.published %></span></div>
+  </div>
+
+  <p class="m-admin-note">
+    First-party only — no cookies, no client script, no third parties. Counts are
+    distinct players per stage; traffic is server-side page-view logging.
+  </p>
+</div>

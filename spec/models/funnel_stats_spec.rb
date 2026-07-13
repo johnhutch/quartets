@@ -43,6 +43,18 @@ RSpec.describe FunnelStats do
     expect(stats.published).to be >= 1
   end
 
+  it "nests the stages so conversion can't exceed 100% (started ⊆ opened)" do
+    # game_started with history but no matching puzzle_opened (the post-deploy
+    # skew) must NOT produce started > opened.
+    started("ghost1"); started("ghost2"); started("ghost3")
+    opened("real"); started("real")
+
+    stats = described_class.new(since: 1.day.ago)
+    expect(stats.opened).to eq(1)          # only "real" opened
+    expect(stats.started).to eq(1)         # only "real" counts — ghosts excluded
+    expect(stats.start_rate).to eq(1.0)    # never above 1.0
+  end
+
   it "ignores events older than the window" do
     create(:event, event_type: :puzzle_opened, player_token: "old",
                    puzzle: puzzle, occurred_at: 2.weeks.ago)
