@@ -6,6 +6,25 @@ require "rails_helper"
 RSpec.describe "Admin", type: :request do
   let(:superuser) { create(:user, :superuser, email: "boss@example.com") }
 
+  describe "the Admin nav link" do
+    it "shows in the topbar for staff, and no one else" do
+      get play_index_path # a sub-page carries the topbar
+      expect(response.body).not_to include(admin_root_path) # logged out
+
+      sign_in create(:user)
+      get play_index_path
+      expect(response.body).not_to include(admin_root_path) # ordinary user
+
+      sign_in create(:user, :moderator)
+      get play_index_path
+      expect(response.body).to include(admin_root_path) # editor/moderator
+
+      sign_in superuser
+      get play_index_path
+      expect(response.body).to include(admin_root_path)
+    end
+  end
+
   describe "the gate" do
     it "404s signed-out visitors" do
       get admin_root_path
