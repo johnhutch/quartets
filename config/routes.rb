@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       member { patch :dismiss_reports } # mark a puzzle's flags handled (it's fine)
     end
     resources :users, only: %i[index update] # update = change a user's role
+    get "analytics", to: "analytics#index" # traffic + funnels (superuser-only)
   end
 
   # Public play surface — no login. Browse published puzzles, open one by its

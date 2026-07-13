@@ -6,5 +6,7 @@
   <% if current_user.superuser? %>
     <%= link_to "Users", admin_users_path,
           class: "m-tabs__tab#{' is-active' if active == :users}" %>
+    <%= link_to "Analytics", admin_analytics_path,
+          class: "m-tabs__tab#{' is-active' if active == :analytics}" %>
   <% end %>
 </nav>
