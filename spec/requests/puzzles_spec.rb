@@ -255,6 +255,18 @@ RSpec.describe "Puzzles", type: :request do
         expect(Puzzle.all).not_to include(puzzle) # gone from every live surface
         expect(Attempt.where(puzzle_id: puzzle.id).count).to eq(1) # play preserved
       end
+
+      it "returns to the page you deleted from (dashboard vs admin)" do
+        puzzle = create(:puzzle, user: user)
+        delete puzzle_path(puzzle), headers: { "HTTP_REFERER" => admin_puzzles_url }
+        expect(response).to redirect_to(admin_puzzles_url)
+      end
+
+      it "falls back to the dashboard when there's no referer" do
+        puzzle = create(:puzzle, user: user)
+        delete puzzle_path(puzzle)
+        expect(response).to redirect_to(puzzles_path)
+      end
     end
 
     describe "ownership" do

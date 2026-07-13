@@ -116,7 +116,10 @@ class PuzzlesController < ApplicationController
   # the link still works — while the author reworks it. Lenient rules apply again.
   def unpublish
     @puzzle.update!(status: :unlisted)
-    redirect_to puzzles_path, notice: "Made unlisted — the link still works, just not listed."
+    # Back to wherever you did it (the admin tab or your dashboard), not always
+    # the dashboard — the action rows are shared between both.
+    redirect_back fallback_location: puzzles_path,
+                  notice: "Made unlisted — the link still works, just not listed."
   end
 
   def destroy
@@ -125,11 +128,14 @@ class PuzzlesController < ApplicationController
     # abandoned draft, mostly) hard-deletes to keep the table clean.
     if @puzzle.attempts.exists?
       @puzzle.soft_delete!
-      redirect_to puzzles_path, notice: "Puzzle deleted. Players' stats are kept."
+      notice = "Puzzle deleted. Players' stats are kept."
     else
       @puzzle.destroy
-      redirect_to puzzles_path, notice: "Puzzle deleted."
+      notice = "Puzzle deleted."
     end
+    # Return to the page you deleted from (admin tab or dashboard), not always
+    # the dashboard — the Delete button is shared between both.
+    redirect_back fallback_location: puzzles_path, notice: notice
   end
 
   # Superuser-only in practice: a normal owner's scope is kept-only, so their
