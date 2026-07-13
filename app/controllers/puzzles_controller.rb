@@ -32,6 +32,17 @@ class PuzzlesController < ApplicationController
     @author_stats = AuthorStats.for(owned_puzzles)
   end
 
+  # The "Completed" tab on Your stuff: every puzzle you've finished (listed or
+  # unlisted), newest first, with the trophy you earned. Account-scoped like the
+  # trophy case (ADR-0011) — anonymous visitors get a sign-up nudge in the view.
+  def completed
+    return unless user_signed_in?
+
+    # includes(:puzzle) preloads through the default scope, so a tombstoned
+    # puzzle comes back nil and the view skips it.
+    @completed = current_user.attempts.includes(puzzle: :user).order(created_at: :desc)
+  end
+
   # Author analytics for one puzzle — how it's playing out in the wild.
   def stats
     @stats = PuzzleStats.new(@puzzle.attempts)

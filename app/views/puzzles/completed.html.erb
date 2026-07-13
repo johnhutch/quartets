@@ -1,0 +1,39 @@
+<% content_for :title, "Completed" %>
+
+<div class="l-container">
+  <h1><%= multicolor("Your stuff") %></h1>
+  <%= render "dash_tabs", active: :completed %>
+
+  <% if @completed.nil? %>
+    <%# Anonymous: completions + trophies are account-scoped (ADR-0011). %>
+    <p class="m-empty">
+      <%= link_to "Sign up", new_user_registration_path %> to track the quartets
+      you've completed and the trophies you've earned.
+    </p>
+  <% else %>
+    <% plays = @completed.select(&:puzzle) # drop any whose puzzle was deleted %>
+    <% if plays.any? %>
+      <ul class="m-puzzle-list m-puzzle-list--dash">
+        <% plays.each do |attempt| %>
+          <li class="m-puzzle-list__item m-completed">
+            <div class="m-puzzle-list__head">
+              <%= link_to multicolor(attempt.puzzle.title.presence || "Untitled"),
+                    play_path(attempt.puzzle.share_token), class: "m-puzzle-list__title" %>
+              <span class="m-puzzle-list__status">
+                Completed <%= attempt.created_at.strftime("%b %-d, %Y") %>
+                &middot; <%= attempt.solved? ? "Solved" : "Out of guesses" %>
+              </span>
+            </div>
+            <% if attempt.achievement %>
+              <span class="m-completed__trophy" title="<%= t("quartets.trophies.#{attempt.achievement}") %>">
+                <%= trophy(attempt.achievement) %>
+              </span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="m-empty">No completed quartets yet — <%= link_to "go play one #{ne_arrow}", play_index_path %>.</p>
+    <% end %>
+  <% end %>
+</div>
