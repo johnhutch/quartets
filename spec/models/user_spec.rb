@@ -57,6 +57,17 @@ RSpec.describe User, type: :model do
     expect(create(:user)).not_to be_superuser
   end
 
+  describe "#name" do
+    it "prefers the display name" do
+      expect(create(:user, display_name: "The Real Hutch").name).to eq("The Real Hutch")
+    end
+
+    it "falls back to the handle when there's no display name" do
+      user = create(:user, email: "hutch@example.com")
+      expect(user.name).to eq(user.handle)
+    end
+  end
+
   describe "roles" do
     it "is neither superuser nor moderator by default" do
       user = create(:user)

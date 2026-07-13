@@ -24,7 +24,7 @@
         Incomplete
       <% end %>
       <% if show_owner %>
-        &middot; <%= puzzle.user&.handle ? link_to(puzzle.user.handle, user_page_path(puzzle.user.handle)) : "anonymous" %>
+        &middot; <%= puzzle.user ? link_to(puzzle.user.name, user_page_path(puzzle.user.handle)) : "anonymous" %>
       <% end %>
       <%# Flag badge — only the admin tab passes report_counts. %>
       <% if (flags = local_assigns[:report_counts]&.fetch(puzzle.id, 0)).to_i.positive? %>

@@ -1,7 +1,10 @@
-<% content_for :title, @user.handle %>
+<% content_for :title, @user.name %>
 
 <div class="l-container">
-  <h1 class="m-user-handle"><%= multicolor(@user.handle) %></h1>
+  <h1 class="m-user-handle"><%= multicolor(@user.name) %></h1>
+  <% if @user.display_name.present? %>
+    <p class="m-user-slug">@<%= @user.handle %></p>
+  <% end %>
 
   <%= render "puzzles/dashboard_stats", stats: @stats %>
 

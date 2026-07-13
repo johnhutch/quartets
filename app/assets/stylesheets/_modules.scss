@@ -812,6 +812,13 @@
   }
 }
 
+// The @handle slug shown under a user's display name on their profile.
+.m-user-slug {
+  margin: -#{$space-sm} 0 $space-md;
+  color: $color-muted;
+  font-family: $font-display;
+}
+
 // Muted footnote under an admin panel (e.g. the analytics privacy note).
 .m-admin-note {
   margin-top: $space-md;

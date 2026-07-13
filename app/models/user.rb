@@ -39,6 +39,13 @@ class User < ApplicationRecord
     superuser? || moderator?
   end
 
+  # The name to show wherever this user is displayed: their chosen display_name
+  # when set, else the handle. (Puzzle bylines use author_display_name, which
+  # layers the puzzle's own author_name in for anonymous work.)
+  def name
+    display_name.presence || handle
+  end
+
   # A single tier for the admin role dropdown, over the two underlying booleans.
   ROLES = %w[member moderator superuser].freeze
 
