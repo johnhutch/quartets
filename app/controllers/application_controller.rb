@@ -19,6 +19,10 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
+  # First-party traffic log (analytics stream A) — path + referrer + UA, no IP,
+  # no cookie. Server-side, best-effort, after the response is built.
+  after_action :log_visit
+
   # Devise's default permit list doesn't know our extra column; display_name is
   # asked at signup and editable in account settings.
   before_action :configure_devise_params, if: :devise_controller?
@@ -30,6 +34,23 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  # Log a page view: successful, top-level HTML GETs only — skip assets, admin
+  # (staff browsing isn't traffic), infra paths, Turbo-frame partials, and XHR.
+  # Bots are logged too, flagged, so they're counted apart from humans.
+  SKIP_VISIT_PATHS = %w[/up /sitemap.xml /robots.txt /manifest].freeze
+
+  def log_visit
+    return unless request.get? && request.format.html? && response.successful?
+    return if request.xhr? || request.headers["Turbo-Frame"].present?
+    return if request.path.start_with?("/assets", "/admin", "/rails")
+    return if SKIP_VISIT_PATHS.include?(request.path)
+
+    Visit.create!(path: request.path, referrer: request.referer,
+                  user_agent: request.user_agent, bot: BotDetector.bot?(request.user_agent))
+  rescue StandardError
+    nil # best-effort: a missed log never affects the visitor
+  end
 
   # One grouped query of play counts for a set of puzzles, keyed by puzzle_id, so
   # list rows can show "N plays" without firing attempts.count per row (N+1).

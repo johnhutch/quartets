@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_13_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -271,6 +271,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_040000) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["handle"], name: "index_users_on_handle", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "visits", force: :cascade do |t|
+    t.boolean "bot", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "occurred_at", null: false
+    t.string "path", null: false
+    t.string "referrer"
+    t.string "source", default: "direct", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.index ["bot"], name: "index_visits_on_bot"
+    t.index ["occurred_at"], name: "index_visits_on_occurred_at"
+    t.index ["source"], name: "index_visits_on_source"
   end
 
   add_foreign_key "attempts", "puzzles"
