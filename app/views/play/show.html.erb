@@ -133,5 +133,15 @@
         <button type="submit" class="m-btn m-btn--sm">Report</button>
       <% end %>
     </details>
+
+    <%# Staff edit hatch: open the editor on anyone's puzzle — fix tags, title, or
+        answers without unpublishing it first. Reaches the editor via the staff
+        bypass in PuzzlesController#accessible_puzzles. %>
+    <% if current_user&.staff? %>
+      <p class="m-play-admin">
+        <%= link_to "Edit this quartet (admin)", edit_puzzle_path(@puzzle), class: "m-btn m-btn--sm" %>
+        <span class="m-play-admin__note">Edit tags, title, or answers — stays published.</span>
+      </p>
+    <% end %>
   <% end %>
 </div>

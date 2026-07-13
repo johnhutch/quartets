@@ -799,6 +799,19 @@
 // the game controls above it.
 .m-play-back { margin-top: $space-xl; text-align: center; }
 
+// Staff-only edit hatch at the bottom of a play page.
+.m-play-admin {
+  margin-top: $space-xl;
+  text-align: center;
+
+  &__note {
+    display: block;
+    margin-top: $space-xs;
+    font-size: $font-sm;
+    color: $color-muted;
+  }
+}
+
 // Muted footnote under an admin panel (e.g. the analytics privacy note).
 .m-admin-note {
   margin-top: $space-md;
