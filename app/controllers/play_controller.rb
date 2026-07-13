@@ -4,6 +4,7 @@
 class PlayController < ApplicationController
   include AnonymousPlayer
   include Creator # for owns? — the owner gets a share prompt on their own puzzle
+  include RecordsEvents # funnel capture (puzzle_opened)
 
   PER_PAGE = 24
 
@@ -57,6 +58,9 @@ class PlayController < ApplicationController
     # players are keyed by account; anonymous players by their player_token
     # (best-effort — clearing the cookie still lets a stranger replay, fine).
     @my_attempt = finished_attempt unless @owned_view
+
+    # Funnel: a genuine play-intent open (not the owner viewing their own board).
+    record_event(:puzzle_opened, puzzle: @puzzle) unless @owned_view
   end
 
   private

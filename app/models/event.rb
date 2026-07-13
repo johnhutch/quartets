@@ -8,9 +8,10 @@ class Event < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :puzzle, optional: true
 
-  # Room to grow: puzzle_opened / authoring_opened are server-side one-liners the
-  # analytics plan adds later; game_started is the one client beacon.
-  enum :event_type, { game_started: 0 }
+  # The funnel signals: puzzle_opened (viewed a play page) and authoring_opened
+  # (opened the create form) are server-side one-liners; game_started is the one
+  # client beacon (nothing else hits the server between open and game-over).
+  enum :event_type, { game_started: 0, puzzle_opened: 1, authoring_opened: 2 }
 
   # So a fresh event is well-formed without the caller stamping the time (the
   # column is NOT NULL, so the default is the guarantee — no presence check needed).
