@@ -45,13 +45,16 @@
     <%= yield :structured_data %>
 
     <%# Absolute image URL + dimensions so iMessage / Slack / Facebook all
-        render the large card reliably. ?v= busts stale social-scraper caches. %>
-    <meta property="og:image" content="<%= root_url %>share.png?v=4">
+        render the large card reliably. Versioned by FILENAME (og.png), not a
+        ?v= query — iMessage's LinkPresentation is finicky about query strings on
+        og:image, and some scrapers key their cache without the query. Bump the
+        filename (og-2.png…) to bust caches on a future image change. %>
+    <meta property="og:image" content="<%= root_url %>og.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Quartets">
-    <meta name="twitter:image" content="<%= root_url %>share.png?v=4">
+    <meta name="twitter:image" content="<%= root_url %>og.png">
 
     <%# PWA manifest — installs the site as a standalone home-screen app. %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
