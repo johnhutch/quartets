@@ -833,7 +833,9 @@ body.theme-brutal {
 .theme-brutal .m-nameplate-stack {
   position: relative;
   display: inline-block;
-  margin: $space-lg 0 $space-md; // room for the nameplate riding above the top edge
+  // Extra top room so the full-width nameplate clears the absolutely-positioned
+  // auth buttons (Log out / Your stuff) in the top-right corner.
+  margin: $space-xl 0 $space-md;
 }
 
 .theme-brutal .m-nameplate {
@@ -1306,7 +1308,9 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: $space-md $space-lg;
+  // Roomier row gap so the archive link clears the Create sticker's hard shadow
+  // when they stack on a phone.
+  gap: $space-lg $space-lg;
   margin-top: $space-lg;
 }
 .theme-brutal .m-hero__cta { transform: rotate(-2deg); font-size: $font-lg; }
