@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc><%= root_url %></loc><changefreq>daily</changefreq></url>
+  <url><loc><%= play_index_url %></loc><changefreq>daily</changefreq></url>
+  <url><loc><%= how_to_play_url %></loc><changefreq>monthly</changefreq></url>
+  <url><loc><%= making_quartets_url %></loc><changefreq>monthly</changefreq></url>
+  <% @puzzles.each do |puzzle| %>
+  <url>
+    <loc><%= play_url(puzzle.share_token) %></loc>
+    <lastmod><%= puzzle.updated_at.iso8601 %></lastmod>
+  </url>
+  <% end %>
+  <% @handles.each do |handle| %>
+  <url><loc><%= user_page_url(handle) %></loc></url>
+  <% end %>
+</urlset>

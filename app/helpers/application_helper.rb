@@ -10,8 +10,24 @@ module ApplicationHelper
   def puzzle_meta_description(puzzle)
     return puzzle.description.squish if puzzle.description.present?
 
-    by = puzzle.author_name.present? ? " by #{puzzle.author_name}" : ""
+    # Use the same byline precedence as every visible surface (display_name beats
+    # the puzzle's free-text author_name), so the SERP/JSON-LD author agrees.
+    name = puzzle.author_display_name
+    by = name.present? ? " by #{name}" : ""
     "A Connections-style puzzle (but better)#{by}. Play it free on Quartets."
+  end
+
+  # The self-referencing canonical URL: the current page minus its query string
+  # (filters/pagination aren't canonical state), overridable via content_for.
+  def canonical_url
+    content_for(:canonical).presence || request.original_url.split("?").first
+  end
+
+  # Emit a JSON-LD structured-data block. `<` is escaped so a puzzle title can't
+  # break out of the <script> tag (the data can carry user content).
+  def json_ld(data)
+    json = JSON.generate(data).gsub("<", "\\u003c").gsub(">", "\\u003e")
+    content_tag(:script, json.html_safe, type: "application/ld+json")
   end
 
   # Milliseconds → a "3:42" clock readout (solve times are minutes, not hours).

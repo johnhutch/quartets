@@ -31,6 +31,18 @@
     <% end %>
 
     <meta property="og:url" content="<%= request.original_url %>">
+    <link rel="canonical" href="<%= canonical_url %>">
+
+    <%# Sitewide structured data — the entity every page shares. Per-page schema
+        (a puzzle Game, the how-to-play FAQ) rides in content_for(:structured_data). %>
+    <%= json_ld({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Quartets",
+      url: root_url,
+      description: ApplicationHelper::SITE_DESCRIPTION
+    }) %>
+    <%= yield :structured_data %>
 
     <%# Absolute image URL + dimensions so iMessage / Slack / Facebook all
         render the large card reliably. ?v= busts stale social-scraper caches. %>

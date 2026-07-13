@@ -10,6 +10,22 @@
     restore a broken hybrid board on the back button, so opt this render out of
     the cache. The server-rendered finished/owner states are static — fine to cache. %>
 <% interactive_board = !@owned_view && !@my_attempt %>
+<%# Structured data: a playable Game, so search + AI engines can surface it as
+    one. Only for published puzzles (unlisted carry noindex — don't advertise). %>
+<% if @puzzle.published? %>
+  <% content_for :structured_data do %>
+    <%= json_ld({
+      "@context": "https://schema.org",
+      "@type": "Game",
+      name: @puzzle.title,
+      description: puzzle_meta_description(@puzzle),
+      url: play_url(@puzzle.share_token),
+      author: { "@type": "Person", name: @puzzle.author_display_name.presence || "Anonymous" },
+      genre: "Word puzzle",
+      isAccessibleForFree: true
+    }) %>
+  <% end %>
+<% end %>
 <% content_for :meta do %>
   <% if interactive_board %>
     <meta name="turbo-cache-control" content="no-cache">

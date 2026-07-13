@@ -1,6 +1,25 @@
 <% content_for :title, "How to play" %>
 <% content_for :description, "How to play Quartets: find the four hidden groups of four in a grid of sixteen words. Four mistakes and you're out." %>
 
+<%# FAQ schema — the format AI answer engines cite most for "how do I play…" %>
+<% content_for :structured_data do %>
+  <%= json_ld({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      { "@type": "Question", name: "How do you play Quartets?",
+        acceptedAnswer: { "@type": "Answer",
+          text: "You get a grid of 16 words that split into 4 hidden groups of 4. Tap four words you think belong together and submit. Solve all four groups before you make four mistakes." } },
+      { "@type": "Question", name: "How many mistakes can you make?",
+        acceptedAnswer: { "@type": "Answer",
+          text: "Four. On the fourth wrong guess the game ends and the answers are revealed." } },
+      { "@type": "Question", name: "What do the colors mean?",
+        acceptedAnswer: { "@type": "Answer",
+          text: "Each group has a color, running from easiest to hardest: yellow, green, blue, then purple — the trickiest, usually wordplay or a hidden connection." } }
+    ]
+  }) %>
+<% end %>
+
 <div class="l-container">
   <h1><%= multicolor("How to play") %></h1>
 
