@@ -812,6 +812,16 @@
   }
 }
 
+// A completed-puzzle row: title + date on the left, the earned trophy on the right.
+.m-completed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+
+  &__trophy .m-trophy { width: 1.75rem; height: 1.75rem; }
+}
+
 // The @handle slug shown under a user's display name on their profile.
 .m-user-slug {
   margin: -#{$space-sm} 0 $space-md;

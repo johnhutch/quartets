@@ -3,6 +3,9 @@ Rails.application.routes.draw do
 
   # Superuser-facing puzzle management.
   resources :puzzles do
+    collection do
+      get :completed # the "Completed" tab on Your stuff — puzzles you've finished
+    end
     member do
       patch :publish
       patch :unpublish

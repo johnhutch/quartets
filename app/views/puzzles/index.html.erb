@@ -2,6 +2,7 @@
 
 <div class="l-container">
   <h1><%= multicolor("Your stuff") %></h1>
+  <%= render "dash_tabs", active: :created %>
 
   <% if !user_signed_in? && @puzzles_total > 0 %>
     <%= render "claim_cta", count: @puzzles_total %>

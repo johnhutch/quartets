@@ -1,0 +1,8 @@
+<%# The two Your-stuff surfaces: puzzles you've made vs puzzles you've finished.
+    `active` is :created or :completed. %>
+<nav class="m-tabs" aria-label="Your stuff">
+  <%= link_to "Your quartets", puzzles_path,
+        class: "m-tabs__tab#{' is-active' if active == :created}" %>
+  <%= link_to "Completed", completed_puzzles_path,
+        class: "m-tabs__tab#{' is-active' if active == :completed}" %>
+</nav>
