@@ -246,6 +246,14 @@ RSpec.describe "Puzzles", type: :request do
         expect { delete puzzle_path(puzzle) }.to change(Puzzle.with_deleted, :count).by(-1)
       end
 
+      it "gives a regular user a confirm — plain 'Delete', no admin 'Hard' label" do
+        create(:puzzle, user: user) # unplayed draft → permanent delete for them
+        get puzzles_path
+
+        expect(response.body).to include("be undone") # confirmation present
+        expect(response.body).not_to include("Hard delete") # that label is admin-only
+      end
+
       it "soft-deletes a played puzzle so players keep their stats" do
         puzzle = create(:published_puzzle, user: user)
         create(:attempt, puzzle: puzzle, solved: true)
