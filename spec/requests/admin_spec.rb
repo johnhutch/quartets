@@ -83,7 +83,7 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to include("Anon Draft")
       expect(response.body).to include("maker") # owner handle in the status line
       expect(response.body).to include("anonymous")
-      expect(response.body).to include("Delete") # the owner-grade action cluster
+      expect(response.body).to match(/delete/i) # the owner-grade action cluster (Hard delete on unplayed)
     end
 
     it "surfaces flagged puzzles with a count and dismisses them" do
@@ -105,6 +105,24 @@ RSpec.describe "Admin", type: :request do
       patch dismiss_reports_admin_puzzle_path(puzzle)
       expect(puzzle.reports.unresolved).to be_empty
       expect(puzzle.reload).not_to be_deleted
+    end
+
+    it "labels an unplayed puzzle 'Hard delete' with a permanent-warning confirm" do
+      create(:published_puzzle, title: "No Plays Yet") # no attempts → hard delete
+
+      get admin_puzzles_path
+
+      expect(response.body).to include("Hard delete")
+      expect(response.body).to include("be undone")
+    end
+
+    it "keeps a played puzzle a soft delete (stats kept, not 'hard')" do
+      puzzle = create(:published_puzzle, title: "Has Plays")
+      create(:attempt, puzzle: puzzle)
+
+      get admin_puzzles_path
+
+      expect(response.body).to include("stats are kept")
     end
 
     it "shows per-puzzle engagement: starts, abandons, time to first group" do

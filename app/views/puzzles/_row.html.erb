@@ -6,6 +6,10 @@
 <% show_owner = local_assigns.fetch(:show_owner, false) %>
 <li class="m-puzzle-list__item">
   <% title = puzzle.title.presence || "Untitled" %>
+  <%# Play count drives both the status line and the delete kind: a played puzzle
+      soft-deletes (tombstone, recoverable), an unplayed one hard-deletes. From
+      the grouped play_counts when present, so no per-row query. %>
+  <% plays = local_assigns[:play_counts] ? local_assigns[:play_counts].fetch(puzzle.id, 0) : puzzle.attempts.count %>
   <div class="m-puzzle-list__head">
     <%# Complete puzzles (published or unlisted) are playable, so the title
         opens the board; an incomplete one opens the editor instead. %>
@@ -16,7 +20,6 @@
       <% if puzzle.deleted? %>
         Deleted
       <% elsif puzzle.published? %>
-        <% plays = local_assigns[:play_counts] ? local_assigns[:play_counts].fetch(puzzle.id, 0) : puzzle.attempts.count %>
         Published &middot; <%= pluralize(plays, "play") %>
       <% elsif puzzle.complete? %>
         Unlisted &middot; link only
@@ -91,8 +94,19 @@
               data: { turbo_method: :patch,
                       turbo_confirm: "Make #{title} unlisted? The link still works, it just won't be listed." } %>
       <% end %>
-      <%= button_to "Delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
-            data: { turbo_confirm: "Delete “#{title}”? This can’t be undone." } %>
+      <% if plays.positive? %>
+        <%# Played → soft delete: pulled from the site but recoverable, stats kept. %>
+        <%= button_to "Delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
+              data: { turbo_confirm: "Delete “#{title}”? It’ll be pulled from the site, but players’ stats are kept." } %>
+      <% elsif show_owner %>
+        <%# No plays + admin view → hard delete, spelled out so staff know it's permanent. %>
+        <%= button_to "Hard delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
+              data: { turbo_confirm: "Hard delete “#{title}”? This can’t be undone." } %>
+      <% else %>
+        <%# No plays, your own → also permanent, but the plain label for a regular author. %>
+        <%= button_to "Delete", puzzle, method: :delete, class: "m-puzzle-list__delete",
+              data: { turbo_confirm: "Delete “#{title}”? This can’t be undone." } %>
+      <% end %>
     </span>
   </div>
 </li>
