@@ -125,8 +125,12 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     click_button "Hell yeah!"
     expect(page).to have_css(".m-rating__opt.is-on", text: /hell yeah/i)
 
+    # The header metabox refreshes in place with the vote counted — no reload.
+    expect(page).to have_css("#metabox .m-likes", text: "2") # hell yeah weighs 2
+
     click_button "@!#?@!"
     expect(page).to have_css(".m-rating__opt.is-on", count: 2)
+    expect(page).to have_css("#metabox .m-difficulty__label", text: /4\/4 difficulty/i)
 
     attempt = Attempt.last
     expect(attempt.quality).to eq("hell_yeah")

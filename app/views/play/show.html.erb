@@ -79,16 +79,7 @@
       <% end %>
     </div>
 
-    <% if @rating_summary || @puzzle.specialized? %>
-      <aside class="m-metabox" aria-label="Quartet info">
-        <% if @rating_summary %>
-          <%= render "play/rating_summary", summary: @rating_summary %>
-        <% end %>
-        <% if @puzzle.specialized? %>
-          <%= render "play/themed_flag", puzzle: @puzzle %>
-        <% end %>
-      </aside>
-    <% end %>
+    <%= render "play/metabox", puzzle: @puzzle, summary: @rating_summary %>
   </header>
 
   <%# The author's blurb can telegraph the trick, so it hides behind a native

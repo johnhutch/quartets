@@ -1,0 +1,17 @@
+<%# The header meta-info box: vote aggregate + theme chip, floated right. Also
+    the turbo-stream target the rating buttons refresh in place (RatingsController
+    replaces "metabox" after each vote). With nothing to show yet it renders a
+    hidden placeholder instead — no empty chrome, but the first-ever vote still
+    has an element to swap. Expects `puzzle` and `summary` (nil when unrated). %>
+<% if summary || puzzle.specialized? %>
+  <aside id="metabox" class="m-metabox" aria-label="Quartet info">
+    <% if summary %>
+      <%= render "play/rating_summary", summary: summary %>
+    <% end %>
+    <% if puzzle.specialized? %>
+      <%= render "play/themed_flag", puzzle: puzzle %>
+    <% end %>
+  </aside>
+<% else %>
+  <aside id="metabox" hidden></aside>
+<% end %>

@@ -65,6 +65,24 @@ RSpec.describe "Ratings", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
+    it "answers a turbo-stream request with a refreshed metabox" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:published_puzzle)
+      create(:attempt, puzzle: puzzle, user: user, solved: true)
+
+      patch play_rating_path(puzzle.share_token),
+            params: { quality: "hell_yeah", difficulty: "pretty_hard" }.to_json,
+            headers: { "Content-Type" => "application/json",
+                       "Accept" => "text/vnd.turbo-stream.html" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      expect(response.body).to include('target="metabox"')
+      expect(response.body).to include("m-likes")      # the fresh thumb tally
+      expect(response.body).to include("m-difficulty") # and the fresh meter
+    end
+
     it "rejects a value that isn't on the menu" do
       user = create(:user)
       sign_in user
@@ -91,6 +109,18 @@ RSpec.describe "Ratings", type: :request do
       expect(response.body).to include("How hard was it?")
       expect(response.body).to include("@!#?@!")
       expect(response.body.scan(/is-on/).size).to eq(1) # only hell-yeah is lit
+    end
+
+    it "leaves a hidden metabox placeholder on an unrated puzzle so the first vote has a swap target" do
+      user = create(:user)
+      sign_in user
+      puzzle = create(:published_puzzle)
+      create(:attempt, puzzle: puzzle, user: user, solved: true)
+
+      get play_path(puzzle.share_token)
+
+      expect(response.body).to include('id="metabox"')
+      expect(response.body).not_to include("m-metabox") # no empty chrome
     end
 
     it "rides along in the finished-play JSON for published puzzles" do
