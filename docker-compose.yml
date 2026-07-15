@@ -48,9 +48,10 @@ services:
       DB_POOL: "12" # 3 for Puma + 5 for Solid Queue + overhead
       # Public host — mailer link host (share URLs follow the request host).
       APP_HOST: ${APP_HOST:-playquartets.com}
-      # Outbound mail (forgot-password). Leave SMTP_* blank until you have a
-      # provider — mail simply won't send (the app boots fine either way).
+      # Outbound mail. Resend HTTP API (port 443) is preferred — set RESEND_API_KEY.
+      # SMTP_* are a fallback, only used if RESEND_API_KEY is blank. Blank = mail off.
       MAILER_SENDER: ${MAILER_SENDER:-no-reply@playquartets.com}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
       SMTP_ADDRESS: ${SMTP_ADDRESS:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}

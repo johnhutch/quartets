@@ -37,6 +37,10 @@ gem "bootsnap", require: false
 gem "sentry-ruby"
 gem "sentry-rails"
 
+# Resend HTTP API for outbound mail (port 443 — SMTP ports are unreliable from
+# the self-hosted NAS). See config/initializers/resend.rb.
+gem "resend"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
