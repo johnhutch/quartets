@@ -15,7 +15,18 @@ class RatingsController < ApplicationController
     return head :not_found unless attempt
 
     attempt.update!(rating_params)
-    head :no_content
+
+    # The buttons ask for a turbo stream so the header metabox refreshes with
+    # the vote counted — no page reload. Anything else keeps the bare 204.
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "metabox", partial: "play/metabox",
+          locals: { puzzle: puzzle, summary: RatingSummary.for_puzzle(puzzle) }
+        )
+      end
+      format.any { head :no_content }
+    end
   rescue ArgumentError # a value that isn't on the enum menu
     head :unprocessable_content
   end
