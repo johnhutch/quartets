@@ -81,19 +81,26 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com") }
 
-  # SMTP comes from the NAS .env (ADR-0005) — fill these in at first deploy.
-  # Forgot-password mail only actually sends once SMTP_ADDRESS is present;
-  # until then delivery errors stay swallowed so the app boots clean.
-  config.action_mailer.raise_delivery_errors = ENV["SMTP_ADDRESS"].present?
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address:        ENV["SMTP_ADDRESS"],
-    port:           ENV.fetch("SMTP_PORT", 587).to_i,
-    user_name:      ENV["SMTP_USERNAME"],
-    password:       ENV["SMTP_PASSWORD"],
-    authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
-    enable_starttls_auto: true
-  }
+  # Outbound mail. Prefer Resend's HTTP API (port 443) — SMTP ports are unreliable
+  # from the self-hosted NAS (partial IP reachability behind the ISP causes
+  # Net::OpenTimeout). The API rides HTTPS, which is rock-solid here. Falls back to
+  # SMTP if only SMTP_* is configured (e.g. another host); mail is off until one is
+  # set, and errors stay swallowed until then so the app boots clean.
+  if ENV["RESEND_API_KEY"].present?
+    config.action_mailer.delivery_method = :resend # registered by the resend gem's railtie
+    config.action_mailer.raise_delivery_errors = true
+  else
+    config.action_mailer.raise_delivery_errors = ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address:        ENV["SMTP_ADDRESS"],
+      port:           ENV.fetch("SMTP_PORT", 587).to_i,
+      user_name:      ENV["SMTP_USERNAME"],
+      password:       ENV["SMTP_PASSWORD"],
+      authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
+      enable_starttls_auto: true
+    }
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
