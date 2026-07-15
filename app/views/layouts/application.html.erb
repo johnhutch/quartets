@@ -59,7 +59,10 @@
     <%# PWA manifest — installs the site as a standalone home-screen app. %>
     <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
     <meta name="apple-mobile-web-app-title" content="Quartets">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <%# "black" (not black-translucent) so iOS reserves the status-bar area and keeps
+        our content inside the safe area — otherwise the topbar sits under the clock/
+        notch in standalone. Near-black status bar blends with the dark theme. %>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">

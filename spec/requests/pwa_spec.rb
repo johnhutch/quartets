@@ -17,4 +17,18 @@ RSpec.describe "PWA manifest", type: :request do
     get root_path
     expect(response.body).to include('rel="manifest"')
   end
+
+  it "serves the service worker as JavaScript" do
+    # Browsers register a SW with Accept: */* (not text/html), so match that.
+    get pwa_service_worker_path, headers: { "HTTP_ACCEPT" => "*/*" }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.media_type).to eq("text/javascript")
+    expect(response.body).to include("addEventListener") # a real SW, not a stub
+  end
+
+  it "reserves the status bar (black, not translucent) so content stays in the safe area" do
+    get root_path
+    expect(response.body).to include('name="apple-mobile-web-app-status-bar-style" content="black"')
+  end
 end

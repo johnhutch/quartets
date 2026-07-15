@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Offline — Quartets</title>
+  <style>
+    /* Self-contained: assets may not be cached when this shows. */
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid; place-content: center; gap: 1rem; text-align: center;
+      padding: 2rem; background: #0c0c0c; color: #f4f2ec;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    h1 { margin: 0; font-size: 2rem; letter-spacing: -0.02em; }
+    p { margin: 0; color: #bcb8ae; max-width: 30ch; }
+    .q { display: inline-flex; gap: 4px; margin-bottom: 0.5rem; }
+    .q span { width: 22px; height: 22px; border: 2px solid #0c0c0c; }
+    .y { background: #f2c94c } .g { background: #8ed081 }
+    .b { background: #8db4f2 } .p { background: #cf9bdb }
+  </style>
+</head>
+<body>
+  <span class="q" aria-hidden="true"><span class="y"></span><span class="g"></span><span class="b"></span><span class="p"></span></span>
+  <h1>You're offline</h1>
+  <p>Quartets needs a connection to load puzzles. Reconnect and try again.</p>
+</body>
+</html>
