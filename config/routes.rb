@@ -69,8 +69,9 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # PWA manifest so the site installs as a standalone home-screen app (linked in
-  # the layout head). No service worker — we're not doing offline/caching.
+  # the layout head) + a service worker for cached assets and an offline fallback.
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
   # root "posts#index"
