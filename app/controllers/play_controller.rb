@@ -24,7 +24,7 @@ class PlayController < ApplicationController
     scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
 
     # Paginate so the archive doesn't load + aggregate the whole catalog per hit
-    # as it grows (the NAS is a slow box). Plain offset, same as the dashboard.
+    # as it grows. Plain offset, same as the dashboard.
     total = scope.count
     @total_pages = [(total / PER_PAGE.to_f).ceil, 1].max
     @page = params[:page].to_i.clamp(1, @total_pages)
@@ -59,6 +59,11 @@ class PlayController < ApplicationController
     # (best-effort — clearing the cookie still lets a stranger replay, fine).
     @my_attempt = finished_attempt unless @owned_view
 
+    # A saved mid-game (ProgressController) resumes instead of resetting: the
+    # board rehydrates from it on render. Same identity split as the finished
+    # attempt — account first, else the player_token cookie.
+    @play_state = resumable_state unless @owned_view || @my_attempt
+
     # Funnel: a genuine play-intent open (not the owner viewing their own board).
     record_event(:puzzle_opened, puzzle: @puzzle) unless @owned_view
   end
@@ -71,5 +76,15 @@ class PlayController < ApplicationController
     else
       @puzzle.attempts.where(player_token: current_player_token).order(created_at: :desc).first
     end
+  end
+
+  def resumable_state
+    anonymous = @puzzle.play_states.where(user_id: nil).find_by(player_token: current_player_token)
+    return anonymous unless user_signed_in?
+
+    # Signed in: the account's save wins; failing that, adopt a game they
+    # started anonymously on this device (mirrors ClaimsPuzzles for authoring).
+    @puzzle.play_states.find_by(user: current_user) ||
+      anonymous&.tap { |state| state.update(user: current_user) }
   end
 end

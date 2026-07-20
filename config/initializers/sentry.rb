@@ -1,6 +1,6 @@
 # Production error monitoring. Only initializes when SENTRY_DSN is present, so
 # dev, test, and an un-configured production all stay silent — nothing phones
-# home until you set the DSN in the NAS .env.
+# home until you set the DSN in the production environment.
 #
 # Privacy: send_default_pii stays FALSE (the SDK default, pinned here for intent).
 # That keeps request bodies, cookies, headers, and user IPs out of every event —

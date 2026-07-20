@@ -1,8 +1,8 @@
 require "rails_helper"
 
 # The Sentry initializer is DSN-gated so error reporting never turns on in dev,
-# test, or an un-configured production — nothing phones home until the NAS .env
-# sets SENTRY_DSN. This pins that guard: a green CI run must not ship events.
+# test, or an un-configured production — nothing phones home until the production
+# environment sets SENTRY_DSN. This pins that guard: a green CI run must not ship events.
 RSpec.describe "Sentry error monitoring" do
   it "stays dormant in the test environment (no DSN, no reporting)" do
     expect(ENV["SENTRY_DSN"]).to be_blank

@@ -795,6 +795,46 @@ groundwork (sitemap, JSON-LD, canonicals) shipped alongside; full launch plan in
 
 ---
 
+## 0022 — Mid-game progress persists server-side (leave and resume, never reset)
+
+**Date:** 2026-07-19
+**Status:** accepted
+
+**Context.** The game lived entirely in Stimulus state: nothing touched the
+server until game over, when one POST minted the finished `Attempt`. Closing the
+tab, following a link, or an iOS PWA eviction mid-game threw the whole play away
+— the same class of loss the authoring auto-save exists to prevent (ADR-0001).
+localStorage was considered and rejected: it's per-device, so it can't honor the
+one-play-per-account rule (ADR-0009) or follow a logged-in player across
+devices, and it would trust the client with state the attempts endpoint was
+specifically hardened against (the `PlayRecording` rebuild).
+
+**Decision.** A new **`PlayState`** row — the save-game for an in-progress play.
+The game PUTs `/p/:share_token/progress` after **every guess** (best-effort,
+like the attempts POST); the server runs the log through the same
+**`PlayRecording`** trust model (words in, colors derived from the puzzle, junk
+rejected) and **refuses finished logs** — game over records via
+`attempts#create`, which **deletes** the save under both identities. Identity
+mirrors `Attempt`: keyed by **account** when signed in (partial unique index,
+works across devices), else by the **player_token cookie** (unique per token,
+lives as long as the cookie). `play#show` rehydrates the board from the save
+(solved rows, mistakes, wrong-pick guard, play clock offset); signing in
+**claims** a game started anonymously on the device, echoing `ClaimsPuzzles`.
+A resumed game doesn't re-beacon `game_started`, so abandon stats stay honest.
+
+**Consequence.** Leaving a puzzle never resets it — anonymous players resume on
+the same browser, account holders resume anywhere. Stats and trophies are
+untouched: `PlayState` is invisible to `PuzzleStats`/`PlayerStats` (attempts
+remain the only record of a play) and the forgery surface didn't grow (a forged
+save can only ever paint the forger's own board). Rows are self-cleaning on
+finish; an **anonymous** save that goes a month without a new guess is pruned
+by a daily Solid Queue recurring task (`PlayState.stale.delete_all`,
+`config/recurring.yml` — `PlayState::ANONYMOUS_TTL`), so drive-by visitors
+can't accrete rows forever. Account saves are exempt from the prune — bounded
+at one per user per puzzle, and cross-session resume is the promise.
+
+---
+
 ## Adding new decisions
 
 Append using the template above. Status is one of: `proposed` | `accepted` | `superseded by NNNN` | `deprecated`.

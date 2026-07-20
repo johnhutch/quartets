@@ -34,6 +34,9 @@ class AttemptsController < ApplicationController
       else
         puzzle.attempts.create!(base)
       end
+    # The play is recorded — the mid-game save is spent. Clear it under both
+    # identities (a signed-in player may have saved anonymously before logging in).
+    clear_progress(puzzle)
     # The result payload the game injects: cube (on-screen grid), full share block
     # (title + cube + link, host from the request), the earned tier, and the
     # pre-rendered trophies block. PlayResult owns the shaping — the revisit view
@@ -53,6 +56,12 @@ class AttemptsController < ApplicationController
   end
 
   private
+
+  def clear_progress(puzzle)
+    states = puzzle.play_states.where(player_token: current_player_token)
+    states = states.or(puzzle.play_states.where(user: current_user)) if user_signed_in?
+    states.delete_all
+  end
 
   # The signed-in path races the partial unique (user_id, puzzle_id) index: two
   # near-simultaneous POSTs both miss the find_by, and the loser's insert raises

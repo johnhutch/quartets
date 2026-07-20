@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-07-08
+**Last updated:** 2026-07-19
 **Active branch:** develop (clean; the ADR-0018 punch list + rich seeds are committed and QA'd; `main` is prod/deploy)
 
 Current state + a rolling shipped-log. Planned/not-started work lives in `TODOS.md`; the *why* behind decisions lives in `DECISIONS.md`.
@@ -64,6 +64,23 @@ via `RatingSummary` — the stats-page slice is still TODO). A
 is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
+
+- **Mid-game progress persists — leave a puzzle, come back, resume (ADR-0022).**
+  New `PlayState` save-game: the board PUTs `/p/:share_token/progress` after
+  every guess (best-effort, per-guess `data-progress-saved` marker for tests);
+  the server reuses the `PlayRecording` trust model (words in, colors derived,
+  junk + finished logs rejected) and upserts one row per player per puzzle —
+  keyed by **account** when signed in (cross-device), else the **player_token**
+  cookie, matching `Attempt`'s identity split with matching partial unique
+  indexes. `play#show` rehydrates the saved board (solved rows, burned
+  mistakes, the resubmit guard, and the play clock resumes from
+  `elapsed_ms`); signing in claims a game started anonymously on that device.
+  `attempts#create` deletes the save when the play records (both identities),
+  and a resumed game skips the `game_started` beacon so abandon stats don't
+  double-count. Stats/trophies untouched — attempts stay the only record of a
+  play. Abandoned **anonymous** saves expire: a daily Solid Queue recurring
+  task prunes rows idle past `PlayState::ANONYMOUS_TTL` (30 days since the
+  last guess); account saves never expire. 511 green.
 
 - **Launch prep: SEO/AEO groundwork + first-party analytics (ADR-0021).** Item 7.
   **SEO:** dynamic `/sitemap.xml` (published puzzles + static pages + profiles,

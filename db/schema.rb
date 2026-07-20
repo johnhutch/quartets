@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_13_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_19_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_13_020000) do
     t.datetime "updated_at", null: false
     t.jsonb "words"
     t.index ["puzzle_id"], name: "index_groups_on_puzzle_id"
+  end
+
+  create_table "play_states", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "elapsed_ms"
+    t.jsonb "guesses", default: [], null: false
+    t.string "player_token", null: false
+    t.bigint "puzzle_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["puzzle_id", "player_token"], name: "index_play_states_on_puzzle_and_player", unique: true, where: "(user_id IS NULL)"
+    t.index ["puzzle_id", "user_id"], name: "index_play_states_on_puzzle_and_user", unique: true, where: "(user_id IS NOT NULL)"
+    t.index ["puzzle_id"], name: "index_play_states_on_puzzle_id"
+    t.index ["user_id"], name: "index_play_states_on_user_id"
   end
 
   create_table "puzzles", force: :cascade do |t|
@@ -292,6 +306,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_13_020000) do
   add_foreign_key "events", "puzzles"
   add_foreign_key "events", "users"
   add_foreign_key "groups", "puzzles"
+  add_foreign_key "play_states", "puzzles"
+  add_foreign_key "play_states", "users"
   add_foreign_key "reports", "puzzles"
   add_foreign_key "reports", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

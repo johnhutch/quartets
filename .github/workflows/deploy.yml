@@ -41,8 +41,8 @@ jobs:
           # came from (Dockerfile reads GIT_SHA → ENV → the Sentry initializer).
           build-args: |
             GIT_SHA=${{ github.sha }}
-          # Tag both :latest (what Watchtower chases) and the commit SHA, so every
-          # build leaves a durable, addressable image to roll back to.
+          # Tag both :latest and the commit SHA, so every build leaves a durable,
+          # addressable image to roll back to.
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:sha-${{ github.sha }}

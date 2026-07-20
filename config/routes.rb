@@ -39,6 +39,9 @@ Rails.application.routes.draw do
   get "/p/:share_token", to: "play#show", as: :play
   # The game posts a finished play here for stats (anonymous, cookie-attributed).
   post "/p/:share_token/attempts", to: "attempts#create", as: :play_attempts
+  # …and saves its in-progress state here after every guess, so leaving the
+  # puzzle mid-game resumes instead of resetting (cleared when the play records).
+  put "/p/:share_token/progress", to: "progress#update", as: :play_progress
   # Post-play quality/difficulty rating — updates the viewer's attempt.
   patch "/p/:share_token/rating", to: "ratings#update", as: :play_rating
   # And beacons game_started here on the first tile tap, so we can tell a started-
