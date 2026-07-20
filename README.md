@@ -31,7 +31,7 @@ shareable emoji-cube result come along for the ride.
 | Auth | Devise — superuser-only for creation; play is public |
 | Game UI | Our own compact vanilla-JS engine on Stimulus — no React, no Node build |
 | Tests | RSpec + Capybara, TDD |
-| Hosting | Self-hosted on a Synology NAS via Docker / DSM Container Manager |
+| Hosting | Self-hosted via Docker |
 
 ## Getting it running
 

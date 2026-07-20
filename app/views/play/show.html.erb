@@ -107,7 +107,7 @@
   <% elsif @my_attempt %>
     <%= render "play/result", puzzle: @puzzle, attempt: @my_attempt %>
   <% else %>
-    <%= render "play/board", puzzle: @puzzle %>
+    <%= render "play/board", puzzle: @puzzle, saved: @play_state %>
   <% end %>
 
   <% unless owns?(@puzzle) %>

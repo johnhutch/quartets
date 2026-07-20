@@ -81,11 +81,10 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com") }
 
-  # Outbound mail. Prefer Resend's HTTP API (port 443) — SMTP ports are unreliable
-  # from the self-hosted NAS (partial IP reachability behind the ISP causes
-  # Net::OpenTimeout). The API rides HTTPS, which is rock-solid here. Falls back to
-  # SMTP if only SMTP_* is configured (e.g. another host); mail is off until one is
-  # set, and errors stay swallowed until then so the app boots clean.
+  # Outbound mail. Prefer Resend's HTTP API (port 443) — SMTP ports can be
+  # unreliable from a self-hosted server, and HTTPS is rock-solid. Falls back to
+  # SMTP if only SMTP_* is configured; mail is off until one is set, and errors
+  # stay swallowed until then so the app boots clean.
   if ENV["RESEND_API_KEY"].present?
     config.action_mailer.delivery_method = :resend # registered by the resend gem's railtie
     config.action_mailer.raise_delivery_errors = true
@@ -112,10 +111,9 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Host authorization. Public traffic arrives through a Cloudflare Tunnel as
-  # `playquartets.com`; `web`/`localhost` cover the internal compose origins the
-  # tunnel and health checks use. (Direct NAS-IP access is intentionally not
-  # listed — go through the domain.)
+  # Host authorization. Public traffic arrives through a reverse proxy as
+  # `playquartets.com`; `web`/`localhost` cover the internal origins the proxy and
+  # health checks use.
   config.hosts += %w[playquartets.com www.playquartets.com web localhost]
 
   # Skip DNS rebinding protection for the default health check endpoint.

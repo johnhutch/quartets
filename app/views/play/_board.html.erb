@@ -1,13 +1,18 @@
 <%# The playable board. Shared by the homepage and /p/:share_token so they stay
     identical. We feed the game controller the groups (color + category + the
     four words) as JSON; it shuffles the 16 tiles, runs the guess loop, and caps
-    mistakes at MAX_MISTAKES. Expects a `puzzle` local. %>
+    mistakes at MAX_MISTAKES. Expects a `puzzle` local; an optional `saved`
+    PlayState rehydrates a half-played board (guess log + play clock) so coming
+    back resumes instead of resetting. %>
+<% saved = local_assigns[:saved] %>
 <%= tag.div class: "m-game",
       data: {
         controller: "game",
         game_max_mistakes_value: Puzzle::MAX_MISTAKES,
         game_record_url_value: play_attempts_path(puzzle.share_token),
         game_events_url_value: play_events_path(puzzle.share_token),
+        game_progress_url_value: play_progress_path(puzzle.share_token),
+        game_saved_value: (saved ? { guesses: saved.guesses, elapsedMs: saved.elapsed_ms } : {}).to_json,
         game_puzzle_value: {
           groups: puzzle.groups.map { |g|
             { color: g.color, description: g.description, words: g.filled_words }

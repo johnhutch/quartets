@@ -201,6 +201,58 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(page).to have_no_css(".m-card.is-selected")
   end
 
+  it "resumes a half-played game after leaving and coming back" do
+    visit play_path(puzzle.share_token)
+
+    solve(answers[:blue])                # one group down
+    click_button "one"                   # then a wrong guess
+    click_button "two"
+    click_button "mercury"
+    click_button "piano"
+    click_button "Submit"
+    expect(page).to have_css(".m-game[data-progress-saved='2']") # both saves landed
+
+    visit play_path(puzzle.share_token) # leave and come back
+
+    # The board picks up where they left off: blue solved, one mistake burned,
+    # twelve tiles still in play — not a fresh sixteen-tile reset.
+    expect(page).to have_css(".m-game__group-name", text: /blue/i)
+    expect(page).to have_css(".m-mistake.is-used", count: 1)
+    expect(page).to have_css(".m-card", count: 12)
+
+    # The resubmit guard survives the reload too.
+    solve(%w[one two mercury piano])
+    expect(page).to have_content(/already made that guess/i)
+    expect(page).to have_css(".m-mistake.is-used", count: 1)
+
+    # And the game still finishes clean from the restored state.
+    click_button "Deselect all"
+    answers.except(:blue).each_value { |group| solve(group) }
+    expect(page).to have_content(/solved it/i)
+    expect(page).to have_css(".m-game[data-recorded='true']")
+
+    attempt = Attempt.last
+    expect(attempt.mistakes_count).to eq(1)
+    expect(attempt.guesses.size).to eq(5) # the restored guesses made it into the record
+    expect(PlayState.count).to eq(0)      # the save-game is spent
+  end
+
+  it "does not re-beacon game_started on a resumed game" do
+    visit play_path(puzzle.share_token)
+    solve(answers[:blue])
+    expect(page).to have_css(".m-game[data-progress-saved='1']")
+    expect(Event.where(puzzle: puzzle).game_started.count).to eq(1)
+
+    visit play_path(puzzle.share_token)
+    click_button "one" # first tap of the resumed session — starts the clock
+    %w[two three four].each { |word| click_button word }
+    click_button "Submit"
+    expect(page).to have_css(".m-game[data-progress-saved='2']")
+
+    # Still one start — a resume isn't a new game (abandon stats stay honest).
+    expect(Event.where(puzzle: puzzle).game_started.count).to eq(1)
+  end
+
   def solve(words)
     words.each { |word| click_button word }
     click_button "Submit"

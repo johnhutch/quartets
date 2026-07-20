@@ -33,7 +33,9 @@ export default class extends Controller {
     puzzle: Object,
     maxMistakes: { type: Number, default: 4 },
     recordUrl: String,
-    eventsUrl: String
+    eventsUrl: String,
+    progressUrl: String,
+    saved: Object // a saved half-played game: { guesses: [...], elapsedMs }
   }
 
   connect() {
@@ -47,6 +49,8 @@ export default class extends Controller {
     this.wrongPicks = new Set() // sorted word-sets already guessed wrong (resubmit guard)
     this.over = false
     this.startTime = null   // set on the first tile tap; the clock for timing
+    this.resumed = false    // true when rehydrated from a saved game
+    this.resumedElapsed = 0 // where the saved play clock left off (ms)
 
     this.puzzleValue.groups.forEach((group) => {
       this.groups[group.color] = { description: group.description, words: group.words }
@@ -71,8 +75,31 @@ export default class extends Controller {
     this.element.querySelectorAll(".m-game__share, .m-awards, .m-rating").forEach((n) => n.remove())
 
     this.shuffleCards()
+    if (this.savedValue.guesses?.length) this.restore(this.savedValue)
     this.render()
     this.renderMistakes()
+  }
+
+  // Rehydrate a saved half-played game (the server-derived guess log from
+  // PlayState): replay each guess into our state — solved groups come off the
+  // board, wrong guesses burn their mistake and re-arm the resubmit guard — so
+  // the restored board is exactly the one the player walked away from.
+  restore({ guesses, elapsedMs }) {
+    this.resumed = true
+    this.resumedElapsed = elapsedMs || 0
+    guesses.forEach((guess) => {
+      const colors = guess.colors
+      const correct = colors.every((color) => color === colors[0])
+      this.guesses.push({ words: guess.words, colors, t: guess.t ?? null })
+      if (correct) {
+        this.solvedColors.push(colors[0])
+        this.cards = this.cards.filter((card) => card.color !== colors[0])
+        this.renderSolved(colors[0])
+      } else {
+        this.wrongPicks.add([...guess.words].sort().join("|"))
+        this.mistakes += 1
+      }
+    })
   }
 
   // --- player actions ---------------------------------------------------
@@ -152,6 +179,10 @@ export default class extends Controller {
       this.wrongPicks.add(pick)
       this.registerMistake(colors)
     }
+
+    // Persist the mid-game state so leaving and coming back resumes. Game over
+    // records the finished play instead (record()), which spends the save.
+    if (!this.over) this.saveProgress()
   }
 
   // --- internals --------------------------------------------------------
@@ -255,8 +286,10 @@ export default class extends Controller {
   // from merely opening the page — so a started-but-unfinished game is an abandon.
   markStarted() {
     if (this.startTime !== null) return
-    this.startTime = performance.now()
-    this.recordStart()
+    // A resumed game picks its clock up where the save left off, and doesn't
+    // re-beacon game_started — it's the same game, not a new start.
+    this.startTime = performance.now() - this.resumedElapsed
+    if (!this.resumed) this.recordStart()
   }
 
   // ms since the clock started; null if it never did (no interaction yet).
@@ -282,6 +315,27 @@ export default class extends Controller {
       this.element.dataset.started = "true"
     } catch {
       // Funnel stats are nice-to-have; a failed beacon shouldn't break the game.
+    }
+  }
+
+  // Save the in-progress game after a guess (best-effort — a failed save never
+  // breaks the game, it just won't resume). Marks the element
+  // `data-progress-saved` with the guess count so a test can wait on the round-trip.
+  async saveProgress() {
+    if (!this.hasProgressUrlValue || this.progressUrlValue === "") return
+
+    try {
+      const response = await fetch(this.progressUrlValue, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          progress: { guesses: this.guesses, elapsed_ms: this.elapsedMs() }
+        })
+      })
+      if (response.ok) this.element.dataset.progressSaved = String(this.guesses.length)
+    } catch {
+      // Resume is nice-to-have; play on.
     }
   }
 

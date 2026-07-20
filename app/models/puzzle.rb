@@ -16,6 +16,7 @@ class Puzzle < ApplicationRecord
 
   has_many :groups, -> { order(:position) }, dependent: :destroy, inverse_of: :puzzle
   has_many :attempts, dependent: :destroy
+  has_many :play_states, dependent: :delete_all
   has_many :events, dependent: :destroy
   has_many :reports, dependent: :destroy
   accepts_nested_attributes_for :groups

@@ -10,7 +10,7 @@
 #      have data to render. This is what makes local look like prod.
 
 # --- The single superuser --------------------------------------------------
-# Creds come from the environment (dotenv loads .env locally; the Synology .env
+# Creds come from the environment (dotenv loads .env locally; the production .env
 # sets real values). In development only, fall back to a default so seeding — and the
 # demo puzzles below — never block you for lack of env vars. Production stays
 # strict: no env, no fallback.
