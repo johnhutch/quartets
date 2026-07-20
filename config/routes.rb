@@ -55,7 +55,12 @@ Rails.application.routes.draw do
   root "home#show"
 
   # XML sitemap for search + AI-citation crawlers (public/indexable URLs only).
-  get "/sitemap.xml", to: "sitemap#index", defaults: { format: "xml" }, as: :sitemap
+  # format: false — Rails otherwise appends (.:format) to the path, so a
+  # crawler probing /sitemap.xml.gz (bingbot does) matched with format "gz"
+  # and 500ed on the missing gzip template. Now it 404s; the .xml is the only
+  # sitemap we serve (Cloudflare compresses the transfer anyway).
+  get "/sitemap.xml", to: "sitemap#index",
+                      defaults: { format: "xml" }, format: false, as: :sitemap
 
   # Living style guide for the brutalist visual system. Public but intentionally
   # unlinked — a dev/design reference, reachable only by typing the URL.

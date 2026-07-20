@@ -65,6 +65,12 @@ is written to `docs/THEMES.md` on its own branch — scoped, not built.
 
 ## Shipped log (most recent first)
 
+- **Sitemap 500 on `/sitemap.xml.gz` fixed (Sentry, bingbot).** Rails appends
+  `(.:format)` to routes, so bingbot's speculative probe for the sitemaps.org
+  gzipped variant matched `sitemap#index` with format `gz` → MissingTemplate
+  500. `format: false` on the route: the probe now 404s (we only serve the
+  .xml; Cloudflare already compresses the transfer via Accept-Encoding).
+
 - **Mid-game progress persists — leave a puzzle, come back, resume (ADR-0022).**
   New `PlayState` save-game: the board PUTs `/p/:share_token/progress` after
   every guess (best-effort, per-guess `data-progress-saved` marker for tests);
