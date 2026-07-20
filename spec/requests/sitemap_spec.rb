@@ -38,4 +38,14 @@ RSpec.describe "Sitemap", type: :request do
     expect(response.body).to include(user_page_url("has"))
     expect(response.body).not_to include(user_page_url("empty"))
   end
+
+  it "404s the speculative gzipped variant crawlers probe for" do
+    # Bingbot requests /sitemap.xml.gz on spec (sitemaps.org allows a gzipped
+    # sitemap; we don't offer one — the wire is already compressed by
+    # Cloudflare via Accept-Encoding). Without format: false on the route this
+    # matched with format "gz" and 500ed on the missing gzip template.
+    get "/sitemap.xml.gz"
+
+    expect(response).to have_http_status(:not_found)
+  end
 end
