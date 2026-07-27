@@ -145,6 +145,19 @@ RSpec.describe "Puzzles", type: :request do
         expect(response.body).not_to include(publish_puzzle_path(puzzle)) # can't publish yet
       end
 
+      # The unpublish-first rule is the dashboard's, not the account's: staff get
+      # the direct-edit hatch on /admin (and the play page), never here.
+      it "offers no Edit on a published puzzle — you make it unlisted first, staff included" do
+        puzzle = create(:published_puzzle, user: user)
+
+        get puzzles_path
+        expect(response.body).not_to include(edit_puzzle_path(puzzle))
+
+        user.update!(superuser: true)
+        get puzzles_path
+        expect(response.body).not_to include(edit_puzzle_path(puzzle))
+      end
+
       it "tags a complete-but-unlisted puzzle 'Unlisted' and offers a real Publish plus a quiet Edit" do
         puzzle = create(:puzzle, :complete, user: user, status: :unlisted)
 

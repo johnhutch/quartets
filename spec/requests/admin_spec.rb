@@ -86,6 +86,14 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to match(/delete/i) # the owner-grade action cluster (Hard delete on unplayed)
     end
 
+    it "offers a direct Edit on a published puzzle — no unpublish dance" do
+      live = create(:published_puzzle, title: "Live One")
+
+      get admin_puzzles_path
+
+      expect(response.body).to include(edit_puzzle_path(live))
+    end
+
     it "surfaces flagged puzzles with a count and dismisses them" do
       puzzle = create(:published_puzzle, title: "Flagged One")
       create(:report, puzzle: puzzle, reporter_token: "a")

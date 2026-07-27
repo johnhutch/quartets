@@ -1,9 +1,11 @@
 <%# One owner-grade dashboard row (title + status + the full action cluster).
     Shared by the owner dashboard and the admin puzzles tab — the admin view
-    passes show_owner: true to append the creator to the status line. The action
-    routes are the plain /puzzles ones; superusers pass their gate via the
-    accessible_puzzles bypass (PuzzlesController#set_puzzle). %>
+    passes show_owner: true to append the creator to the status line, and
+    staff: true to unlock the moderation-grade actions. The action routes are the
+    plain /puzzles ones; superusers pass their gate via the accessible_puzzles
+    bypass (PuzzlesController#set_puzzle). %>
 <% show_owner = local_assigns.fetch(:show_owner, false) %>
+<% staff = local_assigns.fetch(:staff, false) %>
 <li class="m-puzzle-list__item">
   <% title = puzzle.title.presence || "Untitled" %>
   <%# Play count drives both the status line and the delete kind: a played puzzle
@@ -65,6 +67,12 @@
       <% end %>
       <%= link_to "Play", play_path(puzzle.share_token), class: "m-puzzle-list__link" %>
       <%= link_to "Stats", stats_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+      <%# Staff-only: fix a live puzzle in place. Authors don't get this on their
+          own dashboard — they make it unlisted first, so a puzzle can't change
+          under players mid-play. Mirrors the hatch on the play page. %>
+      <% if staff %>
+        <%= link_to "Edit", edit_puzzle_path(puzzle), class: "m-puzzle-list__link" %>
+      <% end %>
     <% elsif puzzle.complete? %>
       <%= button_to publish_puzzle_path(puzzle), method: :patch,
             class: "m-btn m-btn--sm m-btn--go" do %>
