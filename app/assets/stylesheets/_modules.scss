@@ -1228,6 +1228,11 @@
     cursor: pointer;
     font-size: 1.1em;
     line-height: 1;
+    // UA buttons use `buttontext` (black), not the inherited color — on the dark
+    // page that made the × invisible.
+    color: inherit;
+
+    &:hover { color: $color-purple; }
   }
 
   &__menu {
