@@ -23,6 +23,18 @@ RSpec.describe "Your puzzles dashboard", type: :system, js: true do
     expect(page).to have_no_content(/copied!/i) # the sheet took it; no copy fallback
   end
 
+  # A puzzle that repeats an answer is unplayable, so there's nothing worth
+  # sharing: the button goes away entirely and says what to fix instead.
+  it "takes the Share button away from a puzzle with duplicate answers" do
+    puzzle = create(:puzzle, :complete, user: user, title: "Repeater")
+    puzzle.groups.last.update!(words: puzzle.groups.first.words.first(1) + %w[x y z])
+
+    visit puzzles_path
+
+    expect(page).to have_no_button("Share")
+    expect(page).to have_css(".m-share-blocked", text: /same answer twice/i)
+  end
+
   it "falls back to copying the link when there is no native share sheet" do
     create(:published_puzzle, user: user, title: "Old School")
 

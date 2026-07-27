@@ -935,6 +935,17 @@ body.theme-brutal {
       position: relative;
       z-index: 1; // ride above the next input so the shadow isn't clipped
     }
+
+    // An answer that's repeated elsewhere in the puzzle (dupes_controller flags
+    // it live). Lives in the theme layer because the theme owns the box's
+    // border/text colors — a bare .is-dupe would lose the specificity fight.
+    // The lit red so the text itself still clears AA on the near-black well.
+    &.is-dupe {
+      border-color: $color-wrong-lit;
+      color: $color-wrong-lit;
+
+      &:focus { border-color: $color-wrong-lit; }
+    }
   }
 
   .m-group input:focus,

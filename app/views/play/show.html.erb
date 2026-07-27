@@ -48,24 +48,26 @@
 
   <% if owns?(@puzzle) && @puzzle.unlisted? %>
     <aside class="m-publish-prompt">
-      <p class="m-publish-prompt__text">Looking good! Share the link with anyone, or publish it to the site.</p>
-      <%= tag.button type: "button", class: "m-btn m-btn--share",
-            data: { controller: "share", share_url_value: play_url(@puzzle.share_token),
-                    action: "share#share" } do %>
-        <%= icon(:share) %><span data-share-target="label">Share</span>
+      <%# A repeated answer makes the board unplayable, so don't invite them to
+          share or publish it — send them back to the editor to fix it first. %>
+      <% if @puzzle.duplicate_answers.any? %>
+        <p class="m-publish-prompt__text">
+          Almost — but two of your answers are the same, so this board can't be played.
+          <%= link_to "Fix it in the editor", edit_puzzle_path(@puzzle) %> and it's good to go.
+        </p>
+        <%= share_button(@puzzle, classes: "m-btn m-btn--share") %>
+      <% else %>
+        <p class="m-publish-prompt__text">Looking good! Share the link with anyone, or publish it to the site.</p>
+        <%= share_button(@puzzle, classes: "m-btn m-btn--share") %>
+        <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
       <% end %>
-      <%= button_to "Publish", publish_puzzle_path(@puzzle), method: :patch, class: "m-btn m-btn--pop" %>
     </aside>
   <% elsif @puzzle.published? && params[:published].present? %>
     <aside class="m-publish-prompt m-publish-prompt--done">
       <p class="m-publish-prompt__text">
         <%= multicolor(@puzzle.title) %> is published! Share it with your friends and enemies.
       </p>
-      <%= tag.button type: "button", class: "m-btn m-btn--share",
-            data: { controller: "share", share_url_value: play_url(@puzzle.share_token),
-                    action: "share#share" } do %>
-        <%= icon(:share) %><span data-share-target="label">Share</span>
-      <% end %>
+      <%= share_button(@puzzle, classes: "m-btn m-btn--share") %>
     </aside>
   <% end %>
 

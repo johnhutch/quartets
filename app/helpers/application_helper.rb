@@ -110,6 +110,26 @@ module ApplicationHelper
     safe_join(rows)
   end
 
+  # The one Share button every surface uses (dashboard rows, the publish prompt,
+  # the owner's revealed board). A puzzle that repeats an answer is unplayable —
+  # the board keys tiles by word text — so there's nothing worth handing out:
+  # the button disappears and says what to fix in its place (ADR-0023).
+  def share_button(puzzle, classes: "m-btn m-btn--sm")
+    dupes = puzzle.duplicate_answers
+
+    if dupes.any?
+      return tag.span("Uses the same answer twice (#{dupes.join(', ')}) — fix it to share.",
+                      class: "m-share-blocked")
+    end
+
+    tag.button(type: "button", class: classes,
+               data: { controller: "share",
+                       share_url_value: play_url(puzzle.share_token),
+                       action: "share#share" }) do
+      safe_join([icon(:share), tag.span("Share", data: { share_target: "label" })])
+    end
+  end
+
   # Wraps a text input/textarea with an in-box clear (×) button — shown only
   # while the box has something to clear (clearable_controller). `area: true`
   # pins the × to the top corner instead of the vertical middle (textareas).

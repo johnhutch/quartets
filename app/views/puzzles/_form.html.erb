@@ -1,8 +1,13 @@
+<%# dupes rides alongside autosave: it flags repeated answers as they're typed
+    (autosave#refresh reads the flags to grey Publish) and speaks up again when
+    a blocked Publish is clicked. %>
 <%= form_with model: puzzle, class: "m-form",
       data: {
-        controller: "autosave",
+        controller: "autosave dupes",
         "autosave-debounce-value": 1000,
-        action: "input->autosave#schedule submit->autosave#onSubmit"
+        action: "input->dupes#scan input->autosave#schedule " \
+                "dupes:changed->autosave#refresh autosave:blocked->dupes#reveal " \
+                "submit->autosave#onSubmit"
       } do |f| %>
   <p class="m-form__note">Your work saves automatically as you type — close the tab any time, it's safe.</p>
   <p class="m-form__note">New to this? Read <%= link_to "what makes a good quartet", making_quartets_path %>.</p>
@@ -18,6 +23,11 @@
       </ul>
     </div>
   <% end %>
+
+  <%# Repeated answers, called out the moment they're typed. Filled and kept in
+      sync by dupes_controller (which also reds the offending boxes), so it starts
+      empty even on a draft that already has some. %>
+  <div class="m-form__errors is-wrong" data-dupes-target="summary" aria-live="polite" hidden></div>
 
   <div class="m-form__field">
     <%= f.label :title %>
@@ -148,6 +158,11 @@
     </fieldset>
   <% end %>
 
+  <%# The same duplicate-answer complaint, restated next to the button that just
+      refused to work — the summary at the top is easily scrolled past on a phone.
+      Revealed by dupes#reveal when a blocked Publish is clicked. %>
+  <div class="m-form__errors is-wrong" data-dupes-target="blocked" role="alert" hidden></div>
+
   <div class="m-form__submit">
     <%# Plain save stays first so Enter does the safe thing (never an accidental
         publish). Once complete, it reads as the "keep it unlisted" choice. %>
@@ -161,15 +176,17 @@
         puzzle has no id yet, so it starts hidden + unwired; the autosave controller
         reveals it and sets the formaction the moment the first save mints the record. %>
     <% unless puzzle.published? %>
-      <span class="m-tooltip<%= ' is-blocked' unless puzzle.complete? %>"
+      <span class="m-tooltip<%= ' is-blocked' unless puzzle.publishable? %>"
             data-autosave-target="publishGuard"<%= ' hidden' unless puzzle.persisted? %>>
         <%= tag.button type: :submit,
               formaction: (publish_puzzle_path(puzzle) if puzzle.persisted?),
-              class: "m-btn m-btn--go#{' is-disabled' unless puzzle.complete?}",
+              class: "m-btn m-btn--go#{' is-disabled' unless puzzle.publishable? }",
               data: { autosave_target: "publish", action: "autosave#guardPublish" } do %>
           <%= icon(:eye) %><span>Publish</span>
         <% end %>
-        <span class="m-tooltip__bubble" role="tooltip">This puzzle is incomplete! Finish it before publishing.</span>
+        <%# Swapped to the duplicate-answer reason by dupes_controller when that's
+            what's blocking, since "incomplete" would be a lie. %>
+        <span class="m-tooltip__bubble" role="tooltip" data-dupes-target="tooltip">This puzzle is incomplete! Finish it before publishing.</span>
       </span>
     <% end %>
   </div>

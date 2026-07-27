@@ -122,9 +122,16 @@ RSpec.describe Puzzle, type: :model do
         expect(puzzle).not_to be_valid
       end
 
-      it "rejects a COMPLETE unlisted puzzle with a dup (it's playable by link)" do
+      # Saving is never the place we say no: auto-save has to land whatever the
+      # author has typed, dupes included, or the form fails under them mid-edit.
+      # Publishing is where it bites — and the form flags it live in the meantime.
+      it "still SAVES a complete unlisted puzzle with a dup — only publish refuses" do
         puzzle = build(:puzzle, :complete, status: :unlisted)
         puzzle.groups.last.words = puzzle.groups.first.words.first(1) + %w[x y z]
+
+        expect(puzzle).to be_valid
+
+        puzzle.status = :published
         expect(puzzle).not_to be_valid
         expect(puzzle.errors[:groups].join).to match(/same answer/i)
       end
@@ -133,6 +140,27 @@ RSpec.describe Puzzle, type: :model do
         puzzle = build(:puzzle, status: :unlisted)
         puzzle.groups << build(:group, puzzle: puzzle, color: :blue, words: %w[twin twin])
         expect(puzzle).to be_valid
+      end
+    end
+
+    describe "#duplicate_answers" do
+      it "names the repeated answers, normalized, and is empty for a clean puzzle" do
+        puzzle = build(:puzzle, :complete)
+        expect(puzzle.duplicate_answers).to be_empty
+
+        puzzle.groups.last.words = ["  #{puzzle.groups.first.words.first.upcase}  ", "x", "y", "z"]
+        expect(puzzle.duplicate_answers).to eq([puzzle.groups.first.words.first.downcase])
+      end
+    end
+
+    describe "#publishable?" do
+      it "is completeness AND sixteen different answers" do
+        puzzle = build(:puzzle, :complete)
+        expect(puzzle).to be_publishable
+
+        puzzle.groups.last.words = puzzle.groups.first.words.first(1) + %w[x y z]
+        expect(puzzle).not_to be_publishable
+        expect(puzzle).to be_complete # still "filled in" — just not fit to publish
       end
     end
   end

@@ -80,11 +80,11 @@ class Puzzle < ApplicationRecord
 
   validates :title, presence: true, if: :published?
   validate :complete_structure, if: :published?
-  # Gated on complete?, not published?: a complete puzzle is playable by anyone
-  # with the link once it's unlisted (ADR-0008), and the game keys tiles by word
-  # text — a repeat renders a broken, unwinnable board. Incomplete drafts stay
-  # lenient (dupes are fine while you're still typing).
-  validate :no_duplicate_answers, if: :complete?
+  # Publish-time only (ADR-0023). Saving is never where we say no — auto-save has
+  # to land whatever's typed, or the form starts failing under the author
+  # mid-edit. The authoring form flags dupes live in red instead, and Share
+  # refuses to hand out the link of a puzzle carrying one.
+  validate :no_duplicate_answers, if: :published?
 
   # The byline name every display surface uses: the owner's account-wide
   # display_name when set (renaming there renames every byline at once), else
@@ -102,6 +102,30 @@ class Puzzle < ApplicationRecord
       groups.all? { |g| g.description.present? && g.filled_words.size == Group::WORDS_PER_GROUP }
   end
 
+  # Complete AND well-formed. `complete?` only says every box is filled in;
+  # publishing also demands the sixteen answers be sixteen *different* words.
+  def publishable?
+    complete? && duplicate_answers.none?
+  end
+
+  # The answers used more than once, normalized. The game keys board tiles by
+  # word text (see game_controller), so a repeat — across groups or within one —
+  # renders an unwinnable board. Public because the authoring form paints these
+  # red as you type and the Share buttons refuse a puzzle that has any.
+  def duplicate_answers
+    words = groups.reject(&:marked_for_destruction?)
+                  .flat_map(&:filled_words)
+                  .map { |word| self.class.normalize_answer(word) }
+    words.tally.select { |_, count| count > 1 }.keys
+  end
+
+  # The one rule for "same answer", shared by the model, the form, and
+  # dupes_controller.js: case and surrounding whitespace don't make words
+  # different.
+  def self.normalize_answer(word)
+    word.to_s.strip.downcase
+  end
+
   private
 
   def complete_structure
@@ -115,12 +139,8 @@ class Puzzle < ApplicationRecord
     end
   end
 
-  # Sixteen answers means sixteen *different* answers. The game keys tiles by
-  # their word text (see game_controller), so a repeat — across groups or within
-  # one — is unplayable. Case/whitespace don't make words different.
   def no_duplicate_answers
-    words = groups.reject(&:marked_for_destruction?).flat_map(&:filled_words).map(&:downcase)
-    dupes = words.tally.select { |_, count| count > 1 }.keys
+    dupes = duplicate_answers
     errors.add(:groups, "use the same answer more than once: #{dupes.join(', ')}") if dupes.any?
   end
 end

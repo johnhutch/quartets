@@ -71,12 +71,12 @@ export default class extends Controller {
   }
 
   // Keep the save button ("Save" → "Keep it unlisted (link only)") and the publish
-  // button (greyed + tooltip until the puzzle is complete) in sync as the author types.
+  // button (greyed + tooltip until the puzzle can go out) in sync as the author types.
   refresh() {
-    const done = this.complete()
-    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = done ? "Keep it unlisted (link only)" : "Save"
-    if (this.hasPublishGuardTarget) this.publishGuardTarget.classList.toggle("is-blocked", !done)
-    if (this.hasPublishTarget) this.publishTarget.classList.toggle("is-disabled", !done)
+    const ready = this.publishable()
+    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = this.complete() ? "Keep it unlisted (link only)" : "Save"
+    if (this.hasPublishGuardTarget) this.publishGuardTarget.classList.toggle("is-blocked", !ready)
+    if (this.hasPublishTarget) this.publishTarget.classList.toggle("is-disabled", !ready)
   }
 
   // A brand-new puzzle renders Publish hidden + unwired (no id yet). Once the
@@ -89,10 +89,21 @@ export default class extends Controller {
     this.refresh()
   }
 
-  // Block a publish attempt while the puzzle is still incomplete; the tooltip
-  // explains why.
+  // Block a publish attempt while the puzzle isn't fit to go out; the tooltip
+  // explains why, and the blocked event lets dupes_controller restate it next to
+  // the button (a tooltip is easy to miss on a phone).
   guardPublish(event) {
-    if (!this.complete()) event.preventDefault()
+    if (this.publishable()) return
+
+    event.preventDefault()
+    this.dispatch("blocked")
+  }
+
+  // Every box filled AND no repeated answers. The dupes controller owns the
+  // duplicate check and paints the offenders, so we just read its flags back off
+  // the DOM — no shared state, and no dependence on which controller connects first.
+  publishable() {
+    return this.complete() && !this.element.querySelector("input.is-dupe")
   }
 
   complete() {

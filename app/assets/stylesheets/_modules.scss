@@ -906,6 +906,14 @@
   }
 }
 
+// Stands in for the Share button on a puzzle that repeats an answer — there's
+// nothing worth sharing until it's fixed (ADR-0023). Sits inline exactly where
+// the button was, so the row doesn't reflow.
+.m-share-blocked {
+  font-size: $font-sm;
+  color: $color-wrong-lit;
+}
+
 // --- Auth pages (login / signup / forgot / account) ---------------------
 // A narrow column over the shared .m-form. Mobile-first; the form itself is
 // already styled, so this just handles page rhythm and the link cluster.
@@ -1005,6 +1013,16 @@
     margin: 0;
     color: $color-muted;
     font-size: $font-sm;
+  }
+
+  // Validation complaints — the server's on a failed save, and the live
+  // duplicate-answer flags (dupes_controller). Colored by .is-wrong.
+  &__errors {
+    margin: 0;
+    padding: $space-sm $space-md;
+
+    p, ul { margin: 0; }
+    ul { padding-left: $space-md; }
   }
 
   // Auto-save indicator. Quiet by default; only the failure state shouts.

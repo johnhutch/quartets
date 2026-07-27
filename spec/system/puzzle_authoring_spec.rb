@@ -90,6 +90,42 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     expect(page).to have_no_css("[data-controller='game']")
   end
 
+  # A repeated answer makes the board unplayable — the game keys its tiles by
+  # word text — so the form flags it the moment it's typed instead of letting the
+  # author find out at publish time. The draft still auto-saves regardless.
+  it "flags duplicate answers live, blocks Publish, and still auto-saves" do
+    visit new_puzzle_path
+
+    fill_group "blue",   %w[cat dog owl fox], "Animals"
+    fill_group "green",  %w[red blue teal jade], "Colors"
+    fill_group "yellow", %w[one two three four], "Numbers"
+    fill_group "purple", %w[mars venus pluto CAT], "Space" # CAT repeats blue's cat
+    fill_in "Title", with: "Repeater"
+
+    # Called out at the top of the form, and both offending boxes go red.
+    expect(page).to have_css('[data-dupes-target="summary"]', text: /cat/i)
+    expect(page).to have_css(".m-group--blue input.is-dupe")
+    expect(page).to have_css(".m-group--purple input.is-dupe")
+
+    # ...but the work still lands. Losing it would be worse than a broken draft.
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
+    expect(Puzzle.last.groups.count).to eq(4)
+
+    # Publish refuses, and says why right where they clicked.
+    click_button "Publish"
+    expect(page).to have_css('[data-dupes-target="blocked"]', text: /cat/i)
+    expect(Puzzle.last).to be_unlisted
+
+    # Fix the repeat and the form unlocks.
+    within(".m-group--purple") { fill_in "Word 4", with: "ceres" }
+    expect(page).to have_no_css("input.is-dupe")
+    expect(page).to have_css('[data-autosave-target="status"]', text: /saved/i)
+
+    click_button "Publish"
+    expect(page).to have_current_path(play_path(Puzzle.last.share_token), ignore_query: true)
+    expect(Puzzle.last).to be_published
+  end
+
   # Swapping two blocks' colors: pencil → menu → pick. The two boxes recolor in
   # place (contents stay put; the easiest→hardest order reasserts on reload) and
   # autosave persists the exchange.

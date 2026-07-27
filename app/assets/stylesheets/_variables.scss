@@ -30,7 +30,8 @@ $color-muted:     #5a5a5a; // secondary text
 $color-line:      #d9d9d9; // borders, dividers
 $color-card:      #efefe6; // unselected tile bg, NYT-ish
 $color-card-sel:  #5a594e; // selected tile bg
-$color-wrong:     #c4453c; // mistake / error state
+$color-wrong:     #c4453c; // mistake / error state — as a fill, with paper on top
+$color-wrong-lit: #e8776d; // the same red lifted to read as TEXT on the dark page (6.8:1)
 
 // --- Spacing scale ------------------------------------------------------
 // Tight, predictable steps. Reach for these instead of magic px.
