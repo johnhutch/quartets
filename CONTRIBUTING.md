@@ -10,15 +10,16 @@ and playing Connections-style puzzles — but issues and PRs are welcome.
   the bug.
 - **Match the house style.** Keep comments, docs, and commit messages confident,
   terse, and fluff-free. Commit messages match the casual existing log.
-- **Decisions are documented.** The big ones live in [`DECISIONS.md`](DECISIONS.md)
-  and `docs/`. If your change reverses one, update it in the same PR.
+- **Explain the why.** The architecture choices worth knowing are in the
+  [README](README.md#how-its-built), along with the mistakes that produced them.
+  If your change reverses one, say so in the PR.
 
 ## Getting set up
 
 ```bash
 # Ruby is pinned in .ruby-version (4.0.4) — use chruby/rbenv to match it.
 bundle install
-bin/rails db:create db:migrate db:seed
+bin/rails db:prepare   # create, migrate, seed
 bin/dev          # boots Rails + the dartsass watcher (see Procfile.dev)
 ```
 

@@ -5,7 +5,7 @@
 # and restarts web. A Caddy proxy sits in front so deploys don't 502 during the
 # restart, and a cloudflared sidecar exposes the app at playquartets.com via a
 # Cloudflare Tunnel (tunnel → caddy → web). Secrets live in a sibling .env on the
-# NAS (gitignored) — see .env.example and docs/DEPLOY.md.
+# NAS (gitignored) — see .env.example and the deploy section of the README.
 services:
   db:
     image: postgres:17-alpine
@@ -75,7 +75,7 @@ services:
       # Hyper Backup, and survive a stray `docker volume prune` — the same prune
       # that would take pgdata with it. ONE-TIME SETUP: the host directory has to
       # be writable by uid 1000 (the rails user) or the app won't boot. See
-      # docs/DEPLOY.md.
+      # the deploy section of the README.
       - ./backups:/backups
     # The Cloudflare Tunnel reaches it at web:3000 over the compose network.
     # The host-port mapping is just for direct LAN access / debugging.

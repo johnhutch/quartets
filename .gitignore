@@ -4,7 +4,7 @@
 # belong in git's global ignore instead:
 # `$XDG_CONFIG_HOME/git/ignore` or `~/.config/git/ignore`
 
-# Scratch space — handoff docs, working notes. Not for committing.
+# Scratch space — docs, working notes. Not for committing.
 /.scratch/
 
 # Ignore bundler config.
@@ -48,9 +48,7 @@
 /backups/
 
 .DS_Store
-.tooling/settings.local.json
 .idea/
 upgrade/
 .byebug_history
-.vscode/
 .tool-versions

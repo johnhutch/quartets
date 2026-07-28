@@ -44,7 +44,7 @@ fi
 
 # Fail on an unwritable mount BEFORE spending minutes on a dump. This is the
 # likely first-run problem: the host directory has to be writable by uid 1000
-# (the rails user) — see docs/DEPLOY.md.
+# (the rails user) — see the deploy section of the README.
 mkdir -p "$BACKUP_DIR"
 if ! touch "$BACKUP_DIR/.writable"; then
   echo "!! $BACKUP_DIR is not writable by uid $(id -u) — chown it 1000:1000 on the NAS." >&2

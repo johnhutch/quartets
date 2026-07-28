@@ -4,7 +4,7 @@
 # -> Rails boot = ~10-15s on the slow NAS). cloudflared points HERE instead of at
 # `web` directly, so during that window Caddy holds the connection and retries
 # rather than returning 502s. Users see a one-time slow load, not an outage.
-# See DECISIONS.md ADR-0007.
+# See the deploy section of the README.
 :80 {
 	reverse_proxy web:3000 {
 		# Keep trying a backend for up to 25s before giving up on a request, so a
