@@ -152,7 +152,7 @@ en:
             - label: "Can you make me a thing?"
               note_html: "Sure. But it's my job, so, probably not for free. I run <a href=\"https://swiftkickweb.com\" target=\"_blank\" rel=\"noopener\">Swiftkick Web</a>, so, hit us up if you need some help. Or just some advice. Whatever."
       privacy: "Privacy Policy"
-      disclaimer: "Not affiliated with The New York Times or any of its subsidiaries."
+      disclaimer: "Quartets is an independent project. It is not affiliated with, endorsed by, or connected to The New York Times or any of its subsidiaries. \"Connections\" and \"The New York Times\" are trademarks of The New York Times Company. The whole point is that you can't copyright a grid of colored squares — but let's be clear about it anyway."
 
   # Snarky game-over quips (ADR-0011). One is picked at random per finished game.
   # Each bucket needles you toward the next rung — except reverse_rainbow, which has
