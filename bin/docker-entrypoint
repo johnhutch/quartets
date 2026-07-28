@@ -1,7 +1,10 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
+# If running the rails server then create or migrate existing database — backing
+# it up first when this deploy is about to change the schema. A failed backup
+# deliberately aborts the boot rather than migrating blind (bin/backup-before-migrate).
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/backup-before-migrate
   ./bin/rails db:prepare
 fi
 

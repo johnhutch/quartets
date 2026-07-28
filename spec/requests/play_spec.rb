@@ -16,6 +16,19 @@ RSpec.describe "Play (public)", type: :request do
       expect(page_text).not_to include("Still cooking")
     end
 
+    # Publication date, not creation date: a puzzle written weeks ago and
+    # published today belongs at the top of the archive.
+    it "orders the archive by publication date, newest first" do
+      old_hand = create(:published_puzzle, title: "Published Last Week")
+      old_hand.update_column(:published_at, 7.days.ago)
+      just_out = create(:published_puzzle, title: "Published Today", created_at: 1.year.ago)
+      just_out.update_column(:published_at, 1.hour.ago)
+
+      get play_index_path
+
+      expect(page_text.index("Published Today")).to be < page_text.index("Published Last Week")
+    end
+
     it "paginates the archive past a page of puzzles" do
       create_list(:published_puzzle, PlayController::PER_PAGE + 1)
 

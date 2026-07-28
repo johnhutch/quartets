@@ -145,6 +145,43 @@ RSpec.describe "Puzzles", type: :request do
         expect(response.body).not_to include(publish_puzzle_path(puzzle)) # can't publish yet
       end
 
+      it "dates every row: published on for live ones, created on for the rest" do
+        live = create(:published_puzzle, user: user, title: "Out There")
+        live.update_column(:published_at, Time.zone.local(2026, 5, 4, 12))
+        create(:puzzle, user: user, title: "Still Cooking", created_at: Time.zone.local(2026, 6, 9, 12))
+
+        get puzzles_path
+
+        text = Nokogiri::HTML(response.body).text.squish
+        expect(text).to include("Published on May 4, 2026")
+        expect(text).to include("Created on Jun 9, 2026")
+      end
+
+      it "shows an unpublished puzzle's last-edited date beside its created date" do
+        made = Time.zone.local(2026, 6, 9, 12)
+        puzzle = create(:puzzle, user: user, title: "Reworked", created_at: made)
+        puzzle.update_column(:updated_at, made + 5.days)
+
+        get puzzles_path
+
+        text = Nokogiri::HTML(response.body).text.squish
+        expect(text).to match(/Updated Jun 14, 2026.*Created on Jun 9, 2026/) # updated sits left
+      end
+
+      it "lists newest first — by publication date for published, creation for drafts" do
+        older = create(:published_puzzle, user: user, title: "Older Publish")
+        older.update_column(:published_at, 5.days.ago)
+        newer = create(:published_puzzle, user: user, title: "Newer Publish")
+        newer.update_column(:published_at, 1.hour.ago)
+        create(:puzzle, user: user, title: "Ancient Draft", created_at: 30.days.ago)
+
+        get puzzles_path
+
+        text = Nokogiri::HTML(response.body).text
+        expect(text.index("Newer Publish")).to be < text.index("Older Publish")
+        expect(text.index("Older Publish")).to be < text.index("Ancient Draft")
+      end
+
       # The unpublish-first rule is the dashboard's, not the account's: staff get
       # the direct-edit hatch on /admin (and the play page), never here.
       it "offers no Edit on a published puzzle — you make it unlisted first, staff included" do

@@ -31,6 +31,19 @@ class Puzzle < ApplicationRecord
   # Hand-picked for the homepage rotation. Curated, not "everything published."
   scope :featured, -> { where(featured: true) }
 
+  # List order everywhere puzzles are listed (dashboard, admin, archive): a
+  # published puzzle sorts by when it went public, anything else by when it was
+  # made. published_at is nil for everything unpublished, so COALESCE picks the
+  # right clock without a CASE.
+  scope :newest_first, -> {
+    order(Arel.sql("COALESCE(puzzles.published_at, puzzles.created_at) DESC, puzzles.id DESC"))
+  }
+
+  # "Published on" means the current stint: stamped when status flips to
+  # published, cleared when it's pulled back to unlisted. Re-publishing stamps a
+  # fresh date — the lists sort and label by when it's been out there *now*.
+  before_save :stamp_published_at, if: :will_save_change_to_status?
+
   # Soft delete (ADR): deleting a *played* puzzle would vaporize every player's
   # attempts — and with them their trophies and stats. So a played puzzle is
   # tombstoned (deleted_at set) instead of destroyed; unplayed ones still hard
@@ -119,6 +132,14 @@ class Puzzle < ApplicationRecord
     words.tally.select { |_, count| count > 1 }.keys
   end
 
+  # Worked on after the day it was made — the only case where a draft's edit
+  # date tells you anything its creation date doesn't. Compared by day because
+  # that's the granularity the lists display: auto-save moves updated_at by
+  # seconds on every keystroke, and "Updated Jul 27 · Created Jul 27" is noise.
+  def edited_since_created?
+    updated_at.present? && created_at.present? && updated_at.to_date > created_at.to_date
+  end
+
   # The one rule for "same answer", shared by the model, the form, and
   # dupes_controller.js: case and surrounding whitespace don't make words
   # different.
@@ -137,6 +158,10 @@ class Puzzle < ApplicationRecord
     unless colors.uniq.sort == Group.colors.keys.sort
       errors.add(:groups, "must use all four distinct colors")
     end
+  end
+
+  def stamp_published_at
+    self.published_at = published? ? Time.current : nil
   end
 
   def no_duplicate_answers

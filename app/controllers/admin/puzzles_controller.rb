@@ -13,7 +13,7 @@ class Admin::PuzzlesController < Admin::BaseController
     @flagged_total = flagged_ids.size
     scope = scope.where(id: flagged_ids) if params[:flagged].present?
 
-    @puzzles = paginate(scope.order(updated_at: :desc))
+    @puzzles = paginate(scope.newest_first)
     # Funnel numbers (starts vs attempts, first-group time) — staff-only signal,
     # so it's computed here and passed to the shared row explicitly.
     @engagement = EngagementStats.for(@puzzles)

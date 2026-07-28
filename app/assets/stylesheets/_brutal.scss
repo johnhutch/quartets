@@ -765,6 +765,13 @@ body.theme-brutal {
     color: $brutal-muted;
   }
 
+  .m-puzzle-list__dates {
+    font-family: $font-display;
+    text-transform: uppercase;
+    font-size: $font-sm;
+    color: $brutal-muted;
+  }
+
   // Quiet caps text-links for the secondary actions.
   .m-puzzle-list__link,
   .m-puzzle-list__unpublish,

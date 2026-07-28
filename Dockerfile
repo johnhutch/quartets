@@ -16,7 +16,13 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    # postgresql-client is pinned to 17 to MATCH the server (postgres:17-alpine in
+    # docker-compose.yml): pg_dump refuses to dump a server newer than itself, and
+    # bin/backup-before-migrate runs it on every schema-changing deploy. Bump both
+    # together. (Debian trixie's default is 17, so this is what the meta-package
+    # would give us anyway — pinned to make the coupling explicit and to fail at
+    # build time, in CI, if the base image ever moves.)
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client-17 && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 

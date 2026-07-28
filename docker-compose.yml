@@ -57,12 +57,26 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-plain}
+      # Pre-migration dumps: where they land (matches the bind mount below) and
+      # how many to keep. SKIP_PRE_MIGRATE_BACKUP=1 forces a boot past a failing
+      # backup — the escape hatch, not the setting.
+      BACKUP_DIR: /backups
+      BACKUP_KEEP: ${BACKUP_KEEP:-10}
+      SKIP_PRE_MIGRATE_BACKUP: ${SKIP_PRE_MIGRATE_BACKUP:-}
       # Error monitoring (Sentry). Blank = off; the app runs fine without it.
       # GIT_SHA is baked into the image at build time, so it isn't set here.
       SENTRY_DSN: ${SENTRY_DSN:-}
     # Puma directly on port 3000 (Caddy fronts it — no Thruster). Matches the
     # image's default CMD now; kept explicit as documentation.
     command: ["./bin/rails", "server"]
+    volumes:
+      # Pre-migration database dumps (bin/backup-before-migrate). A bind mount,
+      # not a named volume, so they're visible in File Station, get swept up by
+      # Hyper Backup, and survive a stray `docker volume prune` — the same prune
+      # that would take pgdata with it. ONE-TIME SETUP: the host directory has to
+      # be writable by uid 1000 (the rails user) or the app won't boot. See
+      # docs/DEPLOY.md.
+      - ./backups:/backups
     # The Cloudflare Tunnel reaches it at web:3000 over the compose network.
     # The host-port mapping is just for direct LAN access / debugging.
     ports:

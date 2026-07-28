@@ -49,6 +49,20 @@
         <% end %>
       </span>
     <% end %>
+    <%# When it went out, or — for anything not published — when it was made,
+        with the last-worked-on date to its left if that's a different day.
+        published_at is the current stint (cleared on unpublish), so an unlisted
+        puzzle always shows a created date, never a stale published one. %>
+    <span class="m-puzzle-list__dates">
+      <% if puzzle.published? %>
+        Published on <%= list_date(puzzle.published_at) %>
+      <% else %>
+        <% if puzzle.edited_since_created? %>
+          <span class="m-puzzle-list__edited">Updated <%= list_date(puzzle.updated_at) %></span>
+        <% end %>
+        Created on <%= list_date(puzzle.created_at) %>
+      <% end %>
+    </span>
   </div>
 
   <%# One filled accent button per row (the encouraged next step), then

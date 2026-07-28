@@ -17,7 +17,7 @@ class PuzzlesController < ApplicationController
 
   def index
     # eager-load groups — the row template calls complete? on each puzzle.
-    scope = owned_puzzles.includes(:groups).order(updated_at: :desc, id: :desc)
+    scope = owned_puzzles.includes(:groups).newest_first
     @puzzles_total = scope.count
     @total_pages = [(@puzzles_total / PER_PAGE.to_f).ceil, 1].max
     @page = params[:page].to_i.clamp(1, @total_pages)

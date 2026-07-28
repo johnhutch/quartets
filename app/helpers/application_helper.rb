@@ -110,6 +110,12 @@ module ApplicationHelper
     safe_join(rows)
   end
 
+  # Dates on list surfaces. Day precision — nobody needs the minute a draft was
+  # last touched, and it keeps the rows scannable.
+  def list_date(time)
+    time&.strftime("%b %-d, %Y")
+  end
+
   # The one Share button every surface uses (dashboard rows, the publish prompt,
   # the owner's revealed board). A puzzle that repeats an answer is unplayable —
   # the board keys tiles by word text — so there's nothing worth handing out:

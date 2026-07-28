@@ -21,6 +21,44 @@ RSpec.describe Puzzle, type: :model do
     expect(Puzzle.new.status).to eq("unlisted")
   end
 
+  describe "published_at" do
+    it "stamps when a puzzle goes public and clears when it's pulled back" do
+      puzzle = create(:puzzle, :complete, status: :unlisted)
+      expect(puzzle.published_at).to be_nil
+
+      puzzle.update!(status: :published)
+      expect(puzzle.published_at).to be_present
+
+      puzzle.update!(status: :unlisted)
+      expect(puzzle.published_at).to be_nil
+    end
+
+    it "doesn't re-stamp on an ordinary edit" do
+      puzzle = create(:published_puzzle)
+      first_published = 3.days.ago.change(usec: 0)
+      puzzle.update_column(:published_at, first_published)
+
+      puzzle.update!(title: "Renamed")
+
+      expect(puzzle.reload.published_at).to be_within(1.second).of(first_published)
+    end
+  end
+
+  describe ".newest_first" do
+    it "sorts published puzzles by when they went public, everything else by when it was made" do
+      old_publish = create(:published_puzzle, title: "Published Long Ago")
+      old_publish.update_column(:published_at, 10.days.ago)
+      fresh_publish = create(:published_puzzle, title: "Published Today")
+      fresh_publish.update_column(:published_at, 1.hour.ago)
+      # Made before either, published never — sorts on its creation date.
+      draft = create(:puzzle, title: "Old Draft")
+      draft.update_column(:created_at, 20.days.ago)
+
+      expect(Puzzle.newest_first.pluck(:title))
+        .to eq(["Published Today", "Published Long Ago", "Old Draft"])
+    end
+  end
+
   describe "discovery metadata (specialized + description)" do
     it "defaults to Classic (not specialized)" do
       expect(Puzzle.new.specialized).to be(false)

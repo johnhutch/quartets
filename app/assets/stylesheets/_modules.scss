@@ -515,6 +515,18 @@
     color: $color-muted;
   }
 
+  // When it went public — or when it was made, for anything that hasn't. Full
+  // width so it takes its own line between the title and the action buttons.
+  &__dates {
+    display: block;
+    width: 100%;
+    font-size: $font-sm;
+    color: $color-muted;
+  }
+
+  // Last worked on, sat to the left of the created date.
+  &__edited { margin-right: $space-sm; }
+
   &__actions {
     display: flex;
     flex-wrap: wrap;

@@ -43,6 +43,10 @@
 
 # additions after rails default
 
+# Pre-migration database dumps (bin/backup-before-migrate). Only ever written on
+# the NAS, but never let one near a commit.
+/backups/
+
 .DS_Store
 .tooling/settings.local.json
 .idea/

@@ -1,0 +1,71 @@
+#!/bin/bash
+# Dump the production database immediately before a migration runs.
+#
+# Deploys are push-to-main → GHCR → Watchtower recreates `web`, and the
+# entrypoint runs `db:prepare` on boot (see bin/docker-entrypoint). That boot is
+# the last moment the pre-migration data exists, so this is where the safety net
+# goes — there's no CI step with access to the NAS to put it anywhere else.
+#
+# Only dumps when a migration is actually pending: an ordinary restart, or a
+# crash loop, shouldn't fill the disk with identical copies.
+#
+# Dumps land in BACKUP_DIR — a bind mount to the NAS (docker-compose.yml), so
+# they're browsable in File Station, swept up by Hyper Backup, and survive a
+# `docker volume prune`. The newest BACKUP_KEEP are kept.
+#
+# A failed backup ABORTS the boot. Migrating un-backed-up production data is the
+# exact thing this exists to prevent, so failing loudly beats failing quietly.
+# To force a boot without one: set SKIP_PRE_MIGRATE_BACKUP=1 in the NAS .env.
+set -euo pipefail
+
+BACKUP_DIR="${BACKUP_DIR:-/backups}"
+BACKUP_KEEP="${BACKUP_KEEP:-10}"
+
+if [ "${SKIP_PRE_MIGRATE_BACKUP:-}" = "1" ]; then
+  echo "==> pre-migrate backup skipped (SKIP_PRE_MIGRATE_BACKUP=1)"
+  exit 0
+fi
+
+trap 'echo "!! pre-migrate backup FAILED — refusing to migrate. Fix it, or set SKIP_PRE_MIGRATE_BACKUP=1 in .env to force the boot." >&2' ERR
+
+# First boot: no database to protect yet. db:prepare is about to create it.
+if ! psql "$DATABASE_URL" -c 'SELECT 1' >/dev/null 2>&1; then
+  echo "==> no existing database — nothing to back up"
+  exit 0
+fi
+
+# Exits 0 when the schema is already up to date. Anything else (pending
+# migrations, or the check itself erroring) falls through to the backup — the
+# safe direction is always "take one".
+if ./bin/rails db:abort_if_pending_migrations >/dev/null 2>&1; then
+  echo "==> schema is up to date — no pre-migrate backup needed"
+  exit 0
+fi
+
+# Fail on an unwritable mount BEFORE spending minutes on a dump. This is the
+# likely first-run problem: the host directory has to be writable by uid 1000
+# (the rails user) — see docs/DEPLOY.md.
+mkdir -p "$BACKUP_DIR"
+if ! touch "$BACKUP_DIR/.writable"; then
+  echo "!! $BACKUP_DIR is not writable by uid $(id -u) — chown it 1000:1000 on the NAS." >&2
+  exit 1
+fi
+rm -f "$BACKUP_DIR/.writable"
+
+sha="${GIT_SHA:-unknown}"
+file="$BACKUP_DIR/quartets-$(date -u +%Y%m%dT%H%M%SZ)-pre-${sha:0:7}.sql.gz"
+
+echo "==> pending migrations found — dumping to $file"
+# --clean --if-exists so the dump restores straight over a live database.
+# Written to .part and renamed, so any file that exists is a complete one.
+pg_dump "$DATABASE_URL" \
+  --format=plain --no-owner --no-privileges --clean --if-exists \
+  | gzip -9 > "$file.part"
+mv "$file.part" "$file"
+
+echo "==> backup complete ($(du -h "$file" | cut -f1))"
+
+# Keep the newest BACKUP_KEEP; the NAS disk is not infinite.
+ls -1t "$BACKUP_DIR"/quartets-*.sql.gz 2>/dev/null \
+  | tail -n +$((BACKUP_KEEP + 1)) \
+  | xargs -r rm -f
