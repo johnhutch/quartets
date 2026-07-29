@@ -50,7 +50,10 @@
     <% end %>
   </section>
 
-  <%# JUMP IN — dark band, multicolor head, real puzzles as a big title list. %>
+  <%# JUMP IN — dark band, multicolor head, real puzzles as a big title list.
+      Everything here is playable by definition: finished ones are filtered out
+      upstream, so `done` is always false (the archive is where a completed row
+      gets its ✓). %>
   <% if @puzzles.any? %>
     <section class="m-band m-band--strip">
       <h2 class="m-band__head"><%= multicolor(t("home.strip.head")) %></h2>
@@ -58,10 +61,17 @@
         <% @puzzles.each do |puzzle| %>
           <%= render "play/browse_card", puzzle: puzzle, variant: "strip",
                 summary: @rating_summaries[puzzle.id],
-                done: @completed_ids.include?(puzzle.id) %>
+                done: false %>
         <% end %>
       </ul>
       <%= link_to "#{t('home.strip.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-band__cta" %>
+    </section>
+  <% elsif @cleared_the_board %>
+    <%# You've played everything that isn't yours. Congratulations, here's a job. %>
+    <section class="m-band m-band--strip">
+      <h2 class="m-band__head"><%= multicolor(t("home.strip.cleared_head")) %></h2>
+      <p class="m-band__lead"><%= t("home.strip.cleared_note") %></p>
+      <%= link_to "#{t('home.strip.cleared_cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-band__cta" %>
     </section>
   <% end %>
 

@@ -97,6 +97,11 @@ en:
       by_html: "by %{author}" # _html so the author interpolation may be a profile link
       played: "Played"
       cta: "The whole archive"
+      # Shown in place of the strip when there's genuinely nothing left to play —
+      # every published quartet is either yours or already finished.
+      cleared_head: "You've completed every puzzle we have, you nerd!"
+      cleared_note: "Why don't you go make some instead?"
+      cleared_cta: "Make one"
     why:
       head: "Why play here"
       features:

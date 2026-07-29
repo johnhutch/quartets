@@ -114,7 +114,11 @@ RSpec.describe "Home", type: :request do
       expect(response.body.scan(/class="m-difficulty"/).size).to eq(HomeController::STRIP_SIZE)
     end
 
-    it "flags the ones a signed-in player already finished, like the archive does" do
+    # A puzzle you've finished is a dead end here — opening it shows the
+    # reconstructed result board, not a game (ADR-0012). The strip exists to hand
+    # you something to play, so finished ones come out entirely rather than being
+    # badged the way the archive badges them.
+    it "leaves out the puzzles a signed-in player already finished" do
       user = create(:user)
       sign_in user
       played = create(:published_puzzle, title: "Been There")
@@ -123,8 +127,49 @@ RSpec.describe "Home", type: :request do
 
       get root_path
 
-      expect(response.body.scan(/class="m-browse__done"/).size).to eq(1) # the completed overlay
-      expect(response.body).to include("is-done")                        # the dimmed row
+      expect(page_text).to include("Fresh Meat")
+      expect(page_text).not_to include("Been There")
+    end
+
+    # Anonymous plays are keyed by the player_token cookie, so the same rule has
+    # to hold without an account — otherwise the strip keeps offering a visitor
+    # the puzzle they just finished.
+    it "leaves out the puzzles an anonymous player finished, by player_token" do
+      played = create(:published_puzzle, title: "Anon Played This")
+      create(:published_puzzle, title: "Still Untouched")
+
+      get root_path # mints the cookie
+      # The cookie is signed, so the raw jar value isn't the token the controller
+      # reads — decode it the way the app does.
+      token = ActionDispatch::Cookies::CookieJar.build(request, cookies.to_hash).signed[:player_token]
+      create(:attempt, puzzle: played, player_token: token, solved: true)
+
+      get root_path
+
+      expect(page_text).to include("Still Untouched")
+      expect(page_text).not_to include("Anon Played This")
+    end
+
+    it "brags at you when you've cleared everything on the site" do
+      user = create(:user)
+      sign_in user
+      done = create(:published_puzzle, title: "The Last One")
+      create(:attempt, puzzle: done, user: user, solved: true)
+
+      get root_path
+
+      expect(page_text).to match(/completed every puzzle we have/i)
+      expect(page_text).to match(/go make some instead/i)
+      expect(response.body).to include(new_puzzle_path) # somewhere to act on it
+    end
+
+    it "stays quiet when the site is simply empty, rather than claiming you cleared it" do
+      user = create(:user)
+      sign_in user
+
+      get root_path
+
+      expect(page_text).not_to match(/completed every puzzle/i)
     end
 
     it "does not embed a playable game" do
