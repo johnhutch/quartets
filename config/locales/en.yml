@@ -85,9 +85,9 @@ en:
       - "The Capitalist Courier"
       - "The Late-Capitalism Courier"
     wordmark: "Quartets"
-    lede_html: "16 words. 4 groups. 4 mistakes."
+    lede_html: "Create and solve NYT Connections-style puzzles."
     hero:
-      pitch: "Make your own — send it to your friends or publish it on the site, no signup needed. Or just solve puzzles made by internet randos. Go for it."
+      pitch: "Free, open-source, and anonymous."
       create_cta: "Make a Quartet"
       browse_cta: "Browse the archive"
       aside_html: "Wanna see stats about your puzzles? Or about your own attempts (a trophy case!)? %{signup} whenever."

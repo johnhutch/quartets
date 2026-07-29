@@ -160,6 +160,19 @@ body.theme-brutal {
     &:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba($brutal-ink, 0.35); }
   }
 
+  // Outline: the quiet one. No fill, no shadow — reads as a secondary aside next
+  // to the filled buttons rather than competing with them. Border is currentColor
+  // so it inherits whatever the surrounding text color is.
+  &--outline {
+    background: none;
+    color: inherit;
+    border: 2px solid currentColor;
+    box-shadow: none;
+
+    &:hover { background: $brutal-ink; color: $brutal-paper; }
+    &:active { transform: none; box-shadow: none; }
+  }
+
   // Extra-small / deprioritized — quiet shadow, lighter weight.
   &--xs {
     padding: 2px $space-sm;
@@ -644,9 +657,34 @@ body.theme-brutal {
   flex-wrap: wrap;
   align-items: flex-start;
   gap: $space-md;
+  // When the aside wraps under the title (narrow column + a meta box to show),
+  // a full row of gap reads as a hole. Tighter vertically than horizontally.
+  row-gap: $space-sm;
   margin-bottom: $space-md;
 
-  &__main { flex: 1 1 14rem; min-width: 0; }
+  &__main {
+    flex: 1 1 14rem;
+    min-width: 0;
+
+    // The byline is the last thing in this column, so its trailing margin is
+    // dead space between the title block and whatever wraps beneath it.
+    > :last-child { margin-bottom: 0; }
+  }
+
+  // Right-hand column: how-to-play on top, the meta box under it. Right-aligned
+  // so both hug the edge regardless of their differing widths. On a narrow
+  // screen the header wraps and this drops below the title, which is fine —
+  // it's an aside either way.
+  &__aside {
+    // margin-left:auto is what the metabox used to carry as a direct flex child —
+    // it hugs the right edge on a wide header, and still right-aligns when the
+    // header wraps on a phone (the wrapped line's free space goes to the margin).
+    margin-left: auto;
+    display: grid;
+    justify-items: end;
+    align-content: start;
+    gap: $space-sm;
+  }
 }
 
 // The meta-info box: votes (stacked) + the theme chip, boxed and hugging the

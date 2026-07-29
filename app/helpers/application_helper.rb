@@ -1,7 +1,7 @@
 module ApplicationHelper
   # The site-wide default <meta name="description"> — used on the homepage and
   # any page that doesn't set its own.
-  SITE_DESCRIPTION = "Create and play Connections-style puzzles.".freeze
+  SITE_DESCRIPTION = "Create and play NYT Connections-style puzzles.".freeze
 
   # SEO description for a puzzle page. Prefer the author's shareable blurb (it's
   # purpose-built — "shows when shared"); otherwise a generated, spoiler-free
@@ -14,7 +14,7 @@ module ApplicationHelper
     # the puzzle's free-text author_name), so the SERP/JSON-LD author agrees.
     name = puzzle.author_display_name
     by = name.present? ? " by #{name}" : ""
-    "A Connections-style puzzle (but better)#{by}. Play it free on Quartets."
+    "An NYT Connections-style puzzle (but better)#{by}. Play it free on Quartets."
   end
 
   # The self-referencing canonical URL: the current page minus its query string

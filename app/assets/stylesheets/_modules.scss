@@ -796,7 +796,16 @@
 }
 
 // Show-page title sits tight to its byline.
-.m-play-title { margin-bottom: 0; line-height: 1.05; }
+// A long unbreakable title (SESQUIPEDALIAN) would otherwise paint straight out
+// of its flex column and under the meta box beside it — the box stays put, the
+// text doesn't. Hyphenate at syllables where we can (needs <html lang>, set in
+// the layout), break anywhere as the last resort. Same treatment as .m-card.
+.m-play-title {
+  margin-bottom: 0;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
 // Drop the gap under the title when a byline follows, so it reads as one unit.
 .m-play-title:has(+ .m-byline) { margin-bottom: 0rem; }
 .m-byline { margin-top: 0; }
@@ -860,12 +869,6 @@
 }
 
 // Quiet top-left "how to play" escape hatch on the play page.
-.m-howto {
-  margin: 0 0 $space-sm;
-  font-size: $font-sm;
-  a { color: $color-muted; }
-}
-
 // Quiet "report this quartet" fold-out under the board. Small, muted, out of the
 // way — you have to go looking for it.
 .m-report {

@@ -15,7 +15,7 @@ RSpec.describe "Meta descriptions", type: :request do
       get root_path
 
       expect(meta(response.body, "meta[name='description']"))
-        .to eq("Create and play Connections-style puzzles.")
+        .to eq("Create and play NYT Connections-style puzzles.")
     end
   end
 
@@ -38,7 +38,7 @@ RSpec.describe "Meta descriptions", type: :request do
       get play_path(puzzle.share_token)
 
       expect(meta(response.body, "meta[name='description']"))
-        .to eq("A Connections-style puzzle (but better) by Hutch. Play it free on Quartets.")
+        .to eq("An NYT Connections-style puzzle (but better) by Hutch. Play it free on Quartets.")
     end
 
     it "drops the author clause when the puzzle is anonymous" do
@@ -47,7 +47,7 @@ RSpec.describe "Meta descriptions", type: :request do
       get play_path(puzzle.share_token)
 
       expect(meta(response.body, "meta[name='description']"))
-        .to eq("A Connections-style puzzle (but better). Play it free on Quartets.")
+        .to eq("An NYT Connections-style puzzle (but better). Play it free on Quartets.")
     end
   end
 end

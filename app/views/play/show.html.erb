@@ -42,9 +42,6 @@
 <% end %>
 
 <div class="l-container">
-  <%# Quiet escape hatch for anyone who's never played Connections — top-left,
-      out of the way. %>
-  <p class="m-howto"><%= link_to "How to play", how_to_play_path %></p>
 
   <% if owns?(@puzzle) && @puzzle.unlisted? %>
     <aside class="m-publish-prompt">
@@ -81,7 +78,15 @@
       <% end %>
     </div>
 
-    <%= render "play/metabox", puzzle: @puzzle, summary: @rating_summary %>
+    <%# Right-hand column. The meta box leads — it's about *this* puzzle, so it
+        earns the top slot next to the title; the how-to-play escape hatch sits
+        under it. With no meta box to show, the button rises to the top corner on
+        its own. Quiet outline treatment either way, so it reads as an aside
+        rather than an action competing with the board. %>
+    <div class="m-play-header__aside">
+      <%= render "play/metabox", puzzle: @puzzle, summary: @rating_summary %>
+      <%= link_to "How to play", how_to_play_path, class: "m-btn m-btn--sm m-btn--outline" %>
+    </div>
   </header>
 
   <%# The author's blurb can telegraph the trick, so it hides behind a native

@@ -1,12 +1,12 @@
 <% content_for :title, "Making a good Quartet" %>
-<% content_for :description, "What separates a great Connections-style puzzle from a frustrating one — the rules of thumb for building a Quartet worth playing." %>
+<% content_for :description, "What separates a great NYT Connections-style puzzle from a frustrating one — the rules of thumb for building a Quartet worth playing." %>
 
 <%# HowTo schema — a step-by-step AI engines can extract as a guide. %>
 <% content_for :structured_data do %>
   <%= json_ld({
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: "How to make a good Connections-style puzzle",
+    name: "How to make a good NYT Connections-style puzzle",
     description: "The rules of thumb for building a fair, satisfying Quartet.",
     step: [
       { "@type": "HowToStep", name: "Be fair", text: "Make it hard to solve but obvious in hindsight — trap people with wordplay, not obscurity." },

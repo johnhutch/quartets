@@ -34,10 +34,19 @@ RSpec.describe "Static pages + footer", type: :request do
     end
   end
 
-  it "links how-to-play from the play page (top-left escape hatch)" do
+  # An escape hatch for anyone who's never played Connections. It rides the play
+  # header — top-right, beside the title — as a small outline button: near the
+  # board where you'd look for it, quiet enough not to compete with the puzzle.
+  it "offers how-to-play as an outline button in the play header" do
     puzzle = create(:published_puzzle)
+
     get play_path(puzzle.share_token)
-    expect(response.body).to include(how_to_play_path)
+
+    doc = Nokogiri::HTML(response.body)
+    button = doc.at_css(".m-play-header a[href='#{how_to_play_path}']")
+    expect(button).to be_present
+    expect(button[:class]).to include("m-btn--outline")
+    expect(doc.css("main a[href='#{how_to_play_path}']").size).to eq(1) # not duplicated
   end
 
   describe "the site footer" do

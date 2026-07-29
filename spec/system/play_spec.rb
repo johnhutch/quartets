@@ -52,6 +52,23 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(after_h).to be_within(2).of(before_h)
   end
 
+  # A long unbreakable title used to paint straight out of its column and under
+  # the meta box sitting beside it — the box stays put, the text doesn't. The
+  # title has to break instead. (Bounding boxes look fine either way; the giveaway
+  # is scrollWidth running past clientWidth.)
+  it "breaks a long title instead of painting it over the meta box" do
+    hefty = create(:published_puzzle, title: "Sesquipedalian", specialized: true)
+    hefty.update!(tag_names: %w[star-wars])
+    create(:attempt, puzzle: hefty, solved: true, quality: :hell_yeah, difficulty: :cursed)
+
+    visit play_path(hefty.share_token)
+
+    overflow = page.evaluate_script(
+      "(() => { const t = document.querySelector('.m-play-title'); return t.scrollWidth - t.clientWidth })()"
+    )
+    expect(overflow).to be <= 0
+  end
+
   # Answers are board content, not prose — they read as tiles. Uppercase
   # everywhere one is displayed: the tiles themselves and the solved rows.
   # Presentation only; the stored text stays exactly as the author typed it.
