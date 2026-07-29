@@ -258,6 +258,9 @@
     padding: 0.1em 0.45em;
     font-size: $font-sm;
     font-weight: 700;
+    // Answers read as board tiles wherever they appear, and these chips are
+    // literally tiles restated — same casing as .m-card.
+    text-transform: uppercase;
     color: #000;
     border-radius: $radius;
 
@@ -288,6 +291,14 @@
     text-transform: uppercase;
     font-size: $font-sm;
     letter-spacing: 0.05em;
+  }
+
+  // The answers in a solved row. Uppercase to match the tiles they came from —
+  // a solved row is the board restated, not prose. Presentation only: the words
+  // stay in the database exactly as the author typed them, so export, editing
+  // and duplicate-matching are all untouched.
+  &__group-words {
+    text-transform: uppercase;
   }
 
   // Centered overlay on the board (no reserved row). Holds a transient

@@ -52,6 +52,19 @@ RSpec.describe "Playing a puzzle", type: :system, js: true do
     expect(after_h).to be_within(2).of(before_h)
   end
 
+  # Answers are board content, not prose — they read as tiles. Uppercase
+  # everywhere one is displayed: the tiles themselves and the solved rows.
+  # Presentation only; the stored text stays exactly as the author typed it.
+  it "renders puzzle words in all caps — tiles and solved rows" do
+    visit play_path(puzzle.share_token)
+
+    expect(find(".m-card", text: /\Acat\z/i).text).to eq("CAT")
+
+    solve(answers[:green])
+
+    expect(find(".m-game__group-words").text).to eq("ONE, TWO, THREE, FOUR")
+  end
+
   it "reveals every group and declares a win" do
     visit play_path(puzzle.share_token)
 
