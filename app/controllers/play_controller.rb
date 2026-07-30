@@ -4,13 +4,16 @@
 class PlayController < ApplicationController
   include AnonymousPlayer
   include Creator # for owns? — the owner gets a share prompt on their own puzzle
+  include PlayerCompletions # which puzzles you've finished (account or player_token)
   include RecordsEvents # funnel capture (puzzle_opened)
 
   PER_PAGE = 24
 
   def index
-    # Which of these the signed-in player has already finished, for the check.
-    @completed_ids = user_signed_in? ? current_user.attempts.distinct.pluck(:puzzle_id).to_set : Set.new
+    # Which of these the player has already finished — drives the ✓ badge and the
+    # sink-to-the-bottom ordering below. Account when signed in, else the
+    # anonymous player_token (PlayerCompletions).
+    @completed_ids = completed_puzzle_ids
 
     # Filters, GET params only (nothing persists): "hide my puzzles" defaults
     # ON — you can't play your own (Playability), so they're noise here — and
@@ -19,9 +22,12 @@ class PlayController < ApplicationController
     @hide_mine = params[:hide_mine] != "0"
     @hide_completed = params[:hide_completed] == "1"
 
-    scope = Puzzle.published.includes(:user, :tags).newest_first
+    scope = Puzzle.published.includes(:user, :tags)
     scope = scope.not_owned_by(user: current_user, creator_token: current_creator_token) if @hide_mine
     scope = scope.where.not(id: @completed_ids.to_a) if @hide_completed && @completed_ids.any?
+    # Solved ones sink below the unplayed (and onto later pages), newest-first
+    # within each block. The view splits at the boundary for the heading.
+    scope = scope.ids_last(@completed_ids).newest_first
 
     # Paginate so the archive doesn't load + aggregate the whole catalog per hit
     # as it grows. Plain offset, same as the dashboard.

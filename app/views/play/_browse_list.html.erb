@@ -1,0 +1,10 @@
+<%# One <ul> of archive browse cards. Rendered twice on the archive — the unplayed
+    ones first, then your solved ones under their own heading — so the markup for
+    a row lives in one place. Locals: puzzles, summaries, completed_ids. %>
+<ul class="m-browse-list">
+  <% puzzles.each do |puzzle| %>
+    <%= render "play/browse_card", puzzle: puzzle, variant: "archive",
+          summary: summaries[puzzle.id],
+          done: completed_ids.include?(puzzle.id) %>
+  <% end %>
+</ul>

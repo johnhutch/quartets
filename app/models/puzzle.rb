@@ -39,6 +39,19 @@ class Puzzle < ApplicationRecord
     order(Arel.sql("COALESCE(puzzles.published_at, puzzles.created_at) DESC, puzzles.id DESC"))
   }
 
+  # Sinks the given ids to the bottom, leaving whatever ordering follows intact —
+  # the archive uses it to push the puzzles you've already solved beneath the ones
+  # you haven't. Deliberately in SQL rather than a view-level partition, so the
+  # demotion survives pagination: a solved puzzle that would rank first by date
+  # belongs on the last page, not the top of page one.
+  # Ids are coerced to Integer, so the interpolation can't carry anything else.
+  scope :ids_last, ->(ids) {
+    list = Array(ids).map { |id| Integer(id) }
+    next all if list.empty?
+
+    order(Arel.sql("(puzzles.id IN (#{list.join(',')})) ASC"))
+  }
+
   # "Published on" means the current stint: stamped when status flips to
   # published, cleared when it's pulled back to unlisted. Re-publishing stamps a
   # fresh date — the lists sort and label by when it's been out there *now*.

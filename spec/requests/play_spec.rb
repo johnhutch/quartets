@@ -76,6 +76,73 @@ RSpec.describe "Play (public)", type: :request do
       expect(page_text).to include("Not yet")
       expect(response.body.scan(/class="m-browse__done"/).size).to eq(1) # only the finished one gets the completed overlay
     end
+
+    # The archive keeps your solved puzzles — unlike the jump-in strip, which
+    # drops them — but sinks them beneath the ones you haven't played, under their
+    # own heading. Anything unplayed should be reachable without scrolling past a
+    # wall of stuff you've already beaten.
+    describe "solved puzzles sink to the bottom" do
+      it "orders unsolved first, then the solved ones under a heading" do
+        user = create(:user)
+        sign_in user
+        solved = create(:published_puzzle, title: "Already Beaten")
+        solved.update_column(:published_at, 1.hour.ago) # newest, so only the sort can demote it
+        fresh = create(:published_puzzle, title: "Untouched Still")
+        fresh.update_column(:published_at, 5.days.ago)
+        create(:attempt, puzzle: solved, user: user, solved: true)
+
+        get play_index_path
+
+        text = page_text
+        expect(text).to match(/Untouched Still.*Your solved puzzles.*Already Beaten/m)
+      end
+
+      it "shows no solved heading when you haven't finished any" do
+        sign_in create(:user)
+        create(:published_puzzle, title: "Fresh")
+
+        get play_index_path
+
+        expect(page_text).not_to match(/your solved puzzles/i)
+      end
+
+      it "sinks an anonymous player's solved puzzles too, by player_token" do
+        solved = create(:published_puzzle, title: "Anon Beat This")
+        solved.update_column(:published_at, 1.hour.ago)
+        fresh = create(:published_puzzle, title: "Anon Untouched")
+        fresh.update_column(:published_at, 5.days.ago)
+
+        get play_index_path # mints the cookie
+        token = ActionDispatch::Cookies::CookieJar.build(request, cookies.to_hash).signed[:player_token]
+        create(:attempt, puzzle: solved, player_token: token, solved: true)
+
+        get play_index_path
+
+        expect(page_text).to match(/Anon Untouched.*Your solved puzzles.*Anon Beat This/m)
+      end
+
+      # The sort has to live in SQL, not just in the view — otherwise a solved
+      # puzzle that sorts onto page 1 by date stays on page 1 and the heading
+      # shows up on every page.
+      it "keeps solved puzzles off the first page when there are enough unsolved ones" do
+        user = create(:user)
+        sign_in user
+        # A full page of unsolved puzzles, all older...
+        create_list(:published_puzzle, PlayController::PER_PAGE)
+        Puzzle.update_all(published_at: 3.days.ago)
+        # ...and one solved puzzle that is the NEWEST, so date alone would put it
+        # at the very top of page 1. Only a SQL-level sort can demote it.
+        solved = create(:published_puzzle, title: "Beaten But Newest")
+        solved.update_column(:published_at, 1.minute.ago)
+        create(:attempt, puzzle: solved, user: user, solved: true)
+
+        get play_index_path
+
+        expect(page_text).not_to include("Beaten But Newest")
+        expect(page_text).not_to match(/your solved puzzles/i) # heading belongs on page 2
+        expect(response.body).to include("Page 1 of 2")
+      end
+    end
   end
 
   describe "GET /p/:share_token (show)" do

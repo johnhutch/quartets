@@ -33,13 +33,22 @@
   <% end %>
 
   <% if @puzzles.any? %>
-    <ul class="m-browse-list">
-      <% @puzzles.each do |puzzle| %>
-        <%= render "play/browse_card", puzzle: puzzle, variant: "archive",
-              summary: @rating_summaries[puzzle.id],
-              done: @completed_ids.include?(puzzle.id) %>
-      <% end %>
-    </ul>
+    <%# Unplayed on top, your solved ones beneath a heading. The controller already
+        sorted them that way (Puzzle.ids_last), so this just splits at the seam —
+        which means on a page of only-unsolved or only-solved rows, exactly one of
+        these blocks renders and there's no stray heading. %>
+    <% unplayed, solved = @puzzles.partition { |puzzle| !@completed_ids.include?(puzzle.id) } %>
+
+    <% if unplayed.any? %>
+      <%= render "play/browse_list", puzzles: unplayed,
+            summaries: @rating_summaries, completed_ids: @completed_ids %>
+    <% end %>
+
+    <% if solved.any? %>
+      <h2><%= multicolor("Your solved puzzles") %></h2>
+      <%= render "play/browse_list", puzzles: solved,
+            summaries: @rating_summaries, completed_ids: @completed_ids %>
+    <% end %>
 
     <% if @total_pages > 1 %>
       <nav class="m-pagination">

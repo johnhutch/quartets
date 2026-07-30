@@ -5,6 +5,7 @@
 class HomeController < ApplicationController
   include AnonymousPlayer
   include Creator # for the strip's not-mine filter (you can't play your own)
+  include PlayerCompletions
 
   STRIP_SIZE = 5
 
@@ -39,13 +40,4 @@ class HomeController < ApplicationController
     @rating_summaries = RatingSummary.for(@puzzles)
   end
 
-  private
-
-  # Puzzles this visitor has finished. Identity mirrors Attempt itself (and
-  # PlayController#finished_attempt): by account when signed in, else by the
-  # anonymous player_token cookie — so the rule holds without a login.
-  def completed_puzzle_ids
-    scope = user_signed_in? ? current_user.attempts : Attempt.where(player_token: current_player_token)
-    scope.distinct.pluck(:puzzle_id).to_set
-  end
 end
