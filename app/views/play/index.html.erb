@@ -41,13 +41,15 @@
 
     <% if unplayed.any? %>
       <%= render "play/browse_list", puzzles: unplayed,
-            summaries: @rating_summaries, completed_ids: @completed_ids %>
+            summaries: @rating_summaries, completed_ids: @completed_ids,
+            attempts: @my_attempts %>
     <% end %>
 
     <% if solved.any? %>
       <h2><%= multicolor("Your solved puzzles") %></h2>
       <%= render "play/browse_list", puzzles: solved,
-            summaries: @rating_summaries, completed_ids: @completed_ids %>
+            summaries: @rating_summaries, completed_ids: @completed_ids,
+            attempts: @my_attempts %>
     <% end %>
 
     <% if @total_pages > 1 %>

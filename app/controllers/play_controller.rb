@@ -39,6 +39,10 @@ class PlayController < ApplicationController
     # One grouped query for the page's vote aggregates (keyed by id; unrated
     # puzzles get no entry and render nothing).
     @rating_summaries = RatingSummary.for(@puzzles)
+
+    # Your own attempt per solved puzzle, so each solved card can show the grid
+    # you actually played. One query for the page.
+    @my_attempts = my_attempts_by_puzzle(@puzzles)
   end
 
   def show

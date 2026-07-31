@@ -16,7 +16,22 @@ module PlayerCompletions
   private
 
   def completed_puzzle_ids
-    scope = user_signed_in? ? current_user.attempts : Attempt.where(player_token: current_player_token)
-    scope.distinct.pluck(:puzzle_id).to_set
+    my_attempts.distinct.pluck(:puzzle_id).to_set
+  end
+
+  # The viewer's own finished attempt per puzzle, keyed by puzzle id — the archive
+  # builds each solved card's result grid from it. One query for the whole page.
+  # Ordered so that if a token somehow carries two attempts on one puzzle, the
+  # newest wins rather than an arbitrary row.
+  def my_attempts_by_puzzle(puzzles)
+    ids = puzzles.map(&:id)
+    return {} if ids.empty?
+
+    my_attempts.where(puzzle_id: ids).order(:created_at).index_by(&:puzzle_id)
+  end
+
+  # By account when signed in, else by the anonymous player_token cookie.
+  def my_attempts
+    user_signed_in? ? current_user.attempts : Attempt.where(player_token: current_player_token)
   end
 end

@@ -343,74 +343,78 @@ body.theme-brutal {
   padding: 0;
   display: grid;
   gap: $space-md;
+  // Cards, not rows: two abreast even on a phone, three once there's real width.
+  // minmax(0, 1fr) — not 1fr — so a long unbreakable title can't push its column
+  // past its share (the .m-board lesson).
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  // Home strip: a divided list flush to the band column, no gaps.
-  &--strip {
-    gap: 0;
-    border-top: 2px solid rgba($brutal-ink, 0.25);
+  @media (min-width: $bp-cards-wide) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 .theme-brutal .m-browse {
   position: relative;
-  overflow: hidden; // clips the done overlay's pinstripes to the card
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: $space-sm $space-md;
+  // The <li> is the grid item, not this; without it a short card floats at the
+  // top of its cell and the row's bottom edges don't line up.
+  height: 100%;
+  // A card stacks: head (title + byline, with the ✓ floated into it), then the
+  // meta cluster, then the result grid on a solved one. `auto 1fr auto` lets the
+  // meta row absorb the slack so cards in a row line up their bottom edges even
+  // when titles wrap to different heights.
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: $space-sm;
   padding: $space-md;
   color: $brutal-ink;
   text-align: left; // reset the strip band's centered text
   text-decoration: none;
   transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s ease, padding 0.08s ease;
 
-  &--archive {
-    border: $brutal-border solid $brutal-ink;
-    box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
+  // Card chrome, shared by both surfaces now that the jump-in strip is a card
+  // grid too — the variants (--archive / --strip) survive as hooks, not as
+  // divergent looks.
+  //
+  // Opaque, deliberately: on the jump-in band the card sits over diagonal
+  // pinstripes, and an alpha tint would let them run under the text. One step up
+  // from the band (#131313) and two from the page (#0c0c0c), so the card reads as
+  // a surface on both. Ink stays ~16:1 on it, muted ~9:1 — well clear of AA.
+  background: #181818;
+  border: $brutal-border solid $brutal-ink;
+  box-shadow: $brutal-shadow $brutal-shadow 0 rgba($brutal-ink, 0.2);
 
-    &:hover,
-    &:focus-visible {
-      transform: translate(-2px, -2px);
-      box-shadow: calc(#{$brutal-shadow} + 2px) calc(#{$brutal-shadow} + 2px) 0 rgba($brutal-ink, 0.3);
-    }
-    &:active {
-      transform: translate(1px, 1px);
-      box-shadow: 2px 2px 0 rgba($brutal-ink, 0.2);
-    }
+  &:hover,
+  &:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: calc(#{$brutal-shadow} + 2px) calc(#{$brutal-shadow} + 2px) 0 rgba($brutal-ink, 0.3);
   }
-
-  &--strip {
-    border-bottom: 2px solid rgba($brutal-ink, 0.25);
-
-    &:hover,
-    &:focus-visible {
-      background: rgba($brutal-ink, 0.06);
-      padding-left: $space-lg;
-    }
-    &:active { background: rgba($brutal-ink, 0.1); }
+  &:active {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 rgba($brutal-ink, 0.2);
   }
 
   &:hover .m-browse__title,
   &:focus-visible .m-browse__title { text-decoration: underline; }
 
-  // Left column: title over its (unlinked) byline.
+  // Title over its (unlinked) byline. Normal flow, not grid — the ✓ on a solved
+  // card floats into this box and the text has to wrap around it.
   &__head {
-    flex: 1 1 12ch;
     min-width: 0;
-    display: grid;
-    gap: 2px;
+    display: block;
   }
 
   &__title {
+    display: block;
     font-family: $font-display;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: -0.02em;
     line-height: 1.05;
-    font-size: clamp(1.15rem, 4vw, 1.6rem);
+    // Narrower now that cards sit two or three abreast, so the ceiling comes down.
+    font-size: clamp(1.05rem, 3.2vw, 1.35rem);
     text-underline-offset: 3px;
     overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
   // Byline row: the likes tally, then the (unlinked) author, on one line.
@@ -423,87 +427,65 @@ body.theme-brutal {
   }
   &__by { font-style: italic; }
 
-  // Meta cluster hugs the right edge (rating over theme tags), so the title
-  // owns the width. Drops full-width + left on a narrow phone.
+  // Meta cluster sits under the head now that the card is a column, left-aligned
+  // with everything else rather than hugging a right edge that no longer exists.
   &__meta {
-    flex: 0 1 auto;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: $space-xs;
-    text-align: right;
     color: $brutal-muted;
-
-    @media (max-width: $bp-stack) {
-      flex: 1 1 100%;
-      align-items: flex-start;
-      text-align: left;
-    }
   }
 
   // The card carries the whole thing, so the inline theme flag is inert text —
   // no fold-out, no margin of its own.
   .m-themed--inline {
     margin: 0;
-    justify-content: flex-end;
-    @media (max-width: $bp-stack) { justify-content: flex-start; }
+    justify-content: flex-start;
   }
 
-  // Finished puzzles step back; the overlay stays at full strength.
+  // A solved card is quieter than an unplayed one — it's a record, not an offer —
+  // but it keeps its full contrast. The green wash + pinstripes that used to
+  // cover the whole thing are gone; the ✓ and the result grid carry the state now.
   &.is-done {
-    .m-browse__title,
-    .m-browse__meta { opacity: 0.4; }
+    .m-browse__title { color: $brutal-muted; }
   }
 
-  // Completed overlay: a light green wash + thin diagonal pinstripes (same 2px/
-  // 14px geometry as the jump-in band) over the whole card, with a blocky ✓
-  // badge that swaps to a CTA on hover/focus.
-  &__done {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background:
-      repeating-linear-gradient(-45deg,
-        rgba($color-green, 0.22) 0 2px, transparent 2px 14px),
-      rgba($color-green, 0.06);
-  }
-  &__done-mark,
-  &__done-cta {
-    grid-area: 1 / 1;
-    transition: opacity 0.12s ease;
-  }
+  // ✓ badge, floated into the head so the title and byline wrap around it rather
+  // than being squeezed into a narrow column beside it.
   &__done-mark {
+    float: right;
     display: grid;
     place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
+    margin: 0 0 $space-xs $space-sm;
     background: $color-green;
     color: $color-ink;
     border: $brutal-border solid $color-ink;
     border-radius: $radius; // blocky, not a circle
   }
   &__check {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
   }
-  &__done-cta {
-    opacity: 0;
-    padding: $space-xs $space-md;
-    background: $color-green;
-    color: $color-ink;
-    border: $brutal-border solid $color-ink;
-    box-shadow: 3px 3px 0 rgba($color-ink, 0.4);
-    font-family: $font-display;
-    font-weight: 700;
-    font-size: $font-sm;
-    text-transform: uppercase;
-    transform: rotate(-2deg);
+
+  // The grid you actually played, closing out the card. Left-aligned with the
+  // rest and scaled down — it's a memento here, not the hero it is on the
+  // game-over screen.
+  // Carries .m-cube too, so it already has the grid; this just left-aligns it
+  // with the rest of the card and shrinks the squares — a memento here, not the
+  // hero it is on the game-over screen.
+  &__cube {
+    justify-items: start;
+    padding-top: $space-xs;
+    border-top: 2px solid rgba($brutal-ink, 0.2);
+
+    .m-cube__cell {
+      width: 0.65rem;
+      border-width: 1px;
+    }
   }
-  &:hover .m-browse__done-mark,
-  &:focus-visible .m-browse__done-mark { opacity: 0; }
-  &:hover .m-browse__done-cta,
-  &:focus-visible .m-browse__done-cta { opacity: 1; }
 }
 
 // --- Post-play rating (quality + difficulty) ----------------------------------

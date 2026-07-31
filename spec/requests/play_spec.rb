@@ -74,7 +74,7 @@ RSpec.describe "Play (public)", type: :request do
 
       expect(page_text).to include("Finished it")
       expect(page_text).to include("Not yet")
-      expect(response.body.scan(/class="m-browse__done"/).size).to eq(1) # only the finished one gets the completed overlay
+      expect(response.body.scan(/m-browse__done-mark/).size).to eq(1) # only the finished one gets the ✓
     end
 
     # The archive keeps your solved puzzles — unlike the jump-in strip, which
@@ -119,6 +119,54 @@ RSpec.describe "Play (public)", type: :request do
         get play_index_path
 
         expect(page_text).to match(/Anon Untouched.*Your solved puzzles.*Anon Beat This/m)
+      end
+
+      # A solved card carries the grid you actually played, so the archive doubles
+      # as your own scorecard. Rendered as CSS blocks in our palette (cube_grid),
+      # not raw emoji.
+      it "shows your own result grid on a solved card" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle, title: "Beaten")
+        create(:attempt, puzzle: puzzle, user: user, solved: true, guesses: [
+          { "words" => %w[a b c d], "colors" => %w[blue blue blue green] },
+          { "words" => %w[a b c e], "colors" => %w[blue blue blue blue] }
+        ])
+
+        get play_index_path
+
+        expect(response.body).to include("m-cube__row")
+        expect(response.body.scan(/m-cube__row/).size).to eq(2) # one row per guess
+      end
+
+      it "shows no result grid on a puzzle you haven't played" do
+        sign_in create(:user)
+        create(:published_puzzle, title: "Untouched")
+
+        get play_index_path
+
+        expect(response.body).not_to include("m-cube__row")
+      end
+
+      # The grid has to come from the viewer's attempt, not just any attempt on
+      # that puzzle — otherwise you'd see a stranger's game as your own.
+      it "renders the viewer's grid, not another player's" do
+        user = create(:user)
+        sign_in user
+        puzzle = create(:published_puzzle, title: "Shared Board")
+        create(:attempt, puzzle: puzzle, player_token: "someone-else", solved: true, guesses: [
+          { "words" => %w[a b c d], "colors" => %w[blue green blue green] },
+          { "words" => %w[a b c d], "colors" => %w[blue green blue green] },
+          { "words" => %w[a b c d], "colors" => %w[blue green blue green] }
+        ])
+        create(:attempt, puzzle: puzzle, user: user, solved: true, guesses: [
+          { "words" => %w[a b c d], "colors" => %w[purple purple purple purple] }
+        ])
+
+        get play_index_path
+
+        expect(response.body.scan(/m-cube__row/).size).to eq(1) # mine had one guess
+        expect(response.body).to include("m-cube__cell--purple")
       end
 
       # The sort has to live in SQL, not just in the view — otherwise a solved

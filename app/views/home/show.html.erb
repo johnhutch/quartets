@@ -61,7 +61,7 @@
         <% @puzzles.each do |puzzle| %>
           <%= render "play/browse_card", puzzle: puzzle, variant: "strip",
                 summary: @rating_summaries[puzzle.id],
-                done: false %>
+                done: false, attempt: nil %>
         <% end %>
       </ul>
       <%= link_to "#{t('home.strip.cta')} #{ne_arrow}", play_index_path, class: "m-sticker m-band__cta" %>

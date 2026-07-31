@@ -7,7 +7,7 @@ class HomeController < ApplicationController
   include Creator # for the strip's not-mine filter (you can't play your own)
   include PlayerCompletions
 
-  STRIP_SIZE = 5
+  STRIP_SIZE = 6
 
   def show
     # Themed (specialized) quartets ride along flagged — the visible THEMED chip

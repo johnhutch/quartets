@@ -5,6 +5,7 @@
   <% puzzles.each do |puzzle| %>
     <%= render "play/browse_card", puzzle: puzzle, variant: "archive",
           summary: summaries[puzzle.id],
-          done: completed_ids.include?(puzzle.id) %>
+          done: completed_ids.include?(puzzle.id),
+          attempt: attempts[puzzle.id] %>
   <% end %>
 </ul>
