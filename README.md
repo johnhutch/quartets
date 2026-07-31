@@ -263,6 +263,30 @@ docker-compose start web
 `pg_dump` is pinned to 17 in the Dockerfile to match the Postgres image, because
 it refuses to dump a server newer than itself. Bump them together.
 
+## What's next
+
+Nothing here is a promise. It's what I'd build next if left alone with it.
+
+**Blessed quartets.** Every published puzzle currently counts the same, which
+means your mate's in-joke about his dog can dent a stranger's solve rate. The
+plan is to *bless* a curated set — the ones a person could reasonably solve cold,
+with no context — and treat that as the real catalog. Anyone can still publish
+anything; blessing just decides what's held up as representative.
+
+**A daily quartet, off the blessed pool.** One puzzle a day, same one for
+everyone, picked automatically from the blessed set. That's the ritual the whole
+format runs on, and it's the thing that makes a shared result cube worth posting.
+It needs a critical mass of genuinely good puzzles first, which is the actual
+blocker — not the code.
+
+**Separate stats for the blessed track.** Solve rate, streaks and a leaderboard
+scoped to blessed puzzles only, so the number means something. Your all-time
+figures stay as they are; the blessed track is the one that counts.
+
+**Smaller stuff.** Clickable tags (they render, they just don't filter yet),
+search across titles and descriptions, and a bulk CSV export of everything
+you've made.
+
 ## Contributing
 
 Yes please. A few house rules so we don't fight about it later:

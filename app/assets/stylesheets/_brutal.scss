@@ -825,6 +825,7 @@ body.theme-brutal {
   .m-auth__lede,
   .m-empty,
   .m-form__note,
+  .m-form__nudge,
   .m-game__mistakes,
   .m-pagination__at { color: $brutal-muted; }
 }
@@ -1328,6 +1329,15 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 .theme-brutal .m-hero {
   position: relative;
   overflow: hidden;
+  // Nameplate spans the top; copy and the solved board share the row beneath it.
+  // A grid, not absolute positioning: the board is four rows tall and would
+  // otherwise land on top of the wordmark at some widths.
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) 1.15fr;
+  column-gap: clamp(#{$space-lg}, 4vw, 3rem);
+  align-items: center;
+
+  .m-nameplate-stack { grid-column: 1 / -1; }
   padding-block: clamp(#{$space-xl}, 8vw, 5rem) clamp(#{$space-lg}, 6vw, 3.5rem);
   // Same centered column as the bands (and the subpages' text).
   padding-inline: max(#{$home-pad}, calc((100% - #{$brutal-column}) / 2));
@@ -1371,24 +1381,34 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 }
 // The brand's Q-quadrants (see the favicon): a tilted 2×2 of the category
 // colors, bottom-right, behind nothing — pure decoration.
-.theme-brutal .m-hero__quads {
-  position: absolute;
-  right: max(#{$home-pad}, calc((100% - #{$brutal-column}) / 2)); // hug the column edge
-  bottom: clamp(#{$space-lg}, 6vw, 3.5rem);
+// The masthead's graphic: a solved board parked in the bottom-right corner,
+// hugging the column edge. The hero text is capped at ~46ch, so on a wide screen
+// this fills the empty right half rather than fighting it. Kept whole (no bleed)
+// — it's the thing you're meant to look at.
+.theme-brutal .m-hero__show { position: relative; justify-self: end; width: 100%; }
+
+// Below the nav breakpoint the copy runs full width and the board stacks under
+// it — still bleeding off the right edge. It's the best thing on the page; it
+// doesn't get dropped on the device most people are holding.
+@media (max-width: $bp-nav) {
+  .theme-brutal .m-hero { grid-template-columns: minmax(0, 1fr); }
+  .theme-brutal .m-hero__show { margin-top: $space-lg; justify-self: stretch; }
+}
+
+// The brand's Q-quadrants — a standalone block of color now that they've moved
+// out of the hero.
+.theme-brutal .m-quads {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
+  width: fit-content;
   transform: rotate(-4deg);
 }
-.theme-brutal .m-hero__quad {
-  width: clamp(2.25rem, 5.5vw, 4.25rem);
+.theme-brutal .m-quad {
+  width: clamp(3rem, 8vw, 5.5rem);
   aspect-ratio: 1;
   border: $brutal-border solid #000;
   @each $name, $color in $category-colors { &--#{$name} { background: $color; } }
-}
-// On phones the wordmark is the whole show — the cluster would crowd the nav.
-@media (max-width: $bp-nav) {
-  .theme-brutal .m-hero__quads { display: none; }
 }
 
 // JUMP IN — real puzzles as a big oversized title list (no cards). Content is
@@ -1445,14 +1465,16 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 .theme-brutal .m-why__feature:nth-child(5n+4) .m-why__lead { color: $color-purple; }
 .theme-brutal .m-why__feature:nth-child(5n)   .m-why__lead { color: $color-yellow; }
 
-.theme-brutal .m-why__show { position: relative; justify-self: end; width: 100%; }
+.theme-brutal .m-why__show { position: relative; justify-self: center; }
 .theme-brutal .m-winboard {
   display: grid;
   gap: 6px;
   transform: rotate(-2.5deg);
   margin: $space-md 0;
-  // Bleed off the viewport's right edge (50% is this grid column's width, 50vw
-  // overshoots past it; the band's overflow:hidden clips the excess).
+  // THE effect: the rows run off the viewport's right edge, so the board reads as
+  // rushing at you rather than sitting politely in a box. 50% is this grid
+  // column's width, 50vw overshoots past it; the hero's overflow:hidden clips the
+  // excess. Don't "fix" this to a contained width — that's the whole graphic.
   margin-right: calc(50% - 50vw);
 }
 .theme-brutal .m-winrow {
@@ -1474,7 +1496,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
 }
 @media (max-width: $bp-stack) {
   .theme-brutal .m-why { grid-template-columns: 1fr; }
-  .theme-brutal .m-why__show { margin-top: $space-xl; justify-self: stretch; }
+  .theme-brutal .m-why__show { margin-top: $space-xl; justify-self: center; }
   // Single column: the notes run the full width their feature-row borders do
   // (the 30ch cap is for the desktop two-column layout).
   .theme-brutal .m-why__note { max-width: none; }

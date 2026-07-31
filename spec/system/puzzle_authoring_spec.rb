@@ -70,7 +70,7 @@ RSpec.describe "Authoring a puzzle on a phone", type: :system, js: true do
     # Now that every field is filled, the save button promotes itself to the
     # "keep it unlisted" choice, and Publish reveals + lights up right here on the
     # create screen — no reload, no trip to the editor (ADR-0008).
-    expect(page).to have_button("Keep it unlisted (link only)")
+    expect(page).to have_button("Save and share")
     expect(page).to have_button("Publish")
 
     click_button "Publish"

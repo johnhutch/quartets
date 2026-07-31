@@ -18,16 +18,10 @@
   <%# HERO — one dark masthead band: the NoTimes/QUARTETS nameplate, the rules
       lede, one pitch line, and the primary nav (a sticker-weight Create CTA +
       a quiet archive link — Play itself is the Jump In band one scroll down,
-      so it doesn't get a billboard here). The 2×2 color cluster is the brand's
-      Q-quadrants, purely decorative. %>
+      so it doesn't get a billboard here). The graphic is a solved board — the
+      colorful payoff, and the clearest possible answer to "what is this site".
+      Decorative: the lede already says it in words. %>
   <section class="m-hero">
-    <div class="m-hero__quads" aria-hidden="true">
-      <span class="m-hero__quad m-hero__quad--yellow"></span>
-      <span class="m-hero__quad m-hero__quad--green"></span>
-      <span class="m-hero__quad m-hero__quad--blue"></span>
-      <span class="m-hero__quad m-hero__quad--purple"></span>
-    </div>
-
     <%# The masthead gag re-rolls every load (like Multicolor + the quips). The
         inline --np-scale (1 / char count) lets CSS size any name — short ones
         run at full nameplate size, long ones shrink to span the wordmark. %>
@@ -37,17 +31,36 @@
       <span class="m-nameplate" aria-hidden="true"
             style="--np-scale: <%= (1.0 / nameplate.length).round(4) %>"><%= nameplate %></span>
     </div>
-    <p class="m-lede"><%= t("home.lede_html") %></p>
-    <p class="m-hero__pitch"><%= t("home.hero.pitch") %></p>
 
-    <nav class="m-hero__nav" aria-label="Primary">
-      <%= link_to "#{t('home.hero.create_cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-hero__cta" %>
-      <%= link_to "#{t('home.hero.browse_cta')} #{ne_arrow}", play_index_path, class: "m-hero__browse" %>
-    </nav>
+    <%# Copy and board share a row under the nameplate. Grouped so the grid can
+        place them as two tracks — the board used to be absolutely positioned,
+        which was fine for a small colour cluster and disastrous for something
+        four rows tall (it sat straight on top of the wordmark). %>
+    <div class="m-hero__copy">
+      <p class="m-lede"><%= t("home.lede_html") %></p>
+      <p class="m-hero__pitch"><%= t("home.hero.pitch") %></p>
 
-    <% unless user_signed_in? %>
-      <p class="m-hero__aside"><%= t("home.hero.aside_html", signup: link_to(t("home.hero.signup"), new_user_registration_path)) %></p>
-    <% end %>
+      <nav class="m-hero__nav" aria-label="Primary">
+        <%= link_to "#{t('home.hero.create_cta')} #{ne_arrow}", new_puzzle_path, class: "m-sticker m-hero__cta" %>
+        <%= link_to "#{t('home.hero.browse_cta')} #{ne_arrow}", play_index_path, class: "m-hero__browse" %>
+      </nav>
+
+      <% unless user_signed_in? %>
+        <p class="m-hero__aside"><%= t("home.hero.aside_html", signup: link_to(t("home.hero.signup"), new_user_registration_path)) %></p>
+      <% end %>
+    </div>
+
+    <div class="m-hero__show" aria-hidden="true">
+      <div class="m-winboard">
+        <% t("home.hero.board").each_with_index do |row, i| %>
+          <% color = %w[purple blue green yellow][i] %>
+          <div class="m-winrow m-winrow--<%= color %>">
+            <span class="m-winrow__cat"><%= row[:cat] %></span>
+            <span class="m-winrow__words"><%= row[:words] %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </section>
 
   <%# JUMP IN — dark band, multicolor head, real puzzles as a big title list.
@@ -94,15 +107,14 @@
         </ul>
       </div>
 
+      <%# The brand's Q-quadrants — a quiet block of color to balance the pitch
+          list, now that the solved board has moved up to the masthead. %>
       <div class="m-why__show" aria-hidden="true">
-        <div class="m-winboard">
-          <% t("home.why.board").each_with_index do |row, i| %>
-            <% color = %w[purple blue green yellow][i] %>
-            <div class="m-winrow m-winrow--<%= color %>">
-              <span class="m-winrow__cat"><%= row[:cat] %></span>
-              <span class="m-winrow__words"><%= row[:words] %></span>
-            </div>
-          <% end %>
+        <div class="m-quads">
+          <span class="m-quad m-quad--yellow"></span>
+          <span class="m-quad m-quad--green"></span>
+          <span class="m-quad m-quad--blue"></span>
+          <span class="m-quad m-quad--purple"></span>
         </div>
       </div>
     </div>

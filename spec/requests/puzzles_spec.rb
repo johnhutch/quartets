@@ -133,6 +133,18 @@ RSpec.describe "Puzzles", type: :request do
         expect(response.body).not_to include("Out in the world")
       end
 
+      # The two ways out of the authoring form are a real choice, not a primary and
+      # a fallback: publish it if a stranger could solve it, otherwise save and
+      # send the link. The nudge says so in as many words, because people were
+      # publishing in-jokes.
+      it "nudges the author about who a published quartet is for" do
+        get new_puzzle_path
+
+        text = Nokogiri::HTML(response.body).text.squish
+        expect(text).to include("general enough for internet randos to solve")
+        expect(text).to match(/just save and share/i)
+      end
+
       it "tags an incomplete puzzle 'Incomplete' and offers 'Finish' (the editor), no Publish" do
         puzzle = create(:puzzle, user: user, title: "WIP", status: :unlisted) # no groups
 

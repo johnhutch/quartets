@@ -163,11 +163,21 @@
       Revealed by dupes#reveal when a blocked Publish is clicked. %>
   <div class="m-form__errors is-wrong" data-dupes-target="blocked" role="alert" hidden></div>
 
+  <%# The two ways out are a real choice, not a primary and a fallback. Said out
+      loud because people were publishing in-jokes: a quartet full of private
+      references is a perfectly good quartet, it just isn't one a stranger can
+      solve, so it belongs on the link-only path. %>
+  <p class="m-form__nudge">
+    Is this quartet general enough for internet randos to solve? Publish it!
+    Otherwise, just save and share.
+  </p>
+
   <div class="m-form__submit">
     <%# Plain save stays first so Enter does the safe thing (never an accidental
-        publish). Once complete, it reads as the "keep it unlisted" choice. %>
+        publish). Once the puzzle is finished it becomes the link-only half of the
+        choice above — same button, honest label. %>
     <%= f.button type: :submit, class: "m-btn" do %>
-      <%= icon(:save) %><span data-autosave-target="submitLabel"><%= puzzle.complete? ? "Keep it unlisted (link only)" : "Save" %></span>
+      <%= icon(:save) %><span data-autosave-target="submitLabel"><%= puzzle.complete? ? "Save and share" : "Save" %></span>
     <% end %>
 
     <%# Publish is the loud, encouraged path once the puzzle is complete — a second

@@ -906,6 +906,17 @@
 
 // Form submit row: centered, content-width buttons (Save draft + Publish) with
 // breathing room between them.
+// The publish-or-share nudge. Centered over the submit row so it reads as the
+// question the two buttons answer, rather than as another field's help text.
+.m-form__nudge {
+  margin: 0 auto;
+  max-width: 44ch;
+  text-align: center;
+  text-wrap: balance;
+  font-size: $font-sm;
+  color: $color-muted;
+}
+
 .m-form__submit {
   display: flex;
   flex-wrap: wrap;

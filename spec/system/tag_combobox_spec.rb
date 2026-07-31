@@ -24,7 +24,7 @@ RSpec.describe "Tag combobox", type: :system, js: true do
     find("#tag-input").send_keys(:enter)
     expect(page).to have_css(".m-tags__chip", text: /star-wars/i)
 
-    click_button "Keep it unlisted (link only)"
+    click_button "Save and share"
     expect(page).to have_current_path(puzzles_path)
 
     expect(puzzle.reload).to be_specialized

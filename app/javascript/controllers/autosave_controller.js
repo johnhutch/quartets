@@ -70,11 +70,11 @@ export default class extends Controller {
     this.element.requestSubmit(event.submitter)
   }
 
-  // Keep the save button ("Save" → "Keep it unlisted (link only)") and the publish
+  // Keep the save button ("Save" → "Save and share") and the publish
   // button (greyed + tooltip until the puzzle can go out) in sync as the author types.
   refresh() {
     const ready = this.publishable()
-    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = this.complete() ? "Keep it unlisted (link only)" : "Save"
+    if (this.hasSubmitLabelTarget) this.submitLabelTarget.textContent = this.complete() ? "Save and share" : "Save"
     if (this.hasPublishGuardTarget) this.publishGuardTarget.classList.toggle("is-blocked", !ready)
     if (this.hasPublishTarget) this.publishTarget.classList.toggle("is-disabled", !ready)
   }

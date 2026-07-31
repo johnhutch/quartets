@@ -89,6 +89,19 @@ en:
     hero:
       pitch: "Free, open-source, and anonymous."
       create_cta: "Make a Quartet"
+      # The solved board in the masthead. Decorative, but it's the first quartet
+      # anyone sees, so it has to be a *real* one — and it picks up the joke the
+      # nameplate above it is telling. Rows render purple → yellow (hardest to
+      # easiest): fill-in-the-blank for the purple, proper nouns for the yellow.
+      board:
+        - cat: "Deeply ___"
+          words: "CONCERNED · TROUBLED · SOURCED · DIVIDED"
+        - cat: "Both-sidesing"
+          words: "HEDGE · WAFFLE · STRADDLE · EQUIVOCATE"
+        - cat: "Paywall-speak"
+          words: "SUBSCRIBE · UNLOCK · PREMIUM · METERED"
+        - cat: "Op-ed mainstays"
+          words: "BROOKS · FRIEDMAN · DOUTHAT · STEPHENS"
       browse_cta: "Browse the archive"
       aside_html: "Wanna see stats about your puzzles? Or about your own attempts (a trophy case!)? %{signup} whenever."
       signup: "Sign up"
@@ -115,15 +128,6 @@ en:
           note: "Perfects. Or purple-first. Or go for the reverse-rainbow like a goddam all-star."
         - lead: "Leaderboards."
           note: "Coming soon — so start padding your record now."
-      board:
-        - cat: "NBA teams"
-          words: "HEAT · JAZZ · NETS · SUNS"
-        - cat: "___ dressing"
-          words: "RANCH · BLUE · CAESAR · ITALIAN"
-        - cat: "Trees"
-          words: "MAPLE · OAK · PINE · BIRCH"
-        - cat: "Kitchen tools"
-          words: "WHISK · GRATER · LADLE · TONGS"
     about:
       head: "Ethically built"
       columns:
