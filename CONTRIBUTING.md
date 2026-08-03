@@ -56,5 +56,6 @@ magic numbers in modules. Rebuild with `bin/rails dartsass:build`, or let
 ## Licensing of contributions
 
 Quartets is dual-licensed (see the [README](README.md#license)). By contributing
-you agree your code is offered under the **MIT License**, and any content you add
-(puzzles, copy, docs) under **CC BY 4.0** — matching the rest of the project.
+you agree your code is offered under the **PolyForm Noncommercial License
+1.0.0**, and any content you add (puzzles, copy, docs) under **CC BY-NC 4.0** —
+matching the rest of the project.
