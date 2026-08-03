@@ -305,14 +305,11 @@ the result, and be completely insufferable about it.
 
 ## License
 
-Dual-licensed, because it's both software and creative work — and both halves
-are noncommercial:
+Dual-licensed, because it's both software and creative work:
 
-- **Code** — PolyForm Noncommercial 1.0.0 ([`LICENSE`](LICENSE)). Take it,
-  just don't sell it.
-- **Content** — the puzzles, copy and docs — CC BY-NC 4.0
-  ([`LICENSE-CONTENT`](LICENSE-CONTENT)). Take it, with credit, and don't
-  sell that either.
+- **Code** — MIT ([`LICENSE`](LICENSE)). Take it.
+- **Content** — the puzzles, copy and docs — CC BY 4.0
+  ([`LICENSE-CONTENT`](LICENSE-CONTENT)). Take it, with credit.
 
 Bundled fonts (Space Grotesk, UnifrakturMaguntia) ship under the SIL Open Font
 License 1.1; the license texts sit beside the fonts in
