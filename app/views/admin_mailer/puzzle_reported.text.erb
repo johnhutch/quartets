@@ -6,4 +6,4 @@ By: <%= @puzzle.author_display_name.presence || "anonymous" %>
 Reason: <%= @report.reason %>
 <% end -%>
 
-Review it: <%= admin_puzzles_url %>
+Review it: <%= admin_puzzle_reports_url(@puzzle) %>

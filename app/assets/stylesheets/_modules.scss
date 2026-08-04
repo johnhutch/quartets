@@ -758,7 +758,10 @@
     border: 1px solid $color-line;
     border-radius: $radius;
     font-size: $font-sm;
-    color: $color-muted;
+    // $color-muted is the light-theme gray — near-invisible on the brutal
+    // near-black page (and inside the dark fold-out bubble). Use the dark
+    // theme's muted, ~9:1 both places.
+    color: $brutal-muted;
   }
 }
 
@@ -902,6 +905,97 @@
   border: 2px solid $color-wrong;
   border-radius: $radius;
   font-weight: 700;
+}
+
+// --- Admin report triage (/admin/puzzles/:id/reports) ------------------------
+// The puzzle under review, compact: meta line + the four groups at reduced
+// padding (the .m-group pastels + brutal frame come from their own rules).
+.m-report-puzzle {
+  margin-bottom: $space-lg;
+
+  &__meta {
+    color: $brutal-muted;
+
+    a { text-decoration: underline; }
+  }
+
+  &__group {
+    padding: $space-xs $space-sm;
+    margin-bottom: $space-xs;
+  }
+
+  &__group-name {
+    display: block;
+    font-size: $font-sm;
+    text-transform: uppercase;
+  }
+
+  &__group-words {
+    font-size: $font-sm;
+    text-transform: uppercase;
+  }
+}
+
+.m-triage-list {
+  margin-bottom: $space-lg;
+
+  &__count,
+  &__empty { color: $brutal-muted; }
+}
+
+// One report: open ones render as bordered cards; resolved ones are a dashed
+// <details> whose summary is the one-line "WONTDO · who · when" digest.
+// (.m-triage, not .m-report — that block is the player-facing fold-out on
+// the play page.)
+.m-triage {
+  border: 2px solid $color-line;
+  border-radius: $radius;
+  padding: $space-sm $space-md;
+  margin-bottom: $space-sm;
+
+  &--resolved { border-style: dashed; }
+
+  &__line { cursor: pointer; }
+
+  &__body { margin-top: $space-sm; }
+
+  &__reason { margin: 0 0 $space-xs; font-weight: 700; }
+
+  &__who {
+    margin: 0 0 $space-sm;
+    color: $brutal-muted;
+    font-size: $font-sm;
+  }
+
+  &__note {
+    margin: 0 0 $space-xs;
+    font-size: $font-sm;
+  }
+
+  &__form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: $space-sm;
+    margin-top: $space-sm;
+  }
+
+  &__comment { flex: 1 1 14rem; min-width: 0; }
+
+  // Resolution chip — category colors, black text (the pastels are light).
+  &__chip {
+    display: inline-block;
+    padding: 0 0.4em;
+    border-radius: $radius;
+    font-size: $font-xs;
+    font-weight: 700;
+    color: #000;
+
+    &--fixed { background: $color-green; }
+    &--willdo { background: $color-yellow; }
+    &--wontdo { background: $color-line; }
+    &--duplicate { background: $color-blue; }
+  }
 }
 
 // Form submit row: centered, content-width buttons (Save draft + Publish) with

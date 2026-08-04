@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_27_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_03_184354) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -93,17 +93,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_000000) do
     t.index ["user_id"], name: "index_puzzles_on_user_id"
   end
 
+  create_table "report_comments", force: :cascade do |t|
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.bigint "report_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["report_id"], name: "index_report_comments_on_report_id"
+    t.index ["user_id"], name: "index_report_comments_on_user_id"
+  end
+
   create_table "reports", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "puzzle_id", null: false
     t.text "reason"
     t.string "reporter_token", null: false
-    t.boolean "resolved", default: false, null: false
+    t.integer "resolution"
+    t.datetime "resolved_at"
+    t.bigint "resolved_by_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.index ["puzzle_id", "reporter_token"], name: "index_reports_on_puzzle_id_and_reporter_token", unique: true
     t.index ["puzzle_id"], name: "index_reports_on_puzzle_id"
-    t.index ["resolved"], name: "index_reports_on_resolved"
+    t.index ["resolution"], name: "index_reports_on_resolution"
+    t.index ["resolved_by_id"], name: "index_reports_on_resolved_by_id"
     t.index ["user_id"], name: "index_reports_on_user_id"
   end
 
@@ -309,8 +322,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_000000) do
   add_foreign_key "groups", "puzzles"
   add_foreign_key "play_states", "puzzles"
   add_foreign_key "play_states", "users"
+  add_foreign_key "report_comments", "reports"
+  add_foreign_key "report_comments", "users"
   add_foreign_key "reports", "puzzles"
   add_foreign_key "reports", "users"
+  add_foreign_key "reports", "users", column: "resolved_by_id"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

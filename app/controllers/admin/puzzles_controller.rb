@@ -21,11 +21,16 @@ class Admin::PuzzlesController < Admin::BaseController
     @report_counts = Report.unresolved.where(puzzle_id: @puzzles.map(&:id)).group(:puzzle_id).count
   end
 
-  # Mark a puzzle's flags handled without touching the puzzle — for a report that
-  # turned out to be nothing. (A real takedown just deletes/unpublishes instead.)
+  # Mark a puzzle's flags handled without touching the puzzle — the WONTDO-all
+  # shortcut for junk. (A real takedown just deletes/unpublishes instead;
+  # per-report triage lives at admin_puzzle_reports_path.)
   def dismiss_reports
     puzzle = Puzzle.with_deleted.find(params[:id])
-    puzzle.reports.unresolved.update_all(resolved: true)
+    puzzle.reports.unresolved.update_all(
+      resolution: Report.resolutions[:wontdo],
+      resolved_at: Time.current,
+      resolved_by_id: current_user.id
+    )
     redirect_back fallback_location: admin_puzzles_path, notice: "Reports dismissed."
   end
 end

@@ -1,6 +1,8 @@
-# /admin is staff-only (superuser or moderator). Everyone else gets a 404, not a
-# 403 — the area shouldn't advertise its existence. The users tab tightens this
-# to superuser-only (Admin::UsersController); the puzzles tab is open to both.
+# /admin is staff-only (superuser or moderator). Signed-out visitors get the
+# normal sign-in page (with a return-to, so staff on a fresh device land back
+# here); signed-in non-staff get a 404, not a 403 — the area doesn't confirm
+# what it is. The users tab tightens this to superuser-only
+# (Admin::UsersController); the puzzles tab is open to both.
 class Admin::BaseController < ApplicationController
   before_action :require_staff
 
@@ -9,7 +11,12 @@ class Admin::BaseController < ApplicationController
   private
 
   def require_staff
-    head :not_found unless user_signed_in? && current_user.staff?
+    if !user_signed_in?
+      store_location_for(:user, request.fullpath) if request.get?
+      redirect_to new_user_session_path
+    elsif !current_user.staff?
+      head :not_found
+    end
   end
 
   def require_superuser

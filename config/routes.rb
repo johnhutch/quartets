@@ -27,8 +27,10 @@ Rails.application.routes.draw do
   namespace :admin do
     root "puzzles#index"
     resources :puzzles, only: :index do
-      member { patch :dismiss_reports } # mark a puzzle's flags handled (it's fine)
+      member { patch :dismiss_reports } # WONTDO-all shortcut for junk flags
+      resources :reports, only: :index # the per-puzzle triage page
     end
+    resources :reports, only: :update # resolve and/or comment on one report
     resources :users, only: %i[index update] # update = change a user's role
     get "analytics", to: "analytics#index" # traffic + funnels (superuser-only)
   end

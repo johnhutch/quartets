@@ -26,9 +26,22 @@ RSpec.describe "Admin", type: :request do
   end
 
   describe "the gate" do
-    it "404s signed-out visitors" do
+    it "sends signed-out visitors to sign-in, then back to /admin" do
       get admin_root_path
-      expect(response).to have_http_status(:not_found)
+      expect(response).to redirect_to(new_user_session_path)
+
+      post user_session_path, params: {
+        user: { email: superuser.email, password: "correct-horse-battery-staple" }
+      }
+      expect(response).to redirect_to(admin_root_path)
+    end
+
+    it "still lands an ordinary sign-in on the dashboard" do
+      user = create(:user)
+      post user_session_path, params: {
+        user: { email: user.email, password: "correct-horse-battery-staple" }
+      }
+      expect(response).to redirect_to(puzzles_path)
     end
 
     it "404s ordinary signed-in users" do
@@ -251,9 +264,9 @@ RSpec.describe "Admin", type: :request do
   # records — proven with a real login POST from a signed-out session (the
   # Warden test helper would short-circuit authentication and skip the hook).
   it "records last-login data on real sign-ins (trackable)" do
-    user = create(:user, email: "t@example.com", password: "password123")
+    user = create(:user, email: "t@example.com", password: "correct-horse-battery-staple")
 
-    post user_session_path, params: { user: { email: "t@example.com", password: "password123" } }
+    post user_session_path, params: { user: { email: "t@example.com", password: "correct-horse-battery-staple" } }
 
     expect(user.reload.current_sign_in_at).to be_present
     expect(user.sign_in_count).to eq(1)

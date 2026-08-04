@@ -27,10 +27,11 @@ class ApplicationController < ActionController::Base
   # asked at signup and editable in account settings.
   before_action :configure_devise_params, if: :devise_controller?
 
-  # Root is the public homepage now, so send a freshly signed-in author to their
+  # A stored return-to wins (e.g. /admin bounced you through sign-in); otherwise
+  # root is the public homepage, so send a freshly signed-in author to their
   # dashboard instead of the visitor-facing front door.
-  def after_sign_in_path_for(_resource)
-    puzzles_path
+  def after_sign_in_path_for(resource)
+    stored_location_for(resource) || puzzles_path
   end
 
   private

@@ -1,0 +1,65 @@
+<% content_for :title, "Admin · Reports" %>
+
+<div class="l-container">
+  <h1><%= multicolor("Reports") %></h1>
+  <%= render "admin/tabs", active: :puzzles %>
+
+  <%# The puzzle under review, compact: meta line + the four groups revealed,
+      so the report can be judged (and acted on) without leaving the page. %>
+  <header class="m-report-puzzle">
+    <h2 class="m-report-puzzle__title"><%= multicolor(@puzzle.title.presence || "Untitled") %></h2>
+    <p class="m-report-puzzle__meta">
+      <% if @puzzle.deleted? %>
+        Deleted
+      <% else %>
+        <%= @puzzle.status.capitalize %>
+      <% end %>
+      &middot; <%= @puzzle.user ? link_to(@puzzle.user.name, user_page_path(@puzzle.user.handle)) : "anonymous" %>
+      <% if @puzzle.complete? %>
+        &middot; <%= link_to "Play", play_path(@puzzle.share_token) %>
+      <% end %>
+      &middot; <%= link_to "Edit", edit_puzzle_path(@puzzle) %>
+    </p>
+    <div class="m-report-puzzle__board">
+      <% @puzzle.groups.each do |group| %>
+        <div class="m-group m-group--<%= group.color %> m-report-puzzle__group">
+          <strong class="m-report-puzzle__group-name"><%= group.description %></strong>
+          <span class="m-report-puzzle__group-words"><%= group.filled_words.join(", ") %></span>
+        </div>
+      <% end %>
+    </div>
+  </header>
+
+  <section class="m-triage-list">
+    <h3 class="m-triage-list__heading">Open <span class="m-triage-list__count">(<%= @open_reports.size %>)</span></h3>
+    <% if @open_reports.empty? %>
+      <p class="m-triage-list__empty">No open reports — all clear.</p>
+    <% end %>
+    <% @open_reports.each do |report| %>
+      <article class="m-triage">
+        <%= render "report", report: report %>
+      </article>
+    <% end %>
+  </section>
+
+  <% if @resolved_reports.any? %>
+    <section class="m-triage-list">
+      <h3 class="m-triage-list__heading">Resolved <span class="m-triage-list__count">(<%= @resolved_reports.size %>)</span></h3>
+      <% @resolved_reports.each do |report| %>
+        <details class="m-triage m-triage--resolved">
+          <summary class="m-triage__line">
+            <span class="m-triage__chip m-triage__chip--<%= report.resolution %>"><%= report.resolution.upcase %></span>
+            <% if report.resolved_by %>&middot; <%= report.resolved_by.name %><% end %>
+            <% if report.resolved_at %>&middot; <%= list_date(report.resolved_at) %><% end %>
+            <% if report.comments.any? %>&middot; <%= pluralize(report.comments.size, "comment") %><% end %>
+          </summary>
+          <div class="m-triage__body">
+            <%= render "report", report: report %>
+          </div>
+        </details>
+      <% end %>
+    </section>
+  <% end %>
+
+  <p><%= link_to "← Back to puzzles", admin_puzzles_path %></p>
+</div>

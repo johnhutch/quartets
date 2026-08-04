@@ -31,9 +31,10 @@
       <% if show_owner %>
         &middot; <%= puzzle.user ? link_to(puzzle.user.name, user_page_path(puzzle.user.handle)) : "anonymous" %>
       <% end %>
-      <%# Flag badge — only the admin tab passes report_counts. %>
+      <%# Flag badge — only the admin tab passes report_counts. Links to triage. %>
       <% if (flags = local_assigns[:report_counts]&.fetch(puzzle.id, 0)).to_i.positive? %>
-        &middot; <span class="m-puzzle-list__flag">⚠ <%= pluralize(flags, "report") %></span>
+        &middot; <%= link_to "⚠ #{pluralize(flags, 'report')}",
+              admin_puzzle_reports_path(puzzle), class: "m-puzzle-list__flag" %>
       <% end %>
     </span>
     <%# Admin-only funnel line — only the admin tab passes the engagement local. %>

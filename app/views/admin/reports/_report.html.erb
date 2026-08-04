@@ -1,0 +1,31 @@
+<%# One report's full view: who flagged it and why, the staff comment thread,
+    and the combined resolve-and/or-comment form (both fields optional, empty
+    submits bounce). Rendered open for unresolved reports, inside the fold-out
+    for resolved ones — same form either way, so WILLDO → FIXED is routine. %>
+<p class="m-triage__reason">
+  <%= report.reason.presence || content_tag(:em, "No reason given") %>
+</p>
+<p class="m-triage__who">
+  <%= report.user ? report.user.name : "anonymous" %>
+  &middot; <%= list_date(report.created_at) %>
+</p>
+
+<% report.comments.each do |comment| %>
+  <p class="m-triage__note">
+    <strong><%= comment.user.name %></strong>
+    &middot; <%= list_date(comment.created_at) %> —
+    <%= comment.body %>
+  </p>
+<% end %>
+
+<%= form_with url: admin_report_path(report), method: :patch, class: "m-triage__form" do %>
+  <%= select_tag "report[resolution]",
+        options_for_select(
+          [["— resolution —", ""]] + Report.resolutions.keys.map { |k| [k.upcase, k] },
+          report.resolution
+        ),
+        class: "m-triage__select", aria: { label: "Resolution" } %>
+  <%= text_area_tag "report[comment]", nil, rows: 2, placeholder: "Add a comment (optional)",
+        class: "m-triage__comment", aria: { label: "Comment" } %>
+  <%= submit_tag "Update", class: "m-btn m-btn--sm" %>
+<% end %>
