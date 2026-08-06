@@ -93,7 +93,9 @@ class PlayController < ApplicationController
     return anonymous unless user_signed_in?
 
     # Signed in: the account's save wins; failing that, adopt a game they
-    # started anonymously on this device (mirrors ClaimsPuzzles for authoring).
+    # started anonymously on this device. AnonymousClaim sweeps these at sign-in,
+    # so this is the belt to that braces — it catches a save made anonymously and
+    # then signed into within the same session, before any re-authentication.
     @puzzle.play_states.find_by(user: current_user) ||
       anonymous&.tap { |state| state.update(user: current_user) }
   end

@@ -32,6 +32,13 @@ module Quartets
     # image_processing gem — disable the processor so it stops warning on boot.
     config.active_storage.variant_processor = :disabled
 
+    # How long any identity on this site lasts: the login, the player_token, and
+    # the creator_token (ADR-0025 — "no cookie outlives three months"). Declared
+    # here so it's app policy that Devise follows, not a Devise setting the app
+    # reads back out: config/initializers/devise.rb sets remember_for from this.
+    # The two drifted apart once already, which is what ADR-0025 was cleaning up.
+    config.x.identity_lifespan = 3.months
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

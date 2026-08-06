@@ -29,8 +29,10 @@ RSpec.describe Event, type: :model do
     end
   end
 
-  it "still requires a player token on every play-funnel event" do
-    Event::PLAY_FUNNEL_TYPES.each do |type|
+  # Derived from the enum rather than from a second list, so a new event type is
+  # covered here the moment it's added — and defaults to requiring a token.
+  it "still requires a player token on every event that isn't user-keyed" do
+    (Event.event_types.keys - Event::USER_KEYED_TYPES).each do |type|
       event = Event.new(event_type: type)
       expect(event).not_to be_valid, "expected #{type} to require a player_token"
     end

@@ -172,7 +172,10 @@ Devise.setup do |config|
   # payments, no PII past an email — so the cost of a long window is close to
   # nothing, while the cost of the short one was real: people who play every few
   # weeks were getting logged out and had no idea why.
-  config.remember_for = 3.months
+  #
+  # Read from the app's own identity policy (config/application.rb) rather than
+  # set here, so the login and the identity cookies can't drift apart again.
+  config.remember_for = Rails.application.config.x.identity_lifespan
 
   # Invalidates all the remember me tokens when the user signs out.
   config.expire_all_remember_me_on_sign_out = true

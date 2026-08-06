@@ -7,21 +7,8 @@ require "rails_helper"
 RSpec.describe "Claiming anonymous work on auth", type: :request do
   let(:password) { "correct-horse-battery-staple" }
 
-  # BotDetector treats a blank UA as a crawler and request specs send none, so the
-  # funnel event we read the player_token back off of needs a browser-shaped one.
-  # A `let`, not a constant: constants assigned inside a describe block land on
-  # Object, and visit_logging_spec already owns the obvious name.
-  let(:browser) do
-    { "HTTP_USER_AGENT" => "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/605.1" }
-  end
-
-  # The visitor's player_token as the *server* sees it — play#show logs a
-  # puzzle_opened event keyed by it. The cookie itself is signed with an embedded
-  # expiry, so it can't just be read back out of the jar.
-  def play_anonymously(puzzle)
-    get play_path(puzzle.share_token), headers: browser
-    Event.puzzle_opened.last.player_token
-  end
+  # play_anonymously / browser_headers / expiry_of come from
+  # spec/support/request_cookies.rb.
 
   describe "authored puzzles" do
     it "transfers cookie-owned puzzles to the account once signed in" do
@@ -104,11 +91,9 @@ RSpec.describe "Claiming anonymous work on auth", type: :request do
     it "gives the creator token the same three months as everything else" do
       post puzzles_path, params: { puzzle: { title: "Anon work" } }
 
-      line = Array(response.headers["Set-Cookie"]).flat_map { |h| h.split("\n") }
-                                                  .find { |l| l.start_with?("creator_token=") }
-      expect(line).to be_present
-      expect(Time.parse(line[/expires=([^;]+)/i, 1]))
-        .to be_within(1.minute).of(Devise.remember_for.from_now)
+      expect(set_cookie_line("creator_token")).to be_present
+      expect(expiry_of("creator_token"))
+        .to be_within(1.minute).of(Rails.application.config.x.identity_lifespan.from_now)
     end
   end
 end

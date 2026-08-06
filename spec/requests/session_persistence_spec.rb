@@ -9,31 +9,10 @@ require "rails_helper"
 RSpec.describe "Session persistence", type: :request do
   let(:password) { "correct-horse-battery-staple" }
 
-  # BotDetector treats a blank UA as a crawler, and request specs send none — so
-  # any test that leans on funnel events has to look like a browser. A `let`, not a
-  # constant: constants assigned inside a describe block land on Object, where
-  # they collide across spec files (see the ANSWERS warning the suite already prints).
-  let(:browser) do
-    { "HTTP_USER_AGENT" => "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/605.1" }
-  end
-
+  # set_cookie_line / expiry_of / browser_headers / play_anonymously come from
+  # spec/support/request_cookies.rb.
   def remember_cookie
     response.headers["Set-Cookie"].to_s[/remember_user_token=([^;]+)/, 1]
-  end
-
-  # The raw Set-Cookie line for a cookie, so its expiry can be read. A line with
-  # no `expires=` is a session cookie — the browser drops it when it closes.
-  def set_cookie_line(name)
-    Array(response.headers["Set-Cookie"]).flat_map { |h| h.split("\n") }
-                                         .find { |line| line.start_with?("#{name}=") }
-  end
-
-  def expiry_of(name)
-    line = set_cookie_line(name)
-    return nil if line.nil?
-
-    stamp = line[/expires=([^;]+)/i, 1]
-    stamp && Time.parse(stamp)
   end
 
   describe "POST /users (sign up)" do
@@ -136,9 +115,9 @@ RSpec.describe "Session persistence", type: :request do
     it "keeps the same token across requests — only the expiry moves" do
       puzzle = create(:published_puzzle)
 
-      get play_path(puzzle.share_token), headers: browser
+      get play_path(puzzle.share_token), headers: browser_headers
       first = Event.puzzle_opened.last.player_token
-      get play_path(puzzle.share_token), headers: browser
+      get play_path(puzzle.share_token), headers: browser_headers
 
       expect(first).to be_present
       expect(Event.puzzle_opened.last.player_token).to eq(first)
@@ -168,7 +147,7 @@ RSpec.describe "Session persistence", type: :request do
 
     it "leaves no solved-puzzle identity behind — the orphan state is gone" do
       puzzle = create(:published_puzzle)
-      get play_path(puzzle.share_token), headers: browser
+      get play_path(puzzle.share_token), headers: browser_headers
       create(:attempt, puzzle: puzzle, solved: true,
              player_token: Event.puzzle_opened.last.player_token)
 

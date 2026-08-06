@@ -21,9 +21,11 @@ class Event < ApplicationRecord
   enum :event_type, { game_started: 0, puzzle_opened: 1, authoring_opened: 2,
                       signed_in: 3, signed_in_remembered: 4 }
 
-  # Play-funnel events are counted per distinct player, so one without a token is
-  # useless data rather than a partial row — hence the validation below.
-  PLAY_FUNNEL_TYPES = %w[game_started puzzle_opened authoring_opened].freeze
+  # The sign-in family, which is keyed by user instead of by player. Listing this
+  # side rather than the play funnel is deliberate: it's the small, closed one, so
+  # a *new* play event type requires a token by default. That's the safe direction
+  # — a token that was never captured can't be backfilled.
+  USER_KEYED_TYPES = %w[signed_in signed_in_remembered].freeze
 
   # So a fresh event is well-formed without the caller stamping the time (the
   # column is NOT NULL, so the default is the guarantee — no presence check needed).
@@ -32,10 +34,11 @@ class Event < ApplicationRecord
   validates :event_type, presence: true
   # Sign-in events legitimately have no player_token: Devise's own pages don't
   # include AnonymousPlayer, so someone who signs up before ever opening a puzzle
-  # has no cookie to read. They're keyed by user instead.
-  validates :player_token, presence: true, if: :play_funnel?
+  # has no cookie to read. Everything else is counted per distinct player, where a
+  # row without a token is useless data rather than a partial one.
+  validates :player_token, presence: true, unless: :user_keyed?
 
-  def play_funnel?
-    PLAY_FUNNEL_TYPES.include?(event_type)
+  def user_keyed?
+    USER_KEYED_TYPES.include?(event_type)
   end
 end

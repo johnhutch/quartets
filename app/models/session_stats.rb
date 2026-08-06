@@ -43,10 +43,7 @@ class SessionStats
   # to measure. That's the healthy case, and reporting it as 0 would invert the
   # meaning of the whole number.
   def median_days_between_password_sign_ins
-    gaps = password_sign_in_gaps_in_days
-    return nil if gaps.empty?
-
-    median(gaps)
+    EngagementStats.median(password_sign_in_gaps_in_days)
   end
 
   private
@@ -55,29 +52,16 @@ class SessionStats
     scope.where(occurred_at: @since..).count
   end
 
-  # One pass with a window function: LAG gives each sign-in its account's previous
-  # one, so the gaps fall out as a single column. The first sign-in per account has
-  # no predecessor and comes back NULL — dropped, not zeroed.
+  # Every consecutive pair of password sign-ins by the same account, as days.
+  # An account with only one has no predecessor and contributes nothing —
+  # `each_cons(2)` over a single element is empty, which is why there's no guard.
   #
   # Gaps are measured strictly inside the window, so a shorter window can only
   # report shorter gaps. Read it alongside the raw counts, not on its own.
   def password_sign_in_gaps_in_days
-    seconds = Event.connection.select_values(
-      Event.sanitize_sql_array([ <<~SQL.squish, Event.event_types[:signed_in], @since ])
-        SELECT EXTRACT(EPOCH FROM (occurred_at - LAG(occurred_at)
-                 OVER (PARTITION BY user_id ORDER BY occurred_at)))
-        FROM events
-        WHERE event_type = ? AND user_id IS NOT NULL AND occurred_at >= ?
-      SQL
-    )
-    seconds.compact.map { |s| s.to_f / 1.day }
-  end
-
-  def median(values)
-    sorted = values.sort
-    mid = sorted.size / 2
-    return sorted[mid] if sorted.size.odd?
-
-    (sorted[mid - 1] + sorted[mid]) / 2.0
+    Event.signed_in.where(occurred_at: @since..).where.not(user_id: nil)
+         .order(:user_id, :occurred_at).pluck(:user_id, :occurred_at)
+         .group_by(&:first)
+         .flat_map { |_, rows| rows.map(&:last).each_cons(2).map { |a, b| (b - a) / 1.day } }
   end
 end
