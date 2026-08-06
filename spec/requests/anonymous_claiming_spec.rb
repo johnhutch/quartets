@@ -74,16 +74,20 @@ RSpec.describe "Claiming anonymous work on auth", type: :request do
       expect(state.reload.user).to eq(user)
     end
 
-    it "sweeps once per session, not on every request" do
+    # `except: :fetch` — deserializing an already-signed-in user on every later
+    # request is not an authentication, so the sweep must not re-run there. Uses
+    # this session's OWN player_token, so the only reason it stays unclaimed is
+    # that no sweep happened; a token belonging to someone else would sit there
+    # untouched either way and prove nothing.
+    it "does not re-sweep on ordinary requests inside a session" do
       user = create(:user, email: "once@example.com", password: password)
+      token = play_anonymously(puzzle)
       post user_session_path, params: { user: { email: user.email, password: password } }
 
-      # A late-arriving anonymous row is not re-swept mid-session: the flag is set,
-      # and nothing creates anonymous work for a signed-in visitor anyway.
-      stray = create(:attempt, puzzle: puzzle, player_token: "unrelated")
+      late = create(:attempt, puzzle: create(:published_puzzle), player_token: token)
       get puzzles_path
 
-      expect(stray.reload.user).to be_nil
+      expect(late.reload.user).to be_nil
     end
   end
 

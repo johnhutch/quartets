@@ -93,6 +93,24 @@ RSpec.describe "Session persistence", type: :request do
       expect(expiry_of("player_token")).to be_within(2.seconds).of(login_expiry)
     end
 
+    # The example above can't tell "pinned to the login" from "slides from now":
+    # the sign-in just happened, so both land on the same second. The difference
+    # only shows for a returning player, whose remember cookie was minted a while
+    # back and isn't refreshed mid-session. If the player token slid from *now* it
+    # would start outliving the login — which is the orphan state coming back.
+    it "does not outlive a login that was minted a while ago" do
+      post user_session_path,
+           params: { user: { email: user.email, password: password, remember_me: "1" } }
+      user.update!(remember_created_at: 30.days.ago)
+
+      get play_index_path
+
+      expect(expiry_of("player_token"))
+        .to be_within(1.minute).of(30.days.ago + Devise.remember_for)
+      # Decisively earlier than a token that simply slid from now.
+      expect(expiry_of("player_token")).to be < (Devise.remember_for.from_now - 20.days)
+    end
+
     it "becomes a session cookie when the login is session-only" do
       post user_session_path,
            params: { user: { email: user.email, password: password, remember_me: "0" } }

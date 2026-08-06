@@ -248,9 +248,16 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to include("Session health")
       expect(response.body).to include("Signed in with a password")
       expect(response.body).to include("Signed in from a remembered session")
-      # Three password sign-ins to one remembered — the superuser's own `sign_in`
-      # above is the third, which is the Warden hook doing its job.
-      expect(page_text).to include("75%")
+
+      # Derived rather than hardcoded: `sign_in superuser` is itself a real
+      # authentication, so the Warden hook records a third password sign-in. The
+      # expected percentage is stated from the data actually in the table, so this
+      # asserts what the page renders instead of an arithmetic constant that only
+      # holds while the harness happens to sign in exactly once.
+      expected = SessionStats.new(since: 30.days.ago)
+      expect(expected.password_sign_ins).to eq(3) # 2 seeded + the superuser's own
+      expect(expected.remembered_sign_ins).to eq(1)
+      expect(page_text).to include("#{(expected.re_login_rate * 100).round}%")
       # The player's two password sign-ins were two days apart; the superuser has
       # only one, so contributes no gap.
       expect(page_text).to include("2.0")

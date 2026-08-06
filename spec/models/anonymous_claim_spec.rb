@@ -131,17 +131,57 @@ RSpec.describe AnonymousClaim do
     end
   end
 
+  # A missing token must claim *nothing*, and the danger is not an exception —
+  # it's a WHERE clause that matches far too much. `puzzles.creator_token` is
+  # nullable, so a nil token reaching `Puzzle.where(creator_token: nil)` would
+  # match every account-owned puzzle on the site and hand them all to whoever
+  # just signed in. These assert the blast radius, not the absence of an error.
   describe "with nothing to claim" do
-    it "no-ops when neither cookie is set" do
-      expect {
-        described_class.new(user: user, creator_token: nil, player_token: nil).call
-      }.not_to raise_error
+    # Other people's work, all of it already owned — nothing here is claimable by
+    # anyone, which is exactly what makes it the right tripwire.
+    let!(:someone_else) { create(:user) }
+    let!(:their_puzzle) { create(:puzzle, user: someone_else, creator_token: nil) }
+    let!(:their_attempt) { create(:attempt, user: someone_else, player_token: "their-token") }
+    let!(:their_state) { create(:play_state, user: someone_else, player_token: "their-token") }
+    let!(:their_report) { create(:report, user: someone_else, reporter_token: "their-token") }
+
+    def expect_nothing_moved
+      expect(their_puzzle.reload.user).to eq(someone_else)
+      expect(their_attempt.reload.user).to eq(someone_else)
+      expect(their_state.reload.user).to eq(someone_else)
+      expect(their_report.reload.user).to eq(someone_else)
+      expect(user.puzzles).to be_empty
+      expect(user.attempts).to be_empty
     end
 
-    it "no-ops when the tokens are blank strings" do
-      expect {
-        described_class.new(user: user, creator_token: "", player_token: "").call
-      }.not_to raise_error
+    it "touches nothing when neither cookie is set" do
+      described_class.new(user: user, creator_token: nil, player_token: nil).call
+
+      expect_nothing_moved
+    end
+
+    it "touches nothing when the tokens are blank strings" do
+      described_class.new(user: user, creator_token: "", player_token: "").call
+
+      expect_nothing_moved
+    end
+
+    it "claims only the player's half when there's no creator token" do
+      mine = create(:attempt, player_token: player_token)
+
+      described_class.new(user: user, creator_token: nil, player_token: player_token).call
+
+      expect(mine.reload.user).to eq(user)
+      expect(their_puzzle.reload.user).to eq(someone_else)
+    end
+
+    it "claims only the author's half when there's no player token" do
+      mine = create(:puzzle, user: nil, creator_token: creator_token)
+
+      described_class.new(user: user, creator_token: creator_token, player_token: nil).call
+
+      expect(mine.reload.user).to eq(user)
+      expect(their_attempt.reload.user).to eq(someone_else)
     end
 
     it "is idempotent — a second sweep changes nothing" do
