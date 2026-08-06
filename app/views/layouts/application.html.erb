@@ -98,6 +98,7 @@
         <span class="l-topbar__auth">
           <% if user_signed_in? %>
             <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-topbar__btn" %>
+            <%= link_to "Account", edit_user_registration_path, class: "l-topbar__btn" %>
             <% if current_user.staff? %>
               <%= link_to "Admin", admin_root_path, class: "l-topbar__btn" %>
             <% end %>
@@ -127,6 +128,7 @@
             <% if current_user.staff? %>
               <%= link_to "Admin", admin_root_path, class: "l-nav__link" %>
             <% end %>
+            <%= link_to "Account", edit_user_registration_path, class: "l-nav__link" %>
             <%= button_to "Log out", destroy_user_session_path, method: :delete, class: "l-nav__link" %>
           <% else %>
             <%= link_to "Log in", new_user_session_path, class: "l-nav__link" %>

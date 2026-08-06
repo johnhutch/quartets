@@ -37,6 +37,17 @@ RSpec.describe "Mobile navigation", type: :system, js: true do
     end
   end
 
+  it "puts the Account link in the hamburger for a signed-in user" do
+    login_as create(:user), scope: :user
+    visit play_index_path
+    find("summary.l-nav__toggle").click
+
+    within(".l-nav") do
+      expect(page).to have_link("Account", href: edit_user_registration_path)
+      expect(page).to have_button("Log out")
+    end
+  end
+
   it "hides the page's redundant Create sticker on mobile (the hamburger has it)" do
     visit play_index_path
 

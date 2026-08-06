@@ -33,6 +33,22 @@ RSpec.describe "Authentication", type: :system do
     expect(page).to have_no_button("Log out")
   end
 
+  it "links a signed-in user to account settings beside Log out" do
+    login_as create(:user), scope: :user
+
+    visit play_index_path
+    within(".l-topbar__auth") do
+      expect(page).to have_link("Account", href: edit_user_registration_path)
+      expect(page).to have_button("Log out")
+    end
+
+    # The homepage fronts its own auth chip — same buttons, same order.
+    visit root_path
+    within(".l-home-auth") do
+      expect(page).to have_link("Account", href: edit_user_registration_path)
+    end
+  end
+
   it "walks the forgot-password request from the login screen" do
     create(:user, email: "lost@example.com")
 
