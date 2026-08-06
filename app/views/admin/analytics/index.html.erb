@@ -46,6 +46,28 @@
     <div class="m-stats__row"><span>Published a quartet</span><span><%= @funnel.published %></span></div>
   </div>
 
+  <h2>Session health</h2>
+  <div class="m-stats">
+    <div class="m-stats__row">
+      <span>Signed in with a password</span>
+      <span><%= @sessions.password_sign_ins %></span>
+    </div>
+    <div class="m-stats__row">
+      <span>Signed in from a remembered session</span>
+      <span><%= @sessions.remembered_sign_ins %></span>
+    </div>
+    <div class="m-stats__row">
+      <span>Had to type a password</span>
+      <span><%= number_to_percentage(@sessions.re_login_rate * 100, precision: 0) %></span>
+    </div>
+    <div class="m-stats__row">
+      <span>Median days between password sign-ins</span>
+      <%# nil means nobody signed in with a password twice in the window — no gap
+          to measure, which is the healthy case rather than a zero. %>
+      <span><%= @sessions.median_days_between_password_sign_ins&.round(1) || "—" %></span>
+    </div>
+  </div>
+
   <p class="m-admin-note">
     First-party only — no cookies, no client script, no third parties. Counts are
     distinct players per stage; traffic is server-side page-view logging.

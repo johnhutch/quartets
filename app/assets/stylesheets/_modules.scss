@@ -670,10 +670,17 @@
   display: inline-flex;
   align-items: center;
   gap: $space-xs;
+  // The meter is a fixed ~35px and the label can't break (below), so on a narrow
+  // browse card — two abreast on a phone leaves ~130px of interior — the pair
+  // overran the card's border. Wrapping puts the label on its own line instead;
+  // max-width keeps the whole thing inside whatever box it's given.
+  flex-wrap: wrap;
+  max-width: 100%;
 
   &__meter {
     display: inline-flex;
     gap: 2px;
+    flex-shrink: 0; // segments are the reading, never squeeze them
   }
 
   &__seg {
@@ -693,7 +700,11 @@
     font-size: $font-xs;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    white-space: nowrap;
+    // Was `nowrap`, which only ever bound when space was tight — i.e. exactly
+    // when it needed to give. On the narrowest phones even the label alone is
+    // wider than a card's interior, so it breaks at the space ("4/4" over
+    // "DIFFICULTY") rather than running out over the border.
+    min-width: 0;
   }
 }
 

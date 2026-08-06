@@ -11,5 +11,6 @@ class Admin::AnalyticsController < Admin::BaseController
     since = @days.days.ago
     @traffic = TrafficStats.new(since: since)
     @funnel = FunnelStats.new(since: since)
+    @sessions = SessionStats.new(since: since)
   end
 end

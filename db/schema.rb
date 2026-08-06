@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_03_184354) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_06_025922) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -37,7 +37,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_03_184354) do
     t.datetime "created_at", null: false
     t.integer "event_type", null: false
     t.datetime "occurred_at", null: false
-    t.string "player_token", null: false
+    t.string "player_token"
     t.bigint "puzzle_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id"

@@ -168,13 +168,20 @@ Devise.setup do |config|
 
   # ==> Configuration for :rememberable
   # The time the user will be remembered without asking for credentials again.
-  # config.remember_for = 2.weeks
+  # Three months, not Devise's default fortnight. This is a puzzle game — no
+  # payments, no PII past an email — so the cost of a long window is close to
+  # nothing, while the cost of the short one was real: people who play every few
+  # weeks were getting logged out and had no idea why.
+  config.remember_for = 3.months
 
   # Invalidates all the remember me tokens when the user signs out.
   config.expire_all_remember_me_on_sign_out = true
 
-  # If true, extends the user's remember period when remembered via cookie.
-  # config.extend_remember_period = false
+  # Slide the window on every remembered sign-in, so the clock measures time away
+  # rather than time since you first logged in. Without this an active player was
+  # still dumped on a hard schedule no matter how much they played, which is the
+  # "logged out for no reason" report.
+  config.extend_remember_period = true
 
   # Options to be passed to the created cookie. For instance, you can set
   # secure: true in order to force SSL only cookies.

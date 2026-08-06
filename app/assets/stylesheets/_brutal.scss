@@ -364,6 +364,13 @@ body.theme-brutal {
   // when titles wrap to different heights.
   display: grid;
   grid-template-rows: auto 1fr auto;
+  // Declared, not implicit: an undeclared single column is an `auto` track, which
+  // sizes to its widest content and grows straight past the card's padding box.
+  // The overflowing difficulty row was setting the track, and since every row
+  // stretches to it, the title silently got a wider box than the card has — so
+  // titles measured themselves against space that wasn't there. minmax(0, 1fr)
+  // pins the track to the card's real interior (the .m-board lesson again).
+  grid-template-columns: minmax(0, 1fr);
   gap: $space-sm;
   padding: $space-md;
   color: $brutal-ink;

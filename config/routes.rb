@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
-  devise_for :users
+  # Two narrow overrides, both about cookie lifespan: registrations sets the
+  # remember cookie on signup, sessions clears the player_token on sign-out.
+  # Everything else is stock Devise.
+  devise_for :users, controllers: { registrations: "users/registrations",
+                                    sessions: "users/sessions" }
 
   # Superuser-facing puzzle management.
   resources :puzzles do

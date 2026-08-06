@@ -234,6 +234,28 @@ RSpec.describe "Admin", type: :request do
       expect(response.body).to include("Play funnel")
     end
 
+    # The session-health panel — how people are getting in, and how often the
+    # site makes them type a password again (SessionStats).
+    it "shows the session-health split" do
+      sign_in superuser
+      player = create(:user)
+      Event.create!(event_type: :signed_in, user: player, occurred_at: 3.days.ago)
+      Event.create!(event_type: :signed_in, user: player, occurred_at: 1.day.ago)
+      Event.create!(event_type: :signed_in_remembered, user: player, occurred_at: 2.hours.ago)
+
+      get admin_analytics_path
+
+      expect(response.body).to include("Session health")
+      expect(response.body).to include("Signed in with a password")
+      expect(response.body).to include("Signed in from a remembered session")
+      # Three password sign-ins to one remembered — the superuser's own `sign_in`
+      # above is the third, which is the Warden hook doing its job.
+      expect(page_text).to include("75%")
+      # The player's two password sign-ins were two days apart; the superuser has
+      # only one, so contributes no gap.
+      expect(page_text).to include("2.0")
+    end
+
     it "404s a moderator (analytics is superuser-only)" do
       sign_in create(:user, :moderator)
       get admin_analytics_path
