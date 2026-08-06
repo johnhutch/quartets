@@ -11,8 +11,19 @@ module Creator
 
   private
 
+  # Same three months as the play token and the login (ADR-0025) — no cookie on
+  # this site outlives that. Only ever runs signed out (PuzzlesController gates it
+  # on `unless: :user_signed_in?`), so unlike the play token there's no login
+  # state to mirror: one rule, sliding on each visit to an authoring page.
+  #
+  # An anonymous author away longer than that loses the device-side claim on
+  # unpublished work. That's the deal the short cookie buys, and signing up is the
+  # answer — AnonymousClaim sweeps the drafts onto the account the moment you do.
   def ensure_creator_token
-    cookies.signed.permanent[:creator_token] ||= SecureRandom.uuid
+    cookies.signed[:creator_token] = {
+      value: current_creator_token || SecureRandom.uuid,
+      expires: Devise.remember_for.from_now
+    }
   end
 
   def current_creator_token

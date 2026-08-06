@@ -9,9 +9,9 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # Anonymous authors' puzzles get claimed onto their account the moment they
-  # authenticate (ADR-0005).
-  include ClaimsPuzzles
+  # Everything done anonymously — puzzles, plays, saves, reports — gets claimed
+  # onto the account the moment they authenticate (ADR-0005, widened by ADR-0025).
+  include ClaimsAnonymousWork
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
