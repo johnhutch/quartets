@@ -56,6 +56,12 @@
       <span>Signed in from a remembered session</span>
       <span><%= @sessions.remembered_sign_ins %></span>
     </div>
+    <%# Counted apart from the two above, and excluded from the rate below — a
+        signup is a new account, not a session that failed to last. %>
+    <div class="m-stats__row">
+      <span>New accounts</span>
+      <span><%= @sessions.signups %></span>
+    </div>
     <div class="m-stats__row">
       <span>Had to type a password</span>
       <span><%= number_to_percentage(@sessions.re_login_rate * 100, precision: 0) %></span>

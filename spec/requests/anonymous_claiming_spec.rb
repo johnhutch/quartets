@@ -99,5 +99,28 @@ RSpec.describe "Claiming anonymous work on auth", type: :request do
       expect(expiry_of("creator_token"))
         .to be_within(1.minute).of(Rails.application.config.x.identity_lifespan.from_now)
     end
+
+    # The cookie is the *only* key to an anonymous author's puzzles, published
+    # ones included — `puzzles.user_id` is nil, so if it lapses, edit/unpublish/
+    # delete/stats all 404 on a live listing with no way back. It used to slide
+    # only inside PuzzlesController, so the ordinary thing to do after publishing
+    # (share the link, watch it get played) let it die untouched.
+    it "keeps sliding on the play surfaces, not just authoring pages" do
+      post puzzles_path, params: { puzzle: { title: "Anon work" } }
+      puzzle = Puzzle.last
+
+      get play_index_path
+      expect(expiry_of("creator_token"))
+        .to be_within(1.minute).of(Rails.application.config.x.identity_lifespan.from_now)
+
+      get play_path(puzzle.share_token)
+      expect(expiry_of("creator_token")).to be_present
+    end
+
+    it "does not hand a creator token to someone who has only ever played" do
+      get play_index_path
+
+      expect(set_cookie_line("creator_token")).to be_nil
+    end
   end
 end

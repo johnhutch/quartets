@@ -23,6 +23,15 @@ class SessionStats
     @remembered_sign_ins ||= count(Event.signed_in_remembered)
   end
 
+  # Deliberately outside every ratio below. A signup is a new account, not a
+  # session that failed to last — folding it into password_sign_ins made the
+  # re-login rate climb with new-user growth, so a good launch week read as a
+  # session-persistence regression. Reported on its own so the number still has
+  # somewhere to be seen.
+  def signups
+    @signups ||= count(Event.signed_up)
+  end
+
   def total_sign_ins
     password_sign_ins + remembered_sign_ins
   end

@@ -77,7 +77,7 @@ RSpec.describe "Session persistence", type: :request do
   describe "player_token lifespan" do
     let!(:user) { create(:user, email: "player@example.com", password: password) }
 
-    it "matches the remembered login's own expiry, to the second" do
+    it "matches the remembered login's own expiry" do
       post user_session_path,
            params: { user: { email: user.email, password: password, remember_me: "1" } }
       # Grabbed here because the remember cookie is only written at sign-in; the
@@ -86,29 +86,45 @@ RSpec.describe "Session persistence", type: :request do
 
       get play_index_path
 
-      expected = user.reload.remember_created_at + Devise.remember_for
-      expect(expiry_of("player_token")).to be_within(2.seconds).of(expected)
-      # And that really is when the login cookie goes, not a lookalike window.
       expect(login_expiry).to be_present
       expect(expiry_of("player_token")).to be_within(2.seconds).of(login_expiry)
     end
 
-    # The example above can't tell "pinned to the login" from "slides from now":
-    # the sign-in just happened, so both land on the same second. The difference
-    # only shows for a returning player, whose remember cookie was minted a while
-    # back and isn't refreshed mid-session. If the player token slid from *now* it
-    # would start outliving the login — which is the orphan state coming back.
-    it "does not outlive a login that was minted a while ago" do
+    # Regression for the worst bug on this branch. The expiry was once computed as
+    # `remember_created_at + remember_for`, in the belief that it mirrored Devise.
+    # It doesn't: `remember_me!` sets `remember_created_at ||= Time.now.utc` — it
+    # never advances — while the cookie Devise writes is always
+    # `remember_for.from_now`. So the computed value slid into the past, and once
+    # negative the cookie was written already-expired, read back nil in the same
+    # request, and minted a fresh token every time.
+    it "ignores a stale remember_created_at instead of expiring into the past" do
       post user_session_path,
            params: { user: { email: user.email, password: password, remember_me: "1" } }
-      user.update!(remember_created_at: 30.days.ago)
+      # Older than the whole window — what any long-tenured account looks like,
+      # since the column is stamped once at signup and never moves.
+      user.update!(remember_created_at: 6.months.ago)
 
       get play_index_path
 
+      expect(expiry_of("player_token")).to be > Time.current
       expect(expiry_of("player_token"))
-        .to be_within(1.minute).of(30.days.ago + Devise.remember_for)
-      # Decisively earlier than a token that simply slid from now.
-      expect(expiry_of("player_token")).to be < (Devise.remember_for.from_now - 20.days)
+        .to be_within(1.minute).of(Rails.application.config.x.identity_lifespan.from_now)
+    end
+
+    # The same staleness, one layer down: whatever the cookie says, the token it
+    # carries has to survive being read back in the request that wrote it.
+    it "stays readable in the request that writes it, however old the account is" do
+      post user_session_path,
+           params: { user: { email: user.email, password: password, remember_me: "1" } }
+      user.update!(remember_created_at: 6.months.ago)
+      puzzle = create(:published_puzzle)
+
+      get play_path(puzzle.share_token), headers: browser_headers
+      first = Event.puzzle_opened.last&.player_token
+      get play_path(puzzle.share_token), headers: browser_headers
+
+      expect(first).to be_present # nil here means the cookie expired on write
+      expect(Event.puzzle_opened.last.player_token).to eq(first)
     end
 
     it "becomes a session cookie when the login is session-only" do
@@ -195,12 +211,16 @@ RSpec.describe "Session persistence", type: :request do
       expect(Event.signed_in.last.user).to eq(user)
     end
 
-    it "records a signup as signed_in — somebody typed credentials into a form" do
+    # Its own type, not a password sign-in. A new account is growth, not a session
+    # that failed to last, and SessionStats keeps it out of the re-login rate.
+    it "records a signup as signed_up, not as a forced password re-login" do
       expect {
         post user_registration_path,
              params: { user: { email: "brand@example.com", password: password,
                                password_confirmation: password } }
-      }.to change { Event.signed_in.count }.by(1)
+      }.to change { Event.signed_up.count }.by(1)
+
+      expect(Event.signed_in.count).to eq(0)
     end
 
     it "records nothing on a failed sign-in" do

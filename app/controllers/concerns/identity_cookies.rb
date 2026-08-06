@@ -13,9 +13,12 @@ module IdentityCookies
 
   # Written on every request rather than only when missing, because the expiry has
   # to keep sliding and a browser never reports what it's holding. The value is
-  # preserved across rewrites; only the expiry moves.
+  # preserved across rewrites; only the expiry moves. Returns the token so callers
+  # can memoize it instead of paying for a second verify+parse to read it back.
   def write_identity_cookie(name, expires:)
-    cookies.signed[name] = { value: cookies.signed[name] || SecureRandom.uuid, expires: expires }
+    token = cookies.signed[name] || SecureRandom.uuid
+    cookies.signed[name] = { value: token, expires: expires }
+    token
   end
 
   # The site's identity lifespan — and the value Devise's `remember_for` is set

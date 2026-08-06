@@ -14,12 +14,26 @@
 Warden::Manager.after_set_user except: :fetch do |user, auth, _opts|
   next unless user.is_a?(User)
 
-  # winning_strategy is nil for a programmatic sign_in (registration), which is a
-  # password-equivalent event — somebody just typed credentials into a form.
-  remembered = auth.winning_strategy.is_a?(Devise::Strategies::Rememberable)
+  # Three outcomes. A registration flags the request on its way in, because the
+  # winning strategy can't distinguish one — a post-password-reset sign_in is also
+  # strategy-less, and that one genuinely is somebody who had to type their way
+  # back in. Everything else splits on whether the remember cookie did the work.
+  #
+  # Signups were originally folded into `signed_in` as "password-equivalent". They
+  # aren't, for the one measurement this exists to serve: a signup is a new
+  # account, not a session that failed to last, and counting it as a forced
+  # re-login made the dashboard's headline number rise with new-user growth.
+  event_type =
+    if auth.request.env[Users::RegistrationsController::SIGNING_UP]
+      :signed_up
+    elsif auth.winning_strategy.is_a?(Devise::Strategies::Rememberable)
+      :signed_in_remembered
+    else
+      :signed_in
+    end
 
   Event.create!(
-    event_type: remembered ? :signed_in_remembered : :signed_in,
+    event_type: event_type,
     user: user,
     # Present when they've already touched a play surface; nil is fine and
     # expected on a first-ever signup (Event only requires it for play events).

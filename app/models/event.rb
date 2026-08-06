@@ -15,17 +15,21 @@ class Event < ApplicationRecord
   # (opened the create form) are server-side one-liners; game_started is the one
   # client beacon (nothing else hits the server between open and game-over).
   #
-  # The sign-in pair splits one authentication two ways: signed_in means somebody
-  # typed a password, signed_in_remembered means the remember cookie carried them
-  # in. The *ratio* is the measurement — see SessionStats.
+  # The sign-in trio splits one authentication three ways: signed_in means
+  # somebody typed a password into the login form, signed_in_remembered means the
+  # remember cookie carried them in, and signed_up is a brand-new account. The
+  # *ratio of the first two* is the measurement (see SessionStats) — which is why
+  # signups have to be their own type rather than counting as password sign-ins.
+  # Lumped in, they made "had to type a password" climb with new-user growth, so
+  # a good launch week read as a session-persistence regression.
   enum :event_type, { game_started: 0, puzzle_opened: 1, authoring_opened: 2,
-                      signed_in: 3, signed_in_remembered: 4 }
+                      signed_in: 3, signed_in_remembered: 4, signed_up: 5 }
 
   # The sign-in family, which is keyed by user instead of by player. Listing this
   # side rather than the play funnel is deliberate: it's the small, closed one, so
   # a *new* play event type requires a token by default. That's the safe direction
   # — a token that was never captured can't be backfilled.
-  USER_KEYED_TYPES = %w[signed_in signed_in_remembered].freeze
+  USER_KEYED_TYPES = %w[signed_in signed_in_remembered signed_up].freeze
 
   # So a fresh event is well-formed without the caller stamping the time (the
   # column is NOT NULL, so the default is the guarantee — no presence check needed).

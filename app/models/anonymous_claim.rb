@@ -17,6 +17,16 @@ class AnonymousClaim
 
   # Which token drives which step, stated once. A transaction that issues no
   # queries emits no BEGIN, so there's nothing to guard against up front.
+  #
+  # `RecordNotUnique` is the one failure that's expected rather than exceptional:
+  # two authentications for the same account carrying different player_tokens
+  # (phone and laptop re-authenticating at once) each select their own attempt for
+  # the same puzzle, neither sees the other's uncommitted write, and the second
+  # commit trips the ADR-0009 index. Everything else propagates — this runs in a
+  # deliberately unrescued Warden hook, and a claim that fails silently looks like
+  # losing someone's puzzles. But a lost *race* isn't a lost claim: the loser's
+  # rows stay anonymous and the next authentication picks them up, which is a much
+  # better outcome than 500ing the sign-in that triggered it.
   def call
     ApplicationRecord.transaction do
       claim_puzzles if @creator_token
@@ -26,6 +36,8 @@ class AnonymousClaim
       claim_play_states
       claim_reports
     end
+  rescue ActiveRecord::RecordNotUnique
+    nil
   end
 
   private
@@ -41,17 +53,22 @@ class AnonymousClaim
   # anonymous play was never capped, so a token can hold several attempts on the
   # same puzzle *and* the account may already hold one. Both collide.
   #
-  # So: the earliest anonymous attempt per puzzle, and only for puzzles the
-  # account hasn't played — earliest because ADR-0009's rule is that the first
-  # recorded play is the one that counts. Leftovers stay anonymous rather than
-  # being deleted; they're still real plays in that puzzle's aggregate stats.
+  # So: the NEWEST anonymous attempt per puzzle, and only for puzzles the account
+  # hasn't played. Newest because that's the one every read path already resolves
+  # to while signed out — `PlayController#finished_attempt` orders
+  # `created_at: :desc`, and `PlayerCompletions#my_attempts_by_puzzle` keeps the
+  # last of an ascending index_by. Claiming the earliest instead made signing in
+  # silently swap the board, cube, trophy and duration you'd been looking at for an
+  # older game's, and pointed `RatingsController` at that older attempt too.
+  # Leftovers stay anonymous rather than being deleted; they're still real plays in
+  # that puzzle's aggregate stats, and no surface was showing them anyway.
   def claim_attempts
     # The DISTINCT ON has to ride inside pluck: a plain `pluck(:id)` after a
     # `select` builds its own SELECT clause and drops it, quietly claiming every
     # duplicate play and colliding on the index.
     ids = Attempt.where(player_token: @player_token, user_id: nil)
                  .where.not(puzzle_id: @user.attempts.select(:puzzle_id))
-                 .order(:puzzle_id, :created_at)
+                 .order(:puzzle_id, created_at: :desc)
                  .pluck(Arel.sql("DISTINCT ON (puzzle_id) id"))
 
     Attempt.where(id: ids).update_all(user_id: @user.id)

@@ -67,20 +67,36 @@ RSpec.describe AnonymousClaim do
     end
 
     # Anonymous play was never capped, so one token can hold several plays of the
-    # same puzzle — but the account can only hold one.
-    it "claims only the earliest when the token played one puzzle repeatedly" do
-      first = create(:attempt, puzzle: puzzle, player_token: player_token,
-                     created_at: 3.days.ago)
-      second = create(:attempt, puzzle: puzzle, player_token: player_token,
+    # same puzzle — but the account can only hold one. It has to be the newest:
+    # that's the one every signed-out read path resolves to, so claiming an older
+    # one would make signing in silently swap the board, cube and trophy the
+    # player had been looking at.
+    it "claims the newest when the token played one puzzle repeatedly" do
+      oldest = create(:attempt, puzzle: puzzle, player_token: player_token,
+                      created_at: 3.days.ago)
+      middle = create(:attempt, puzzle: puzzle, player_token: player_token,
                       created_at: 2.days.ago)
-      third = create(:attempt, puzzle: puzzle, player_token: player_token,
-                     created_at: 1.day.ago)
+      newest = create(:attempt, puzzle: puzzle, player_token: player_token,
+                      created_at: 1.day.ago)
 
       expect { claim }.not_to raise_error
 
-      expect(first.reload.user).to eq(user)
-      expect(second.reload.user).to be_nil
-      expect(third.reload.user).to be_nil
+      expect(newest.reload.user).to eq(user)
+      expect(middle.reload.user).to be_nil
+      expect(oldest.reload.user).to be_nil
+    end
+
+    # Ties the claim to the read path rather than restating the ordering, so this
+    # keeps holding if either side moves.
+    it "claims the same attempt the player was already being shown" do
+      create(:attempt, puzzle: puzzle, player_token: player_token, created_at: 3.days.ago)
+      create(:attempt, puzzle: puzzle, player_token: player_token, created_at: 1.day.ago)
+      shown = puzzle.attempts.where(player_token: player_token)
+                    .order(created_at: :desc).first # PlayController#finished_attempt
+
+      claim
+
+      expect(user.attempts.find_by(puzzle: puzzle)).to eq(shown)
     end
 
     it "claims across several puzzles in one sweep" do
@@ -90,6 +106,22 @@ RSpec.describe AnonymousClaim do
       claim
 
       expect(attempts.map { |a| a.reload.user }).to all(eq(user))
+    end
+
+    # Two authentications for the same account carrying different player_tokens
+    # (phone and laptop re-authenticating at once) can each select their own
+    # attempt for the same puzzle; neither sees the other's uncommitted write and
+    # the second commit trips the ADR-0009 index. This runs in a deliberately
+    # unrescued Warden hook, so letting that escape would 500 the sign-in. The
+    # loser's rows stay anonymous and the next authentication picks them up.
+    it "survives losing a claim race instead of 500ing the sign-in" do
+      create(:attempt, puzzle: puzzle, player_token: player_token)
+      losing = instance_double(ActiveRecord::Relation)
+      allow(Attempt).to receive(:where).and_call_original
+      allow(Attempt).to receive(:where).with(id: anything).and_return(losing)
+      allow(losing).to receive(:update_all).and_raise(ActiveRecord::RecordNotUnique, "dup key")
+
+      expect { claim }.not_to raise_error
     end
 
     it "leaves another player's attempts alone" do

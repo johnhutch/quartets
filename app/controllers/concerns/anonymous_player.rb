@@ -19,8 +19,10 @@ module AnonymousPlayer
 
   private
 
+  # Seeds the memo with what was just written, so the read below doesn't verify
+  # the same signed cookie a second time.
   def ensure_player_token
-    write_identity_cookie(:player_token, expires: player_token_expires_at)
+    @current_player_token = write_identity_cookie(:player_token, expires: player_token_expires_at)
   end
 
   # Memoized: reading a signed cookie is a fresh HMAC + JSON parse every time, and
@@ -30,22 +32,34 @@ module AnonymousPlayer
     @current_player_token ||= cookies.signed[:player_token]
   end
 
-  # A remembered login pins the token to that cookie's *own* expiry — same
-  # `remember_created_at + remember_for` arithmetic Devise uses, so the two can't
-  # drift. A session-only login gets a session cookie (nil expiry): they said
-  # don't remember me, so nothing should outlive the browser. Signed out there's
-  # no login to outlive, so it just slides.
+  # One rule with one exception. The token carries the same lifespan as the login
+  # (config.x.identity_lifespan, which is where Devise's remember_for comes from)
+  # and slides on the same policy, so neither meaningfully outlives the other. The
+  # exception is a session-only login: they said don't remember me, so the play
+  # identity shouldn't outlive the browser either.
+  #
+  # This used to try to pin the expiry to `remember_created_at + remember_for`, on
+  # the belief that it was Devise's own arithmetic. It isn't, and the bug was
+  # severe: `Devise::Models::Rememberable#remember_me!` sets
+  # `remember_created_at ||= Time.now.utc` — it never advances — while the cookie
+  # it writes is always `remember_for.from_now`. So the computed value drifted
+  # further into the past on every re-auth, and once it went negative the cookie
+  # was written already-expired, read back nil in the same request, and minted a
+  # fresh uuid every time — taking mid-game saves (NOT NULL player_token) and the
+  # game_started beacon down with it. Do not reintroduce that pinning.
   def player_token_expires_at
-    return identity_lifespan.from_now unless user_signed_in?
-    return nil unless remembered_login?
+    return nil if session_only_login?
 
-    (current_user.remember_created_at || Time.current) + Devise.remember_for
+    identity_lifespan.from_now
   end
 
-  # The login cookie as the browser actually holds it. Reading `remember_created_at`
-  # instead would lie after a session-only sign-in, since a previous remembered
-  # login leaves that column set.
-  def remembered_login?
-    cookies[:remember_user_token].present?
+  # Signed in without a live remember cookie. Note the known imprecision: Devise
+  # only clears `remember_user_token` on explicit sign-out, so someone who once
+  # ticked "Stay logged in" and later signs in without it still carries the old
+  # cookie and is read as remembered here. That cookie is genuinely still valid —
+  # rememberable will sign them back in with it — so treating it as a remembered
+  # login describes the browser's real state rather than the checkbox's intent.
+  def session_only_login?
+    user_signed_in? && cookies[:remember_user_token].blank?
   end
 end

@@ -14,7 +14,16 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # Not included in controllers by default — Devise ships it as opt-in.
   include Devise::Controllers::Rememberable
 
+  # Read by the session-events hook (config/initializers/session_events.rb), which
+  # otherwise can't tell a registration from any other programmatic sign-in — a
+  # password reset also signs you in with no winning strategy, and that one really
+  # is somebody who had to type their way back in.
+  SIGNING_UP = "quartets.signing_up".freeze
+
   def create
+    # Set before `super`, since the hook fires inside it. Harmless on a failed
+    # signup: nothing authenticates, so the hook never runs.
+    request.env[SIGNING_UP] = true
     super
     # `super` renders or redirects; cookies set after that still ride the response.
     # Guarded on persisted? because a failed signup re-renders the form with an

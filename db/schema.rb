@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_06_025922) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_06_193000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_06_025922) do
     t.bigint "puzzle_id", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.index ["player_token"], name: "index_play_states_on_player_token"
     t.index ["puzzle_id", "player_token"], name: "index_play_states_on_puzzle_and_player", unique: true, where: "(user_id IS NULL)"
     t.index ["puzzle_id", "user_id"], name: "index_play_states_on_puzzle_and_user", unique: true, where: "(user_id IS NOT NULL)"
     t.index ["puzzle_id"], name: "index_play_states_on_puzzle_id"
@@ -115,6 +116,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_06_025922) do
     t.bigint "user_id"
     t.index ["puzzle_id", "reporter_token"], name: "index_reports_on_puzzle_id_and_reporter_token", unique: true
     t.index ["puzzle_id"], name: "index_reports_on_puzzle_id"
+    t.index ["reporter_token"], name: "index_reports_on_reporter_token"
     t.index ["resolution"], name: "index_reports_on_resolution"
     t.index ["resolved_by_id"], name: "index_reports_on_resolved_by_id"
     t.index ["user_id"], name: "index_reports_on_user_id"

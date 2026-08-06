@@ -8,23 +8,37 @@ module Creator
 
   included do
     helper_method :current_creator_token, :owns?
+    before_action :refresh_creator_token
   end
 
   private
 
-  # Only ever runs signed out (PuzzlesController gates it on
-  # `unless: :user_signed_in?`), so unlike the play token there's no login state to
-  # mirror — one rule, sliding on each visit to an authoring page.
+  # Minting stays PuzzlesController's job (`before_action :ensure_creator_token,
+  # unless: :user_signed_in?`) — no reason to hand a creator identity to someone
+  # who has only ever played. But *refreshing* has to happen wherever Creator is
+  # included, which is the play and home surfaces too.
   #
-  # An anonymous author away longer than that loses the device-side claim on
-  # unpublished work. That's the deal the short cookie buys, and signing up is the
-  # answer — AnonymousClaim sweeps the drafts onto the account the moment you do.
+  # Without this the cookie only slid on authoring pages, so an author who
+  # published a quartet, shared the link, and then did the normal thing — visit
+  # /p/:share_token and /play to watch it get played — never re-stamped it. Three
+  # months on, `owns?` goes false and edit/unpublish/delete/stats all 404 on a
+  # live puzzle, with no way back: `puzzles.user_id` is nil and the cookie was the
+  # only key, so even signing up can't claim it. That's a public listing nobody
+  # can take down, which is a long way past the "lost drafts" this was meant to
+  # cost.
+  def refresh_creator_token
+    return if user_signed_in? || current_creator_token.blank?
+
+    ensure_creator_token
+  end
+
   def ensure_creator_token
-    write_identity_cookie(:creator_token, expires: identity_lifespan.from_now)
+    @current_creator_token = write_identity_cookie(:creator_token,
+                                                   expires: identity_lifespan.from_now)
   end
 
   def current_creator_token
-    cookies.signed[:creator_token]
+    @current_creator_token ||= cookies.signed[:creator_token]
   end
 
   # The puzzles owned by whoever is making this request: by account if signed in,
