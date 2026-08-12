@@ -74,6 +74,7 @@ Rails.application.routes.draw do
 
   # Static info pages — public, login-free. Linked from the site footer.
   get "/privacy", to: "pages#privacy", as: :privacy
+  get "/terms", to: "pages#terms", as: :terms
   get "/how-to-play", to: "pages#how_to_play", as: :how_to_play
   get "/making-quartets", to: "pages#making_quartets", as: :making_quartets
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

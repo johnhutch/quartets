@@ -204,4 +204,8 @@
   <% if puzzle.persisted? && puzzle.unlisted? %>
     <p class="m-form__note">Not ready to go public? Saving keeps it <strong>unlisted</strong> — anyone with the link can play, but it won't appear on the site or in search.</p>
   <% end %>
+
+  <%# Ownership, stated where authors actually are — anonymous creators never
+      see a signup screen, so this is their one shot at the terms. %>
+  <p class="m-form__note">Whatever you make here is yours — you keep full copyright; we only get permission to host and show it. <%= link_to "The terms", terms_path %>.</p>
 <% end %>

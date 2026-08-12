@@ -14,6 +14,16 @@ RSpec.describe "Static pages + footer", type: :request do
     end
   end
 
+  describe "GET /terms" do
+    it "is public and says creators keep ownership of their puzzles" do
+      get terms_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to match(/your quartets are yours/i)
+      expect(response.body).to match(/non-exclusive/i) # the narrow hosting license
+    end
+  end
+
   describe "GET /how-to-play" do
     it "is public and explains the rules" do
       get how_to_play_path
@@ -60,6 +70,7 @@ RSpec.describe "Static pages + footer", type: :request do
       expect(response.body).to include("github.com/johnhutch")   # @johnhutch
       expect(response.body).to include("swiftkickweb.com")
       expect(response.body).to include(privacy_path)
+      expect(response.body).to include(terms_path)
       expect(response.body).to include("Creative Commons")
       expect(response.body).to match(/not affiliated with the new york times/i)
     end

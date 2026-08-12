@@ -308,8 +308,11 @@ the result, and be completely insufferable about it.
 Dual-licensed, because it's both software and creative work:
 
 - **Code** — MIT ([`LICENSE`](LICENSE)). Take it.
-- **Content** — the puzzles, copy and docs — CC BY 4.0
+- **Content** — *our* puzzles, copy and docs — CC BY 4.0
   ([`LICENSE-CONTENT`](LICENSE-CONTENT)). Take it, with credit.
+- **User puzzles** — not ours to license. Quartets made by users on the hosted
+  site belong to their creators, full copyright retained; the site takes only a
+  narrow hosting license ([playquartets.com/terms](https://playquartets.com/terms)).
 
 Bundled fonts (Space Grotesk, UnifrakturMaguntia) ship under the SIL Open Font
 License 1.1; the license texts sit beside the fonts in

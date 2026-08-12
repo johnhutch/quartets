@@ -4,6 +4,9 @@ class PagesController < ApplicationController
   def privacy
   end
 
+  def terms
+  end
+
   def how_to_play
   end
 

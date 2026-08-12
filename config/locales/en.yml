@@ -152,8 +152,11 @@ en:
               note: "The no-strings license: take the code, change it, ship it, even sell it — just keep the credit line. That's what keeps free code actually free."
               href: "https://github.com/johnhutch/quartets/blob/main/LICENSE"
             - label: "CC BY 4.0"
-              note: "Take the puzzles, remix them, just credit the puzzle creator and link to their quartets profile."
+              note: "The content we wrote — our own puzzles, the copy, the docs — is free to take and remix with credit. Our work, our grant."
               href: "https://creativecommons.org/licenses/by/4.0/"
+            - label: "Your puzzles are yours"
+              note: "Creators keep full copyright of every quartet they make. We take just enough license to host and show them — nothing transfers, nothing gets sold, nothing gets relicensed."
+              href: "/terms"
         - head: "Credits"
           bullets:
             - label: "Who's responsible for this?"
