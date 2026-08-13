@@ -139,11 +139,9 @@
             <ul class="m-manifesto__list">
               <% col[:bullets].each do |b| %>
                 <li class="m-manifesto__item">
-                  <% if b[:href].present? %>
-                    <%= link_to "#{b[:label]} #{ne_arrow}", b[:href], class: "m-manifesto__label", target: "_blank", rel: "noopener" %>
-                  <% else %>
-                    <span class="m-manifesto__label"><%= b[:label] %></span>
-                  <% end %>
+                  <%# Labels are never links — an un-underlined heading-link reads
+                      as plain text (WCAG). Links live in the note copy, underlined. %>
+                  <span class="m-manifesto__label"><%= b[:label] %></span>
                   <%# note_html allows inline links (trusted copy from en.yml, never user input) %>
                   <% if b[:note_html].present? %>
                     <span class="m-manifesto__note"><%= b[:note_html].html_safe %></span>
@@ -158,8 +156,9 @@
       <% end %>
     </div>
 
+    <%# Privacy + terms live in the manifesto's Legalese column now; the legal
+        row is just the NYT disclaimer. %>
     <p class="m-foot__legal">
-      <%= link_to t("home.about.privacy"), privacy_path %> &middot;
       <%= t("home.about.disclaimer") %>
     </p>
   </footer>

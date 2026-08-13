@@ -205,6 +205,31 @@ RSpec.describe "Home", type: :request do
       expect(response.body).to include('aria-label="Primary"') # the fork carries the landmark
     end
 
+    context "the manifesto footer" do
+      # Manifesto headers used to be links styled without underlines — which
+      # reads as plain text (a WCAG "links must look like links" problem). Links
+      # live in the note copy now, where the CSS underlines them.
+      it "keeps links in the body text, never on the headers" do
+        get root_path
+
+        doc = Nokogiri::HTML(response.body)
+        expect(doc.css("a.m-manifesto__label")).to be_empty
+        expect(doc.css(".m-manifesto__note a[href*='github.com/johnhutch']")).to be_present
+      end
+
+      it "carries terms + privacy in a Legalese section" do
+        get root_path
+
+        doc = Nokogiri::HTML(response.body)
+        legalese = doc.css(".m-manifesto__col").find do |col|
+          col.at_css(".m-manifesto__head")&.text&.match?(/legalese/i)
+        end
+        expect(legalese).to be_present
+        expect(legalese.css("a[href='#{terms_path}']")).to be_present
+        expect(legalese.css("a[href='#{privacy_path}']")).to be_present
+      end
+    end
+
     context "the floating auth chip" do
       it "offers log-in and sign-up buttons when logged out, styled like the subpage topbar" do
         get root_path

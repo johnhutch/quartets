@@ -1562,9 +1562,7 @@ $home-pad: clamp(#{$space-md}, 6vw, 4rem);
     letter-spacing: -0.01em;
     font-size: $font-sm;
     color: $brutal-ink;
-    text-decoration: none;
   }
-  a.m-manifesto__label:hover { color: $color-yellow; }
   &__note {
     display: block;
     margin-top: 2px;
