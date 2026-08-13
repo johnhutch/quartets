@@ -119,15 +119,15 @@ en:
       head: "Why play here"
       features:
         - lead: "Free."
-          note: "All the puzzles and stats, free forever, devoid of paywall or \"pro\" tier nonsense."
+          note: "All the puzzles and stats, free forever, devoid of paywalls or \"pro\" tier nonsense."
         - lead: "Build your own."
-          note: "Make your own Quartets with a pretty easy to use, mobile-friendly tool. Keep it private to send to just your friends, or publish on the site for strangers to take a crack at it."
+          note: "Make your own Quartets with a super easy to use (IMO), mobile-friendly tool. (With auto-saving do you don't accidentally lose your work when you accidentally refresh the page!) Keep it private to send to just your friends, or publish on the site for strangers to take a crack at it."
         - lead: "Real stats."
-          note: "Solve rate, mistakes per game, the wrong guesses everyone falls for. You gotta sign up to see it, but that's not a trick. We just need to record who the owner is so we know who can see the stats."
+          note: "Solve rate, mistakes per game, the wrong guesses everyone falls for. You gotta sign up to see it. (No worries, that's not some nonsense engagement generation tactic. We just need to tie stats to a user for stats to work.)
         - lead: "Earn trophies."
-          note: "Perfects. Or purple-first. Or go for the reverse-rainbow like a goddam all-star."
+          note: "Perfects. Or purple-firsts. Or go for the reverse-rainbow like a goddam all-star."
         - lead: "Leaderboards."
-          note: "Coming soon — so start padding your record now."
+          note: "Coming soon. Maybe. If we get enough users. Either way, start padding your stats now."
     about:
       head: "Ethically built"
       columns:

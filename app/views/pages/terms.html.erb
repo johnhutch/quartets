@@ -4,16 +4,17 @@
   <h1><%= multicolor("Terms") %></h1>
 
   <p class="m-lede">
-    Short version: your quartets are yours. You keep full ownership of every
-    puzzle you make here. We take the bare minimum permission needed to run the
-    site, and not a drop more.
+    TL;DR: You keep full ownership of every puzzle you make here. We take the bare minimum permission needed to run the site, and not a drop more.
   </p>
+
+  <hr />
 
   <h2>Your quartets are yours</h2>
   <p>
-    You own the copyright in every quartet you create — the categories, the word
-    picks, the descriptions, all of it. Saving or publishing here transfers
-    nothing. We don't own your puzzles, we can't sell your puzzles, and we don't
+    You own the copyright in every quartet you create — all the words and categories and the whole thing. 
+    Saving/publishing here transfers
+    nothing nothing to us save for the right to host it (see below). 
+    We don't own your puzzles, we can't sell your puzzles, and we don't
     relicense them to anyone. This is true whether you have an account or made
     your quartet anonymously.
   </p>
@@ -21,43 +22,60 @@
   <h2>The one permission you give us</h2>
   <p>
     By saving a quartet on Quartets you grant us a <strong>non-exclusive,
-    royalty-free license</strong> to host, store, display, and share it — solely
-    so the site can do its job: show your puzzle to the people you share it
-    with, list it in the archive if you publish it, render its share card, and
-    keep its stats. That's the entire grant. It ends when you delete the puzzle.
-    (Anonymous, aggregate play stats survive a deletion — those describe the
-    plays, not the puzzle.)
+    royalty-free license</strong> to host, store, display, and share it. Sorta need that 
+  bit to actually have a site with puzzles on it. Otherwise, like, we'd be legally barred 
+  from letting you create puzzles at all, let alone saving them and showing them to people. 
+  So, that's the entire grant.</p>
+  <p>THAT SAID... there's one bit of complexity: deletion. So, if you create a puzzle and no one 
+  ever plays it and so there's zero stats attached to it, when you hit delete it just deletes. And
+  our <strong>non-exclusive royalty-free license</strong> ends there. NBD.
+  BUT. If a puzzle has some stats attached to it cause some people solved it, we just "soft-delete" it
+  where it effectively removes any and all access to the puzzle. The puzzle data itself stats in the db
+  cause otherwise players would lose their previous play stats. Not even the admins can pull it up on the site —
+  we'd have to do a super annoying and tedious thing where we actually dig through the db to find it and no way 
+  we're doing that just to view one puzzle. So we give up the part of the license about displaying
+  and sharing it, but not hosting and storing it. 
   </p>
 
   <h2>What everyone else gets</h2>
   <p>
-    They get to play it. That's it. Publishing a quartet does <em>not</em> put
-    it under an open license — nobody may copy, republish, or sell your puzzle
-    without your say-so. If you <em>want</em> your work to be remixable, that's
-    your right to give away, wherever and however you like.
+    They get to play it. And that's the extent of it. Publishing a quartet does <em>not</em> put
+    it under an open license. Nobody may copy, republish, or sell your puzzle
+    without your say-so (which you'd just, y'know, give them. Elsewhere we don't have any sort of 
+    mechanism for doing that on the site (yet)). So if you <em>want</em> your work to be remixable, that's
+    your right to give away, wherever and however you like. We might add a checkbox or something
+    to puzzle creation that lets people choose an open-license, but I dunno. I'm debating that. 
+    Too much cruft on the form that most people don't give a shit about can be overwhelming.
+    Maybe a user setting in the profile...
   </p>
 
   <h2>Our own content</h2>
   <p>
     The site's code is <%= link_to "MIT", "https://github.com/johnhutch/quartets/blob/main/LICENSE", target: "_blank", rel: "noopener" %>;
-    the content <em>we</em> wrote — our own puzzles, the site copy, the docs —
+    the content <em>we</em> wrote (and by "we" I pretty just mean Hutch. Who is me. So, my puzzles, the site copy, the docs, all that stuff)
     is <%= link_to "CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/", target: "_blank", rel: "noopener" %>.
-    Those licenses cover our work only, never yours.
+    Those licenses cover our (my) work only, never yours.
   </p>
 
   <h2>Ground rules</h2>
   <p>
-    Only publish what's yours to publish. Don't post someone else's puzzle,
-    hateful junk, or spam. Our moderators can unpublish or remove content that
-    breaks these rules — that's the whole extent of our editorial power, and
-    removing a puzzle never touches your ownership of it.
+    Only publish what's yours to publish. Don't be a dick and post someone else's puzzle. That's lame AF. 
+    Also, don't post hate-garbage or spam. Our moderators can (and will) unpublish or remove content that
+    breaks these rules. It's my site and the mods and I will kick that MAGA bullshit right the fuck off the site, IDGAF. 
+    But yeah, other than that, that's the whole extent of our editorial power. And even with all that in mind, 
+    us removing a puzzle, no matter how vile, never touches your ownership of it. So. Enjoy posting that on some 
+    MAGA-chud, right-wing-snowflake, echo-chamber garbage site, I guess. And also go fuck yourself. That's in our legal terms
+    and conditions, so you're legally required to do it.
   </p>
 
   <h2>If someone stole your work</h2>
   <p>
-    If a quartet on this site lifts your work — or someone lifted yours — tell
+    If a quartet on this site lifts your work (or someone lifted yours) tell
     us at <%= link_to "johnhutch.com", "https://johnhutch.com", target: "_blank", rel: "noopener" %>
-    and we'll sort it out. Usually that means taking the copy down.
+  and we'll try sort it out. Usually that means taking the copy down — maybe even scolding the dork who stole
+  your shit. Maybe some kinda public shaming mechanism... Hrm.</p>
+  <p>BUT ALSO sometimes it also means defending content creators from bullshit DMCA takedowns. Which we have experience doing. So
+  you should probably just skip it and avoid wasting both our time. 
   </p>
 
   <p><%= link_to "← Back to the quartets", root_path %></p>
