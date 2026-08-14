@@ -6,7 +6,50 @@ on:
       - main
 
 jobs:
+  # The gate. Nothing ships unless the suite is green — born from the 2026-08-13
+  # outage, where an unclosed quote in en.yml sailed to prod and 500'd every
+  # page. Any spec that renders a page would have caught it.
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17 # match the prod server (pg_dump is pinned to 17)
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      RAILS_ENV: test
+      # database.yml's test env assumes a local socket; point it at the service
+      # container instead (DATABASE_URL merges over database.yml).
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/quartets_test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with: # version comes from .ruby-version
+          bundler-cache: true
+
+      - name: Prepare database
+        run: bin/rails db:test:prepare
+
+      - name: Build CSS
+        run: bin/rails dartsass:build
+
+      # System specs drive headless Chrome (preinstalled on ubuntu-latest;
+      # Selenium Manager fetches the matching chromedriver).
+      - name: Run the suite
+        run: bundle exec rspec
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
