@@ -217,16 +217,28 @@ RSpec.describe "Home", type: :request do
         expect(doc.css(".m-manifesto__note a[href*='github.com/johnhutch']")).to be_present
       end
 
-      it "carries terms + privacy in a Legalese section" do
+      # Legalese is not a column and not an appendage — it's one more bullet in
+      # the list, sitting directly under "your puzzles are yours", carrying the
+      # two links and no pitch. The bullets above already make the argument.
+      it "carries terms + privacy as a Legalese item under 'your puzzles are yours'" do
         get root_path
 
         doc = Nokogiri::HTML(response.body)
-        legalese = doc.css(".m-manifesto__col").find do |col|
-          col.at_css(".m-manifesto__head")&.text&.match?(/legalese/i)
+
+        column_heads = doc.css(".m-manifesto__col > .m-manifesto__head")
+        expect(column_heads.map(&:text)).not_to include(a_string_matching(/legalese/i))
+
+        legalese = doc.css(".m-manifesto__item").find do |item|
+          item.at_css(".m-manifesto__label")&.text&.match?(/legalese/i)
         end
         expect(legalese).to be_present
-        expect(legalese.css("a[href='#{terms_path}']")).to be_present
-        expect(legalese.css("a[href='#{privacy_path}']")).to be_present
+
+        # Placement, not just presence: last bullet of the ownership column.
+        labels = legalese.parent.css(".m-manifesto__label").map(&:text)
+        expect(labels.last(2)).to eq(["Your puzzles are yours", "Legalese"])
+
+        hrefs = legalese.css(".m-manifesto__note a").map { |a| a["href"] }
+        expect(hrefs).to contain_exactly(terms_path, privacy_path)
       end
     end
 

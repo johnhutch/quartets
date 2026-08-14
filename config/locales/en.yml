@@ -153,12 +153,10 @@ en:
               note_html: "The content we wrote — our own puzzles, the copy, the docs — is free to <a href=\"https://creativecommons.org/licenses/by/4.0/\" target=\"_blank\" rel=\"noopener\">take and remix with credit</a>. Our work, our grant."
             - label: "Your puzzles are yours"
               note_html: "Creators keep full copyright of every quartet they make. We take <a href=\"/terms\">just enough license</a> to host and show them — nothing transfers, nothing gets sold, nothing gets relicensed."
-        - head: "Legalese"
-          bullets:
-            - label: "The terms"
-              note_html: "The \"your puzzles are yours\" deal, in writing. <a href=\"/terms\">Read the terms</a> — they're short and in English."
-            - label: "Privacy policy"
-              note_html: "Short version: we don't creep. <a href=\"/privacy\">The privacy policy</a> is the long version. It's also short."
+            # Just the two links — the bullets above already make the argument,
+            # so this one only has to be findable.
+            - label: "Legalese"
+              note_html: "<a href=\"/terms\">Terms</a> &middot; <a href=\"/privacy\">Privacy</a>"
         - head: "Credits"
           bullets:
             - label: "Who's responsible for this?"
